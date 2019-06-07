@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Basic Usage &mdash; pcdsdaq 2.2.0+18.g630b322 documentation</title>
+  <title>Basic Usage &mdash; pcdsdaq 2.2.0+24.gffb0a01 documentation</title>
   
 
   
@@ -17,34 +17,36 @@
   
 
   
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
 
-  
-  
     
 
   
-
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="AmiDet API" href="ami_api.html" />
     <link rel="prev" title="pcdsdaq.daq.check_connect" href="generated/pcdsdaq.daq.check_connect.html" /> 
-
-  
-  <script src="_static/js/modernizr.min.js"></script>
-
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
@@ -58,7 +60,7 @@
             
             
               <div class="version">
-                2.2.0+18.g630b322
+                2.2.0+24.gffb0a01
               </div>
             
           
@@ -213,8 +215,8 @@ for general information about daq scans.</p>
 </pre></div>
 </div>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">I highly recommend you place any ami detectors BEFORE the daq object in the
+<p class="admonition-title">Note</p>
+<p>I highly recommend you place any ami detectors BEFORE the daq object in the
 dets list, to ensure they are ready before the daq starts running. Failing
 to do this can result in missing some events.</p>
 </div>
@@ -231,20 +233,20 @@ on the level of detail you need.</p>
 <div class="section" id="advanced-options">
 <h2>Advanced Options<a class="headerlink" href="#advanced-options" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
-<li>Use the <code class="docutils literal notranslate"><span class="pre">filter_string</span></code> kwarg or set <code class="docutils literal notranslate"><span class="pre">det.filter_string</span></code> to filter the
+<li><p>Use the <code class="docutils literal notranslate"><span class="pre">filter_string</span></code> kwarg or set <code class="docutils literal notranslate"><span class="pre">det.filter_string</span></code> to filter the
 incoming data for the <a class="reference internal" href="ami_api.html#pcdsdaq.ami.AmiDet" title="pcdsdaq.ami.AmiDet"><code class="xref any py py-class docutils literal notranslate"><span class="pre">AmiDet</span></code></a>. You can also use the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.set_filter" title="pcdsdaq.daq.Daq.set_filter"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.set_filter</span></code></a> method
 to configure the l3t trigger and set the default filtering for <a class="reference internal" href="ami_api.html#pcdsdaq.ami.AmiDet" title="pcdsdaq.ami.AmiDet"><code class="xref any py py-class docutils literal notranslate"><span class="pre">AmiDet</span></code></a>
-instances.</li>
-<li>Use the <code class="docutils literal notranslate"><span class="pre">min_duration</span></code> kwarg or set <code class="docutils literal notranslate"><span class="pre">det.min_duration</span></code> to a positive
+instances.</p></li>
+<li><p>Use the <code class="docutils literal notranslate"><span class="pre">min_duration</span></code> kwarg or set <code class="docutils literal notranslate"><span class="pre">det.min_duration</span></code> to a positive
 number to specify a minimum time spent measuring data at each point. This is
 not needed if you are running pydaq and pyami in the same scan, but it may be
 useful if you are free-running the daq and need to control acquisition times
-in your scan.</li>
-<li>Use the <code class="docutils literal notranslate"><span class="pre">normalize</span></code> kwarg or set <code class="docutils literal notranslate"><span class="pre">det.normalize</span></code> to control normalization
+in your scan.</p></li>
+<li><p>Use the <code class="docutils literal notranslate"><span class="pre">normalize</span></code> kwarg or set <code class="docutils literal notranslate"><span class="pre">det.normalize</span></code> to control normalization
 behavior (default: <code class="docutils literal notranslate"><span class="pre">True</span></code>). If <code class="docutils literal notranslate"><span class="pre">True</span></code>, we’ll normalize with the detector
 chosen with <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.set_monitor" title="pcdsdaq.daq.Daq.set_monitor"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.set_monitor</span></code></a> (if applicable), if a specific detector
 then we’ll normalize with that detector, and if <code class="docutils literal notranslate"><span class="pre">False</span></code> then we’ll skip
-normalization altogether.</li>
+normalization altogether.</p></li>
 </ul>
 </div>
 </div>
@@ -260,7 +262,7 @@ normalization altogether.</li>
         <a href="ami_api.html" class="btn btn-neutral float-right" title="AmiDet API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="generated/pcdsdaq.daq.check_connect.html" class="btn btn-neutral" title="pcdsdaq.daq.check_connect" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="generated/pcdsdaq.daq.check_connect.html" class="btn btn-neutral float-left" title="pcdsdaq.daq.check_connect" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -286,25 +288,16 @@ normalization altogether.</li>
   
 
 
-  
-
-    
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-    
-
-  
-
-  <script type="text/javascript" src="_static/js/theme.js"></script>
-
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

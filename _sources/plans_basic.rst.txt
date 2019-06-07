@@ -26,20 +26,6 @@ This will be done automatically for you in a ``hutch-python`` session.
     daq = Daq(RE=RE)
 
 
-.. ipython:: python
-    :suppress:
-
-    from bluesky import RunEngine
-    from ophyd.sim import motor1
-    from ophyd.sim import det1
-    from pcdsdaq.daq import Daq
-    from pcdsdaq.sim import set_sim_mode
-
-    set_sim_mode(True)
-    RE = RunEngine({})
-    daq = Daq(RE=RE)
-
-
 .. note::
 
    The ``daq`` object must be staged if it's going to be used in a plan. This
@@ -62,16 +48,6 @@ step.
 
     from bluesky.plans import scan
     daq.configure(events=120)
-
-
-.. ipython:: python
-    :suppress:
-
-    from bluesky.plans import scan
-    daq.configure(events=120)
-
-
-.. ipython:: python
 
     RE(scan([daq], motor1, 0, 10, 11))
 
@@ -119,25 +95,10 @@ the `Daq` as a ``bluesky`` ``Flyer``.
         yield from mv(motor, start)
 
 
-.. ipython:: python
-    :suppress:
-
-    from bluesky.plan_stubs import mv
-    from bluesky.preprocessors import run_decorator
-    from pcdsdaq.preprocessors import daq_during_decorator
-
-    @daq_during_decorator()
-    @run_decorator()
-    def basic_plan(motor, start, end):
-        yield from mv(motor, start)
-        yield from mv(motor, end)
-        yield from mv(motor, start)
-
-
 This plan will start the `Daq`, move ``motor`` to the ``start``, ``end``,
 and back to the ``start`` positions, and then end the run.
 
-.. ipython:: python
+.. code-block:: python
 
     RE(basic_plan(motor1, 0, 10))
 

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Using the DAQ with Bluesky &mdash; pcdsdaq 2.2.0+18.g630b322 documentation</title>
+  <title>Using the DAQ with Bluesky &mdash; pcdsdaq 2.2.0+24.gffb0a01 documentation</title>
   
 
   
@@ -17,34 +17,36 @@
   
 
   
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
 
-  
-  
     
 
   
-
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Preprocessors API" href="preprocessors_api.html" />
     <link rel="prev" title="pcdsdaq.ami.concat_filter_strings" href="generated/pcdsdaq.ami.concat_filter_strings.html" /> 
-
-  
-  <script src="_static/js/modernizr.min.js"></script>
-
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
@@ -58,7 +60,7 @@
             
             
               <div class="version">
-                2.2.0+18.g630b322
+                2.2.0+24.gffb0a01
               </div>
             
           
@@ -205,9 +207,9 @@ This will be done automatically for you in a <code class="docutils literal notra
 </pre></div>
 </div>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">The <code class="docutils literal notranslate"><span class="pre">daq</span></code> object must be staged if it’s going to be used in a plan. This
-is done automatically in <a class="reference internal" href="generated/pcdsdaq.preprocessors.daq_during_wrapper.html#pcdsdaq.preprocessors.daq_during_wrapper" title="pcdsdaq.preprocessors.daq_during_wrapper"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_during_wrapper</span></code></a>, <a class="reference internal" href="generated/pcdsdaq.preprocessors.daq_during_decorator.html#pcdsdaq.preprocessors.daq_during_decorator" title="pcdsdaq.preprocessors.daq_during_decorator"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_during_decorator</span></code></a>, and
+<p class="admonition-title">Note</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">daq</span></code> object must be staged if it’s going to be used in a plan. This
+is done automatically in <code class="xref any docutils literal notranslate"><span class="pre">daq_during_wrapper</span></code>, <code class="xref any docutils literal notranslate"><span class="pre">daq_during_decorator</span></code>, and
 in most built-in plans like <code class="docutils literal notranslate"><span class="pre">count</span></code> and <code class="docutils literal notranslate"><span class="pre">scan</span></code>.</p>
 </div>
 </div>
@@ -222,10 +224,8 @@ each point. Since <code class="docutils literal notranslate"><span class="pre">d
 step.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bluesky.plans</span> <span class="kn">import</span> <span class="n">scan</span>
 <span class="n">daq</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">events</span><span class="o">=</span><span class="mi">120</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="n">RE</span><span class="p">(</span><span class="n">scan</span><span class="p">([</span><span class="n">daq</span><span class="p">],</span> <span class="n">motor1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">))</span>
-<span class="gh">Out[1]: </span><span class="go">(&#39;3890b973-13d8-42c9-802d-ad4a9b3477e3&#39;,)</span>
+
+<span class="n">RE</span><span class="p">(</span><span class="n">scan</span><span class="p">([</span><span class="n">daq</span><span class="p">],</span> <span class="n">motor1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -251,7 +251,7 @@ restarting at the next scan step.</p>
 <h2>Running for an Entire Plan Duration<a class="headerlink" href="#running-for-an-entire-plan-duration" title="Permalink to this headline">¶</a></h2>
 <p>The simplest way to include the daq is to turn it on at the start of the plan
 and turn it off at the end of the plan. This is done using the
-<a class="reference internal" href="generated/pcdsdaq.preprocessors.daq_during_wrapper.html#pcdsdaq.preprocessors.daq_during_wrapper" title="pcdsdaq.preprocessors.daq_during_wrapper"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_during_wrapper</span></code></a> or <a class="reference internal" href="generated/pcdsdaq.preprocessors.daq_during_decorator.html#pcdsdaq.preprocessors.daq_during_decorator" title="pcdsdaq.preprocessors.daq_during_decorator"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_during_decorator</span></code></a>, which treat
+<code class="xref any docutils literal notranslate"><span class="pre">daq_during_wrapper</span></code> or <code class="xref any docutils literal notranslate"><span class="pre">daq_during_decorator</span></code>, which treat
 the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> as a <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> <code class="docutils literal notranslate"><span class="pre">Flyer</span></code>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bluesky.plan_stubs</span> <span class="kn">import</span> <span class="n">mv</span>
 <span class="kn">from</span> <span class="nn">bluesky.preprocessors</span> <span class="kn">import</span> <span class="n">run_decorator</span>
@@ -267,11 +267,10 @@ the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcd
 </div>
 <p>This plan will start the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a>, move <code class="docutils literal notranslate"><span class="pre">motor</span></code> to the <code class="docutils literal notranslate"><span class="pre">start</span></code>, <code class="docutils literal notranslate"><span class="pre">end</span></code>,
 and back to the <code class="docutils literal notranslate"><span class="pre">start</span></code> positions, and then end the run.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [2]: </span><span class="n">RE</span><span class="p">(</span><span class="n">basic_plan</span><span class="p">(</span><span class="n">motor1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
-<span class="gh">Out[2]: </span><span class="go">()</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">RE</span><span class="p">(</span><span class="n">basic_plan</span><span class="p">(</span><span class="n">motor1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>If you ignore the <a class="reference internal" href="generated/pcdsdaq.preprocessors.daq_during_decorator.html#pcdsdaq.preprocessors.daq_during_decorator" title="pcdsdaq.preprocessors.daq_during_decorator"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_during_decorator</span></code></a>, this is just a normal <code class="docutils literal notranslate"><span class="pre">plan</span></code>.
+<p>If you ignore the <code class="xref any docutils literal notranslate"><span class="pre">daq_during_decorator</span></code>, this is just a normal <code class="docutils literal notranslate"><span class="pre">plan</span></code>.
 This makes it simple to add the daq collecting data in the background
 to a normal <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> <code class="docutils literal notranslate"><span class="pre">plan</span></code>.</p>
 </div>
@@ -295,7 +294,7 @@ to running, and if you start from a configured state we’ll stay connected.</p>
         <a href="preprocessors_api.html" class="btn btn-neutral float-right" title="Preprocessors API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="generated/pcdsdaq.ami.concat_filter_strings.html" class="btn btn-neutral" title="pcdsdaq.ami.concat_filter_strings" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="generated/pcdsdaq.ami.concat_filter_strings.html" class="btn btn-neutral float-left" title="pcdsdaq.ami.concat_filter_strings" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -321,25 +320,16 @@ to running, and if you start from a configured state we’ll stay connected.</p>
   
 
 
-  
-
-    
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-    
-
-  
-
-  <script type="text/javascript" src="_static/js/theme.js"></script>
-
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

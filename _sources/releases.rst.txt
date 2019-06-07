@@ -1,6 +1,19 @@
 Release History
 ###############
 
+v2.2.1 (2019-6-6)
+=================
+
+Bugfixes
+--------
+- Fix issue where the daq could rapidly cycle under specific conditions
+- Fix issue where the daq class wasn't correctly reset after a disconnect
+- Fix issue where deprecated ``platform`` argument was mistakenly left in at
+  2.0.0
+- Fix issue where module was broken on newest ``bluesky`` because ``None`` is
+  no longer a valid data shape
+
+
 v2.2.0 (2018-10-12)
 ===================
 

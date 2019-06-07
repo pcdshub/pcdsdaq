@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Release History &mdash; pcdsdaq 2.2.0+18.g630b322 documentation</title>
+  <title>Release History &mdash; pcdsdaq 2.2.0+24.gffb0a01 documentation</title>
   
 
   
@@ -17,33 +17,35 @@
   
 
   
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
 
-  
-  
     
 
   
-
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="prev" title="Environments" href="env.html" /> 
-
-  
-  <script src="_static/js/modernizr.min.js"></script>
-
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
@@ -57,7 +59,7 @@
             
             
               <div class="version">
-                2.2.0+18.g630b322
+                2.2.0+24.gffb0a01
               </div>
             
           
@@ -110,28 +112,32 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="env.html">Environments</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Release History</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#v2-2-0-2018-10-12">v2.2.0 (2018-10-12)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#v2-2-1-2019-6-6">v2.2.1 (2019-6-6)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#bugfixes">Bugfixes</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#v2-2-0-2018-10-12">v2.2.0 (2018-10-12)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#features">Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Bugfixes</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#v2-1-0-2018-08-06">v2.1.0 (2018-08-06)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id1">Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">Features</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#v2-0-0-2018-05-27">v2.0.0 (2018-05-27)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id2">Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">Features</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#api-changes">API Changes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#deprecations">Deprecations</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#v1-2-0-2018-05-08">v1.2.0 (2018-05-08)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id3">Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id4">Features</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#v1-1-0-2018-03-07">v1.1.0 (2018-03-07)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id4">Features</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id5">Bugfixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id5">Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id6">Bugfixes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#v1-0-0-2018-03-02">v1.0.0 (2018-03-02)</a></li>
@@ -203,114 +209,128 @@
             
   <div class="section" id="release-history">
 <h1>Release History<a class="headerlink" href="#release-history" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="v2-2-1-2019-6-6">
+<h2>v2.2.1 (2019-6-6)<a class="headerlink" href="#v2-2-1-2019-6-6" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="bugfixes">
+<h3>Bugfixes<a class="headerlink" href="#bugfixes" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Fix issue where the daq could rapidly cycle under specific conditions</p></li>
+<li><p>Fix issue where the daq class wasn’t correctly reset after a disconnect</p></li>
+<li><p>Fix issue where deprecated <code class="docutils literal notranslate"><span class="pre">platform</span></code> argument was mistakenly left in at
+2.0.0</p></li>
+<li><p>Fix issue where module was broken on newest <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> because <code class="docutils literal notranslate"><span class="pre">None</span></code> is
+no longer a valid data shape</p></li>
+</ul>
+</div>
+</div>
 <div class="section" id="v2-2-0-2018-10-12">
 <h2>v2.2.0 (2018-10-12)<a class="headerlink" href="#v2-2-0-2018-10-12" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="features">
 <h3>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>Add <a class="reference internal" href="ami_api.html#pcdsdaq.ami.AmiDet" title="pcdsdaq.ami.AmiDet"><code class="xref any py py-class docutils literal notranslate"><span class="pre">AmiDet</span></code></a> interface for interacting with <code class="docutils literal notranslate"><span class="pre">pyami</span></code></li>
-<li>Clean up and update <code class="docutils literal notranslate"><span class="pre">pcdsdaq_lib_setup</span></code> to work with <code class="docutils literal notranslate"><span class="pre">pyami</span></code></li>
-<li>Allow daq to be configured to run “forever, until everything else is done
-triggering” by setting <code class="docutils literal notranslate"><span class="pre">events=0</span></code></li>
-<li>Add configurable sleep time to account for the difference between the daq
+<li><p>Add <a class="reference internal" href="ami_api.html#pcdsdaq.ami.AmiDet" title="pcdsdaq.ami.AmiDet"><code class="xref any py py-class docutils literal notranslate"><span class="pre">AmiDet</span></code></a> interface for interacting with <code class="docutils literal notranslate"><span class="pre">pyami</span></code></p></li>
+<li><p>Clean up and update <code class="docutils literal notranslate"><span class="pre">pcdsdaq_lib_setup</span></code> to work with <code class="docutils literal notranslate"><span class="pre">pyami</span></code></p></li>
+<li><p>Allow daq to be configured to run “forever, until everything else is done
+triggering” by setting <code class="docutils literal notranslate"><span class="pre">events=0</span></code></p></li>
+<li><p>Add configurable sleep time to account for the difference between the daq
 process claiming to be ready and actually being ready
-(<code class="docutils literal notranslate"><span class="pre">daq.configure(begin_sleep=0.5)</span></code>)</li>
+(<code class="docutils literal notranslate"><span class="pre">daq.configure(begin_sleep=0.5)</span></code>)</p></li>
 </ul>
 </div>
-<div class="section" id="bugfixes">
-<h3>Bugfixes<a class="headerlink" href="#bugfixes" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id1">
+<h3>Bugfixes<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>Fix issue where package update would break the conda environment</li>
+<li><p>Fix issue where package update would break the conda environment</p></li>
 </ul>
 </div>
 </div>
 <div class="section" id="v2-1-0-2018-08-06">
 <h2>v2.1.0 (2018-08-06)<a class="headerlink" href="#v2-1-0-2018-08-06" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id1">
-<h3>Features<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id2">
+<h3>Features<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>Add <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.run_number" title="pcdsdaq.daq.Daq.run_number"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.run_number</span></code></a> method to get the current run number.</li>
+<li><p>Add <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.run_number" title="pcdsdaq.daq.Daq.run_number"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.run_number</span></code></a> method to get the current run number.</p></li>
 </ul>
 </div>
 </div>
 <div class="section" id="v2-0-0-2018-05-27">
 <h2>v2.0.0 (2018-05-27)<a class="headerlink" href="#v2-0-0-2018-05-27" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id2">
-<h3>Features<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id3">
+<h3>Features<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>Allow <code class="docutils literal notranslate"><span class="pre">ctrl+c</span></code> during a <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">begin</span></code></a> call with <code class="docutils literal notranslate"><span class="pre">wait=True</span></code> to stop the run.</li>
-<li>Add sourcable <code class="docutils literal notranslate"><span class="pre">pcdsdaq_lib_setup</span></code> script that will get <code class="docutils literal notranslate"><span class="pre">pydaq</span></code> and
-<code class="docutils literal notranslate"><span class="pre">pycdb</span></code> ready for your python environment.</li>
-<li>The <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.connect" title="pcdsdaq.daq.Daq.connect"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">connect</span></code></a> method will provide more helpful error messages when it fails.</li>
-<li>Allow the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> class to be used as a <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> readable device.
+<li><p>Allow <code class="docutils literal notranslate"><span class="pre">ctrl+c</span></code> during a <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">begin</span></code></a> call with <code class="docutils literal notranslate"><span class="pre">wait=True</span></code> to stop the run.</p></li>
+<li><p>Add sourcable <code class="docutils literal notranslate"><span class="pre">pcdsdaq_lib_setup</span></code> script that will get <code class="docutils literal notranslate"><span class="pre">pydaq</span></code> and
+<code class="docutils literal notranslate"><span class="pre">pycdb</span></code> ready for your python environment.</p></li>
+<li><p>The <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.connect" title="pcdsdaq.daq.Daq.connect"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">connect</span></code></a> method will provide more helpful error messages when it fails.</p></li>
+<li><p>Allow the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> class to be used as a <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> readable device.
 Once staged, runs will end on run stop documents.
 A calibcycle will be run when the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> is triggered, and triggering will be
 reported as done when the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> has stopped. This means it is viable to use
-the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> inside normal plans like <code class="docutils literal notranslate"><span class="pre">scan</span></code> and <code class="docutils literal notranslate"><span class="pre">count</span></code>.</li>
-<li>Add an argument to <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.begin</span></code></a>: <code class="docutils literal notranslate"><span class="pre">end_run=True</span></code> will end the run once the
-daq stops running, rather than leaving the run open.</li>
-<li>Add <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin_infinite" title="pcdsdaq.daq.Daq.begin_infinite"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.begin_infinite</span></code></a></li>
-<li>Add <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.config_info" title="pcdsdaq.daq.Daq.config_info"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.config_info</span></code></a></li>
-<li>Restore daq state after a <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> <code class="docutils literal notranslate"><span class="pre">plan</span></code>, e.g. disconnect if we were
-disconnected, run if we were running, etc.</li>
-<li>Add support for scan PVs via the <a class="reference internal" href="scan_pvs.html#pcdsdaq.scan_vars.ScanVars" title="pcdsdaq.scan_vars.ScanVars"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ScanVars</span></code></a> class. This class attaches
+the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> inside normal plans like <code class="docutils literal notranslate"><span class="pre">scan</span></code> and <code class="docutils literal notranslate"><span class="pre">count</span></code>.</p></li>
+<li><p>Add an argument to <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.begin</span></code></a>: <code class="docutils literal notranslate"><span class="pre">end_run=True</span></code> will end the run once the
+daq stops running, rather than leaving the run open.</p></li>
+<li><p>Add <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin_infinite" title="pcdsdaq.daq.Daq.begin_infinite"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.begin_infinite</span></code></a></p></li>
+<li><p>Add <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.config_info" title="pcdsdaq.daq.Daq.config_info"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.config_info</span></code></a></p></li>
+<li><p>Restore daq state after a <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> <code class="docutils literal notranslate"><span class="pre">plan</span></code>, e.g. disconnect if we were
+disconnected, run if we were running, etc.</p></li>
+<li><p>Add support for scan PVs via the <code class="xref any docutils literal notranslate"><span class="pre">ScanVars</span></code> class. This class attaches
 itself to a <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code> and knows when to update each PV, provided that
-the <code class="docutils literal notranslate"><span class="pre">plan</span></code> has reasonable metadata.</li>
+the <code class="docutils literal notranslate"><span class="pre">plan</span></code> has reasonable metadata.</p></li>
 </ul>
 </div>
 <div class="section" id="api-changes">
 <h3>API Changes<a class="headerlink" href="#api-changes" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><code class="docutils literal notranslate"><span class="pre">calib_cycle</span></code> and related <code class="docutils literal notranslate"><span class="pre">plans</span></code> module has been removed, as using the
+<li><p><code class="docutils literal notranslate"><span class="pre">calib_cycle</span></code> and related <code class="docutils literal notranslate"><span class="pre">plans</span></code> module has been removed, as using the
 <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> as a readable device is more intuitive and it’s still early enough to
-break my API.</li>
-<li><code class="docutils literal notranslate"><span class="pre">daq_wrapper</span></code> and <code class="docutils literal notranslate"><span class="pre">daq_decorator</span></code> have been move to the <code class="docutils literal notranslate"><span class="pre">preprocessors</span></code>
+break my API.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">daq_wrapper</span></code> and <code class="docutils literal notranslate"><span class="pre">daq_decorator</span></code> have been move to the <code class="docutils literal notranslate"><span class="pre">preprocessors</span></code>
 submodule, as a parallel to the <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> structure. They have been renamed
-to <a class="reference internal" href="generated/pcdsdaq.preprocessors.daq_during_wrapper.html#pcdsdaq.preprocessors.daq_during_wrapper" title="pcdsdaq.preprocessors.daq_during_wrapper"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_during_wrapper</span></code></a> and <a class="reference internal" href="generated/pcdsdaq.preprocessors.daq_during_decorator.html#pcdsdaq.preprocessors.daq_during_decorator" title="pcdsdaq.preprocessors.daq_during_decorator"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_during_decorator</span></code></a> as a parallel to the
+to <code class="xref any docutils literal notranslate"><span class="pre">daq_during_wrapper</span></code> and <code class="xref any docutils literal notranslate"><span class="pre">daq_during_decorator</span></code> as a parallel to the
 built-in <code class="docutils literal notranslate"><span class="pre">fly_during_wrapper</span></code>. These are now simple preprocessors to
-run the daq at the same time as a daq-agnostic plan.</li>
-<li><code class="docutils literal notranslate"><span class="pre">complete</span></code> no longer ends the run. This makes it more in line with the
-<code class="docutils literal notranslate"><span class="pre">bluesky</span></code> API.</li>
+run the daq at the same time as a daq-agnostic plan.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">complete</span></code> no longer ends the run. This makes it more in line with the
+<code class="docutils literal notranslate"><span class="pre">bluesky</span></code> API.</p></li>
 </ul>
 </div>
 <div class="section" id="deprecations">
 <h3>Deprecations<a class="headerlink" href="#deprecations" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>The daq no longer needs to be passed a <code class="docutils literal notranslate"><span class="pre">platform</span></code> argument. This argument
-will be removed in a future release, and will log a warning if you pass it.</li>
+<li><p>The daq no longer needs to be passed a <code class="docutils literal notranslate"><span class="pre">platform</span></code> argument. This argument
+will be removed in a future release, and will log a warning if you pass it.</p></li>
 </ul>
 </div>
 </div>
 <div class="section" id="v1-2-0-2018-05-08">
 <h2>v1.2.0 (2018-05-08)<a class="headerlink" href="#v1-2-0-2018-05-08" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id3">
-<h3>Features<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id4">
+<h3>Features<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>Add the <code class="docutils literal notranslate"><span class="pre">record</span></code> option to the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">begin</span></code></a> method. This allows a user running
-interactively to concisely activate recording for single runs.</li>
+<li><p>Add the <code class="docutils literal notranslate"><span class="pre">record</span></code> option to the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">begin</span></code></a> method. This allows a user running
+interactively to concisely activate recording for single runs.</p></li>
 </ul>
 </div>
 </div>
 <div class="section" id="v1-1-0-2018-03-07">
 <h2>v1.1.0 (2018-03-07)<a class="headerlink" href="#v1-1-0-2018-03-07" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id4">
-<h3>Features<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id5">
+<h3>Features<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>Add <code class="docutils literal notranslate"><span class="pre">daq.record</span></code> property to schedule that the next run sould be
-configured with <code class="docutils literal notranslate"><span class="pre">record=True</span></code></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">daq.record</span></code> property to schedule that the next run sould be
+configured with <code class="docutils literal notranslate"><span class="pre">record=True</span></code></p></li>
 </ul>
 </div>
-<div class="section" id="id5">
-<h3>Bugfixes<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id6">
+<h3>Bugfixes<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>Fix bug where configured record was overridden on every configure</li>
+<li><p>Fix bug where configured record was overridden on every configure</p></li>
 </ul>
 </div>
 </div>
 <div class="section" id="v1-0-0-2018-03-02">
 <h2>v1.0.0 (2018-03-02)<a class="headerlink" href="#v1-0-0-2018-03-02" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
-<li>Initial release, transferred from <a class="reference external" href="https://github.com/pcdshub/pcdsdevices">https://github.com/pcdshub/pcdsdevices</a></li>
+<li><p>Initial release, transferred from <a class="reference external" href="https://github.com/pcdshub/pcdsdevices">https://github.com/pcdshub/pcdsdevices</a></p></li>
 </ul>
 </div>
 </div>
@@ -324,7 +344,7 @@ configured with <code class="docutils literal notranslate"><span class="pre">rec
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
       
-        <a href="env.html" class="btn btn-neutral" title="Environments" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="env.html" class="btn btn-neutral float-left" title="Environments" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -350,25 +370,16 @@ configured with <code class="docutils literal notranslate"><span class="pre">rec
   
 
 
-  
-
-    
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-    
-
-  
-
-  <script type="text/javascript" src="_static/js/theme.js"></script>
-
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>
