@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Scan PVs &mdash; pcdsdaq 2.2.0+24.gffb0a01 documentation</title>
+  <title>Scan PVs &mdash; pcdsdaq 2.2.1+2.gd314ed4 documentation</title>
   
 
   
@@ -35,7 +35,8 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Miscellaneous" href="misc.html" /> 
+    <link rel="next" title="Miscellaneous" href="misc.html" />
+    <link rel="prev" title="pcdsdaq.preprocessors.daq_during_decorator" href="generated/pcdsdaq.preprocessors.daq_during_decorator.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -59,7 +60,7 @@
             
             
               <div class="version">
-                2.2.0+24.gffb0a01
+                2.2.1+2.gd314ed4
               </div>
             
           
@@ -184,13 +185,13 @@
   <div class="section" id="scan-pvs">
 <h1>Scan PVs<a class="headerlink" href="#scan-pvs" title="Permalink to this headline">¶</a></h1>
 <p>When using the DAQ, it is convenient to keep track of the state of the scan
-in EPICS to set up nice run tables. This is implemented as the <code class="xref any docutils literal notranslate"><span class="pre">ScanVars</span></code>
+in EPICS to set up nice run tables. This is implemented as the <a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars" title="pcdsdaq.scan_vars.ScanVars"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ScanVars</span></code></a>
 class.</p>
 <p>In this document I will use “scan vars” and “scan pvs” interchangably.</p>
 <div class="section" id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
-<p>Once instantiated, you can use <code class="xref any docutils literal notranslate"><span class="pre">ScanVars.enable</span></code> and
-<code class="xref any docutils literal notranslate"><span class="pre">ScanVars.disable</span></code> to control whether or not we will update the PVs
+<p>Once instantiated, you can use <a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars.enable" title="pcdsdaq.scan_vars.ScanVars.enable"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">ScanVars.enable</span></code></a> and
+<a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars.disable" title="pcdsdaq.scan_vars.ScanVars.disable"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">ScanVars.disable</span></code></a> to control whether or not we will update the PVs
 during a scan.</p>
 <p>The class is instantiated as
 <code class="docutils literal notranslate"><span class="pre">scan_vars</span> <span class="pre">=</span> <span class="pre">ScanVars('XPP:SCAN',</span> <span class="pre">name='scan_vars',</span> <span class="pre">RE=RE)</span></code>,
@@ -233,9 +234,186 @@ replacing <code class="docutils literal notranslate"><span class="pre">XPP</span
 </div>
 <div class="section" id="api">
 <h2>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h2>
-<p>The <code class="xref any docutils literal notranslate"><span class="pre">ScanVars</span></code> class is an <code class="docutils literal notranslate"><span class="pre">ophyd</span></code> <code class="docutils literal notranslate"><span class="pre">Device</span></code> with special <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code>
+<p>The <a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars" title="pcdsdaq.scan_vars.ScanVars"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ScanVars</span></code></a> class is an <code class="docutils literal notranslate"><span class="pre">ophyd</span></code> <code class="docutils literal notranslate"><span class="pre">Device</span></code> with special <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code>
 subscription mechanisms for updating the scan PVs. It reads plan metadata
 and daq configuration to update the PVs.</p>
+<dl class="class">
+<dt id="pcdsdaq.scan_vars.ScanVars">
+<em class="property">class </em><code class="sig-prename descclassname">pcdsdaq.scan_vars.</code><code class="sig-name descname">ScanVars</code><span class="sig-paren">(</span><em class="sig-param">prefix</em>, <em class="sig-param">*</em>, <em class="sig-param">name</em>, <em class="sig-param">RE</em>, <em class="sig-param">i_start=0</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collection of PVs to keep track of the scan state.</p>
+<p>Use <a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars.enable" title="pcdsdaq.scan_vars.ScanVars.enable"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">enable</span></code></a> to set up automatic updating of these PVs
+during a <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code> scan. This relies on proper
+metadata like the metadata in the built in <code class="docutils literal notranslate"><span class="pre">scan</span></code>
+and <code class="docutils literal notranslate"><span class="pre">count</span></code> plans to populate the PVS.</p>
+<p>Use <a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars.disable" title="pcdsdaq.scan_vars.ScanVars.disable"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">disable</span></code></a> to remove this from the <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prefix</strong> (<code class="docutils literal notranslate"><span class="pre">str</span></code>) – The PV prefix, e.g. <code class="docutils literal notranslate"><span class="pre">XPP:SCAN</span></code></p></li>
+<li><p><strong>name</strong> (<code class="docutils literal notranslate"><span class="pre">str</span></code>, required keyword) – A name to refer to this object by</p></li>
+<li><p><strong>RE</strong> (<code class="docutils literal notranslate"><span class="pre">RunEngine</span></code>, required keyword) – The <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code> instance associated with the session.</p></li>
+<li><p><strong>i_start</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code>, optional) – The starting count for the i_step tracker. This defaults to zero,
+which is offset by one from the one-indexed bluesky counter.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="attribute">
+<dt id="pcdsdaq.scan_vars.ScanVars.i_step">
+<code class="sig-name descname">i_step</code><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.i_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Component attribute</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Component</span><span class="p">(</span><span class="n">EpicsSignal</span><span class="p">,</span> <span class="s1">&#39;:ISTEP&#39;</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pcdsdaq.scan_vars.ScanVars.is_scan">
+<code class="sig-name descname">is_scan</code><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.is_scan" title="Permalink to this definition">¶</a></dt>
+<dd><p>Component attribute</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Component</span><span class="p">(</span><span class="n">EpicsSignal</span><span class="p">,</span> <span class="s1">&#39;:ISSCAN&#39;</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pcdsdaq.scan_vars.ScanVars.var0">
+<code class="sig-name descname">var0</code><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.var0" title="Permalink to this definition">¶</a></dt>
+<dd><p>Component attribute</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Component</span><span class="p">(</span><span class="n">EpicsSignal</span><span class="p">,</span> <span class="s1">&#39;:SCANVAR00&#39;</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pcdsdaq.scan_vars.ScanVars.var1">
+<code class="sig-name descname">var1</code><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.var1" title="Permalink to this definition">¶</a></dt>
+<dd><p>Component attribute</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Component</span><span class="p">(</span><span class="n">EpicsSignal</span><span class="p">,</span> <span class="s1">&#39;:SCANVAR01&#39;</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pcdsdaq.scan_vars.ScanVars.var2">
+<code class="sig-name descname">var2</code><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.var2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Component attribute</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Component</span><span class="p">(</span><span class="n">EpicsSignal</span><span class="p">,</span> <span class="s1">&#39;:SCANVAR02&#39;</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pcdsdaq.scan_vars.ScanVars.var0_max">
+<code class="sig-name descname">var0_max</code><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.var0_max" title="Permalink to this definition">¶</a></dt>
+<dd><p>Component attribute</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Component</span><span class="p">(</span><span class="n">EpicsSignal</span><span class="p">,</span> <span class="s1">&#39;:MAX00&#39;</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pcdsdaq.scan_vars.ScanVars.var1_max">
+<code class="sig-name descname">var1_max</code><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.var1_max" title="Permalink to this definition">¶</a></dt>
+<dd><p>Component attribute</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Component</span><span class="p">(</span><span class="n">EpicsSignal</span><span class="p">,</span> <span class="s1">&#39;:MAX01&#39;</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pcdsdaq.scan_vars.ScanVars.var2_max">
+<code class="sig-name descname">var2_max</code><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.var2_max" title="Permalink to this definition">¶</a></dt>
+<dd><p>Component attribute</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Component</span><span class="p">(</span><span class="n">EpicsSignal</span><span class="p">,</span> <span class="s1">&#39;:MAX02&#39;</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pcdsdaq.scan_vars.ScanVars.var0_min">
+<code class="sig-name descname">var0_min</code><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.var0_min" title="Permalink to this definition">¶</a></dt>
+<dd><p>Component attribute</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Component</span><span class="p">(</span><span class="n">EpicsSignal</span><span class="p">,</span> <span class="s1">&#39;:MIN00&#39;</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pcdsdaq.scan_vars.ScanVars.var1_min">
+<code class="sig-name descname">var1_min</code><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.var1_min" title="Permalink to this definition">¶</a></dt>
+<dd><p>Component attribute</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Component</span><span class="p">(</span><span class="n">EpicsSignal</span><span class="p">,</span> <span class="s1">&#39;:MIN01&#39;</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pcdsdaq.scan_vars.ScanVars.var2_min">
+<code class="sig-name descname">var2_min</code><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.var2_min" title="Permalink to this definition">¶</a></dt>
+<dd><p>Component attribute</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Component</span><span class="p">(</span><span class="n">EpicsSignal</span><span class="p">,</span> <span class="s1">&#39;:MIN02&#39;</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pcdsdaq.scan_vars.ScanVars.n_steps">
+<code class="sig-name descname">n_steps</code><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.n_steps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Component attribute</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Component</span><span class="p">(</span><span class="n">EpicsSignal</span><span class="p">,</span> <span class="s1">&#39;:NSTEPS&#39;</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pcdsdaq.scan_vars.ScanVars.n_shots">
+<code class="sig-name descname">n_shots</code><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.n_shots" title="Permalink to this definition">¶</a></dt>
+<dd><p>Component attribute</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Component</span><span class="p">(</span><span class="n">EpicsSignal</span><span class="p">,</span> <span class="s1">&#39;:NSHOTS&#39;</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="pcdsdaq.scan_vars.ScanVars.enable">
+<code class="sig-name descname">enable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.enable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enable automatic updating of PVs during a scan.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pcdsdaq.scan_vars.ScanVars.disable">
+<code class="sig-name descname">disable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.disable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disable automatic updating of PVs during a scan.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pcdsdaq.scan_vars.ScanVars.start">
+<code class="sig-name descname">start</code><span class="sig-paren">(</span><em class="sig-param">doc</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the scan variables at the start of a run.</p>
+<p>This inspects the metadata dictionary and will set reasonable values if
+this metadata dictionary is well-formed as in <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> built-ins
+like <code class="docutils literal notranslate"><span class="pre">scan</span></code>. It also inspects the daq object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pcdsdaq.scan_vars.ScanVars.event">
+<code class="sig-name descname">event</code><span class="sig-paren">(</span><em class="sig-param">doc</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the step counter at each scan step.</p>
+<p>This actually sets the step counter for the next scan step, because
+this runs immediately after a scan step and recieves an event doc from
+the step that just ran.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pcdsdaq.scan_vars.ScanVars.stop">
+<code class="sig-name descname">stop</code><span class="sig-paren">(</span><em class="sig-param">doc</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set all fields to their default values at the end of a run.</p>
+<p>These are all 0 for the numeric fields and empty strings for the string
+fields.</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 </div>
 
@@ -249,6 +427,8 @@ and daq configuration to update the PVs.</p>
       
         <a href="misc.html" class="btn btn-neutral float-right" title="Miscellaneous" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
+      
+        <a href="generated/pcdsdaq.preprocessors.daq_during_decorator.html" class="btn btn-neutral float-left" title="pcdsdaq.preprocessors.daq_during_decorator" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

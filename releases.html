@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Release History &mdash; pcdsdaq 2.2.0+24.gffb0a01 documentation</title>
+  <title>Release History &mdash; pcdsdaq 2.2.1+2.gd314ed4 documentation</title>
   
 
   
@@ -59,7 +59,7 @@
             
             
               <div class="version">
-                2.2.0+24.gffb0a01
+                2.2.1+2.gd314ed4
               </div>
             
           
@@ -273,7 +273,7 @@ daq stops running, rather than leaving the run open.</p></li>
 <li><p>Add <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.config_info" title="pcdsdaq.daq.Daq.config_info"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.config_info</span></code></a></p></li>
 <li><p>Restore daq state after a <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> <code class="docutils literal notranslate"><span class="pre">plan</span></code>, e.g. disconnect if we were
 disconnected, run if we were running, etc.</p></li>
-<li><p>Add support for scan PVs via the <code class="xref any docutils literal notranslate"><span class="pre">ScanVars</span></code> class. This class attaches
+<li><p>Add support for scan PVs via the <a class="reference internal" href="scan_pvs.html#pcdsdaq.scan_vars.ScanVars" title="pcdsdaq.scan_vars.ScanVars"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ScanVars</span></code></a> class. This class attaches
 itself to a <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code> and knows when to update each PV, provided that
 the <code class="docutils literal notranslate"><span class="pre">plan</span></code> has reasonable metadata.</p></li>
 </ul>
@@ -286,7 +286,7 @@ the <code class="docutils literal notranslate"><span class="pre">plan</span></co
 break my API.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">daq_wrapper</span></code> and <code class="docutils literal notranslate"><span class="pre">daq_decorator</span></code> have been move to the <code class="docutils literal notranslate"><span class="pre">preprocessors</span></code>
 submodule, as a parallel to the <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> structure. They have been renamed
-to <code class="xref any docutils literal notranslate"><span class="pre">daq_during_wrapper</span></code> and <code class="xref any docutils literal notranslate"><span class="pre">daq_during_decorator</span></code> as a parallel to the
+to <a class="reference internal" href="generated/pcdsdaq.preprocessors.daq_during_wrapper.html#pcdsdaq.preprocessors.daq_during_wrapper" title="pcdsdaq.preprocessors.daq_during_wrapper"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_during_wrapper</span></code></a> and <a class="reference internal" href="generated/pcdsdaq.preprocessors.daq_during_decorator.html#pcdsdaq.preprocessors.daq_during_decorator" title="pcdsdaq.preprocessors.daq_during_decorator"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_during_decorator</span></code></a> as a parallel to the
 built-in <code class="docutils literal notranslate"><span class="pre">fly_during_wrapper</span></code>. These are now simple preprocessors to
 run the daq at the same time as a daq-agnostic plan.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">complete</span></code> no longer ends the run. This makes it more in line with the

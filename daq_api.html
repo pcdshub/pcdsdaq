@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Daq API &mdash; pcdsdaq 2.2.0+24.gffb0a01 documentation</title>
+  <title>Daq API &mdash; pcdsdaq 2.2.1+2.gd314ed4 documentation</title>
   
 
   
@@ -60,7 +60,7 @@
             
             
               <div class="version">
-                2.2.0+24.gffb0a01
+                2.2.1+2.gd314ed4
               </div>
             
           
@@ -500,9 +500,13 @@ the hutch based on your session details.</p>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">int</span></code></p>
 </dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>RuntimeError:</strong> – if we have no access to NFS</p></li>
+<li><p><strong>ValueError:</strong> – if an invalid hutch was passed</p></li>
+</ul>
+</dd>
 </dl>
-<p>:raises RuntimeError:: if we have no access to NFS
-:raises ValueError:: if an invalid hutch was passed</p>
 </dd></dl>
 
 <dl class="method">

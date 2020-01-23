@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Using the DAQ with Bluesky &mdash; pcdsdaq 2.2.0+24.gffb0a01 documentation</title>
+  <title>Using the DAQ with Bluesky &mdash; pcdsdaq 2.2.1+2.gd314ed4 documentation</title>
   
 
   
@@ -60,7 +60,7 @@
             
             
               <div class="version">
-                2.2.0+24.gffb0a01
+                2.2.1+2.gd314ed4
               </div>
             
           
@@ -201,7 +201,7 @@ This will be done automatically for you in a <code class="docutils literal notra
 <span class="kn">from</span> <span class="nn">pcdsdaq.daq</span> <span class="kn">import</span> <span class="n">Daq</span>
 <span class="kn">from</span> <span class="nn">pcdsdaq.sim</span> <span class="kn">import</span> <span class="n">set_sim_mode</span>
 
-<span class="n">set_sim_mode</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">set_sim_mode</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">RE</span> <span class="o">=</span> <span class="n">RunEngine</span><span class="p">({})</span>
 <span class="n">daq</span> <span class="o">=</span> <span class="n">Daq</span><span class="p">(</span><span class="n">RE</span><span class="o">=</span><span class="n">RE</span><span class="p">)</span>
 </pre></div>
@@ -209,7 +209,7 @@ This will be done automatically for you in a <code class="docutils literal notra
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">daq</span></code> object must be staged if it’s going to be used in a plan. This
-is done automatically in <code class="xref any docutils literal notranslate"><span class="pre">daq_during_wrapper</span></code>, <code class="xref any docutils literal notranslate"><span class="pre">daq_during_decorator</span></code>, and
+is done automatically in <a class="reference internal" href="generated/pcdsdaq.preprocessors.daq_during_wrapper.html#pcdsdaq.preprocessors.daq_during_wrapper" title="pcdsdaq.preprocessors.daq_during_wrapper"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_during_wrapper</span></code></a>, <a class="reference internal" href="generated/pcdsdaq.preprocessors.daq_during_decorator.html#pcdsdaq.preprocessors.daq_during_decorator" title="pcdsdaq.preprocessors.daq_during_decorator"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_during_decorator</span></code></a>, and
 in most built-in plans like <code class="docutils literal notranslate"><span class="pre">count</span></code> and <code class="docutils literal notranslate"><span class="pre">scan</span></code>.</p>
 </div>
 </div>
@@ -251,7 +251,7 @@ restarting at the next scan step.</p>
 <h2>Running for an Entire Plan Duration<a class="headerlink" href="#running-for-an-entire-plan-duration" title="Permalink to this headline">¶</a></h2>
 <p>The simplest way to include the daq is to turn it on at the start of the plan
 and turn it off at the end of the plan. This is done using the
-<code class="xref any docutils literal notranslate"><span class="pre">daq_during_wrapper</span></code> or <code class="xref any docutils literal notranslate"><span class="pre">daq_during_decorator</span></code>, which treat
+<a class="reference internal" href="generated/pcdsdaq.preprocessors.daq_during_wrapper.html#pcdsdaq.preprocessors.daq_during_wrapper" title="pcdsdaq.preprocessors.daq_during_wrapper"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_during_wrapper</span></code></a> or <a class="reference internal" href="generated/pcdsdaq.preprocessors.daq_during_decorator.html#pcdsdaq.preprocessors.daq_during_decorator" title="pcdsdaq.preprocessors.daq_during_decorator"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_during_decorator</span></code></a>, which treat
 the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> as a <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> <code class="docutils literal notranslate"><span class="pre">Flyer</span></code>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bluesky.plan_stubs</span> <span class="kn">import</span> <span class="n">mv</span>
 <span class="kn">from</span> <span class="nn">bluesky.preprocessors</span> <span class="kn">import</span> <span class="n">run_decorator</span>
@@ -270,7 +270,7 @@ and back to the <code class="docutils literal notranslate"><span class="pre">sta
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">RE</span><span class="p">(</span><span class="n">basic_plan</span><span class="p">(</span><span class="n">motor1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>If you ignore the <code class="xref any docutils literal notranslate"><span class="pre">daq_during_decorator</span></code>, this is just a normal <code class="docutils literal notranslate"><span class="pre">plan</span></code>.
+<p>If you ignore the <a class="reference internal" href="generated/pcdsdaq.preprocessors.daq_during_decorator.html#pcdsdaq.preprocessors.daq_during_decorator" title="pcdsdaq.preprocessors.daq_during_decorator"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_during_decorator</span></code></a>, this is just a normal <code class="docutils literal notranslate"><span class="pre">plan</span></code>.
 This makes it simple to add the daq collecting data in the background
 to a normal <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> <code class="docutils literal notranslate"><span class="pre">plan</span></code>.</p>
 </div>
