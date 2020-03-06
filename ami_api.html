@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>AmiDet API &mdash; pcdsdaq 2.2.1+2.gd314ed4 documentation</title>
+  <title>AmiDet API &mdash; pcdsdaq 2.2.2+2.g8351255 documentation</title>
   
 
   
@@ -21,10 +21,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -60,7 +60,7 @@
             
             
               <div class="version">
-                2.2.1+2.gd314ed4
+                2.2.2+2.g8351255
               </div>
             
           
@@ -218,93 +218,12 @@ in any other detector to normalize against something that is not the
 </ul>
 </dd>
 </dl>
-<dl class="attribute">
-<dt id="pcdsdaq.ami.AmiDet.entries">
-<code class="sig-name descname">entries</code><a class="headerlink" href="#pcdsdaq.ami.AmiDet.entries" title="Permalink to this definition">¶</a></dt>
-<dd><p>Component attribute</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Component</span><span class="p">(</span><span class="n">Signal</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pcdsdaq.ami.AmiDet.entries_mon">
-<code class="sig-name descname">entries_mon</code><a class="headerlink" href="#pcdsdaq.ami.AmiDet.entries_mon" title="Permalink to this definition">¶</a></dt>
-<dd><p>Component attribute</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Component</span><span class="p">(</span><span class="n">Signal</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pcdsdaq.ami.AmiDet.err">
-<code class="sig-name descname">err</code><a class="headerlink" href="#pcdsdaq.ami.AmiDet.err" title="Permalink to this definition">¶</a></dt>
-<dd><p>Component attribute</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Component</span><span class="p">(</span><span class="n">Signal</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pcdsdaq.ami.AmiDet.err_mon">
-<code class="sig-name descname">err_mon</code><a class="headerlink" href="#pcdsdaq.ami.AmiDet.err_mon" title="Permalink to this definition">¶</a></dt>
-<dd><p>Component attribute</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Component</span><span class="p">(</span><span class="n">Signal</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pcdsdaq.ami.AmiDet.err_raw">
-<code class="sig-name descname">err_raw</code><a class="headerlink" href="#pcdsdaq.ami.AmiDet.err_raw" title="Permalink to this definition">¶</a></dt>
-<dd><p>Component attribute</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Component</span><span class="p">(</span><span class="n">Signal</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
 <dl class="method">
 <dt id="pcdsdaq.ami.AmiDet.get">
 <code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.ami.AmiDet.get" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the value of all components in the device</p>
 <p>Keyword arguments are passed onto each signal.get(). Components
 beginning with an underscore will not be included.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pcdsdaq.ami.AmiDet.mean">
-<code class="sig-name descname">mean</code><a class="headerlink" href="#pcdsdaq.ami.AmiDet.mean" title="Permalink to this definition">¶</a></dt>
-<dd><p>Component attribute</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Component</span><span class="p">(</span><span class="n">Signal</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pcdsdaq.ami.AmiDet.mean_mon">
-<code class="sig-name descname">mean_mon</code><a class="headerlink" href="#pcdsdaq.ami.AmiDet.mean_mon" title="Permalink to this definition">¶</a></dt>
-<dd><p>Component attribute</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Component</span><span class="p">(</span><span class="n">Signal</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pcdsdaq.ami.AmiDet.mean_raw">
-<code class="sig-name descname">mean_raw</code><a class="headerlink" href="#pcdsdaq.ami.AmiDet.mean_raw" title="Permalink to this definition">¶</a></dt>
-<dd><p>Component attribute</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Component</span><span class="p">(</span><span class="n">Signal</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pcdsdaq.ami.AmiDet.mon_prefix">
-<code class="sig-name descname">mon_prefix</code><a class="headerlink" href="#pcdsdaq.ami.AmiDet.mon_prefix" title="Permalink to this definition">¶</a></dt>
-<dd><p>Component attribute</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Component</span><span class="p">(</span><span class="n">Signal</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-</pre></div>
-</div>
 </dd></dl>
 
 <dl class="method">
@@ -322,7 +241,7 @@ beginning with an underscore will not be included.</p>
 <dl class="method">
 <dt id="pcdsdaq.ami.AmiDet.read">
 <code class="sig-name descname">read</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.ami.AmiDet.read" title="Permalink to this definition">¶</a></dt>
-<dd><p>Read data from the device</p>
+<dd><p>Read data from the device.</p>
 <p>This method is expected to be as instantaneous as possible,
 with any substantial acquisition time taken care of in
 <code class="xref py py-meth docutils literal notranslate"><span class="pre">trigger()</span></code>.</p>
@@ -343,15 +262,6 @@ with the keys <code class="docutils literal notranslate"><span class="pre">{'val
 <dd class="field-even"><p>OrderedDict</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pcdsdaq.ami.AmiDet.rms">
-<code class="sig-name descname">rms</code><a class="headerlink" href="#pcdsdaq.ami.AmiDet.rms" title="Permalink to this definition">¶</a></dt>
-<dd><p>Component attribute</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Component</span><span class="p">(</span><span class="n">Signal</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-</pre></div>
-</div>
 </dd></dl>
 
 <dl class="method">
