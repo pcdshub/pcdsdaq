@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>pcdsdaq.preprocessors.daq_during_wrapper &mdash; pcdsdaq 2.2.2+2.g8351255 documentation</title>
+  <title>pcdsdaq.preprocessors.daq_during_wrapper &mdash; pcdsdaq 2.2.3+5.gb93bb81 documentation</title>
   
 
   
@@ -60,7 +60,7 @@
             
             
               <div class="version">
-                2.2.2+2.g8351255
+                2.2.3+5.gb93bb81
               </div>
             
           
@@ -185,9 +185,9 @@
             
   <div class="section" id="pcdsdaq-preprocessors-daq-during-wrapper">
 <h1>pcdsdaq.preprocessors.daq_during_wrapper<a class="headerlink" href="#pcdsdaq-preprocessors-daq-during-wrapper" title="Permalink to this headline">¶</a></h1>
-<dl class="function">
+<dl class="py function">
 <dt id="pcdsdaq.preprocessors.daq_during_wrapper">
-<code class="sig-prename descclassname">pcdsdaq.preprocessors.</code><code class="sig-name descname">daq_during_wrapper</code><span class="sig-paren">(</span><em class="sig-param">plan</em>, <em class="sig-param">record=None</em>, <em class="sig-param">use_l3t=False</em>, <em class="sig-param">controls=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.preprocessors.daq_during_wrapper" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pcdsdaq.preprocessors.</code><code class="sig-name descname">daq_during_wrapper</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">plan</span></em>, <em class="sig-param"><span class="n">record</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">use_l3t</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">controls</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.preprocessors.daq_during_wrapper" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run a plan with the <a class="reference internal" href="../daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a>.</p>
 <p>This can be used with an ordinary <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> plan that you’d like the daq
 to run along with. This also stages the daq so that the run start/stop

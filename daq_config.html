@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Configuration &mdash; pcdsdaq 2.2.2+2.g8351255 documentation</title>
+  <title>Configuration &mdash; pcdsdaq 2.2.3+5.gb93bb81 documentation</title>
   
 
   
@@ -60,7 +60,7 @@
             
             
               <div class="version">
-                2.2.2+2.g8351255
+                2.2.3+5.gb93bb81
               </div>
             
           
@@ -205,9 +205,9 @@ those that are shared with <a class="reference internal" href="daq_api.html#pcds
 <p>Arguments that are shared between the two methods act as defaults.
 For example, calling <code class="docutils literal notranslate"><span class="pre">daq.configure(duration=3)</span></code> will set the
 no-arguments behavior of <code class="docutils literal notranslate"><span class="pre">daq.begin()</span></code> to run the daq for 3 seconds.</p>
-<dl class="method">
+<dl class="py method">
 <dt>
-<code class="sig-prename descclassname">Daq.</code><code class="sig-name descname">configure</code><span class="sig-paren">(</span><em class="sig-param">events=None</em>, <em class="sig-param">duration=None</em>, <em class="sig-param">record=None</em>, <em class="sig-param">use_l3t=None</em>, <em class="sig-param">controls=None</em>, <em class="sig-param">begin_sleep=None</em><span class="sig-paren">)</span></dt>
+<code class="sig-prename descclassname">Daq.</code><code class="sig-name descname">configure</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">events</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">duration</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">record</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">use_l3t</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">controls</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">begin_sleep</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span></dt>
 <dd><p>Changes the daq’s configuration for the next run.</p>
 <p>This is the method that directly interfaces with the daq. If you simply
 want to get a configuration ready for later, use <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.preconfig" title="pcdsdaq.daq.Daq.preconfig"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">preconfig</span></code></a>.</p>

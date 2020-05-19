@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Scan PVs &mdash; pcdsdaq 2.2.2+2.g8351255 documentation</title>
+  <title>Scan PVs &mdash; pcdsdaq 2.2.3+5.gb93bb81 documentation</title>
   
 
   
@@ -60,7 +60,7 @@
             
             
               <div class="version">
-                2.2.2+2.g8351255
+                2.2.3+5.gb93bb81
               </div>
             
           
@@ -237,9 +237,9 @@ replacing <code class="docutils literal notranslate"><span class="pre">XPP</span
 <p>The <a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars" title="pcdsdaq.scan_vars.ScanVars"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ScanVars</span></code></a> class is an <code class="docutils literal notranslate"><span class="pre">ophyd</span></code> <code class="docutils literal notranslate"><span class="pre">Device</span></code> with special <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code>
 subscription mechanisms for updating the scan PVs. It reads plan metadata
 and daq configuration to update the PVs.</p>
-<dl class="class">
+<dl class="py class">
 <dt id="pcdsdaq.scan_vars.ScanVars">
-<em class="property">class </em><code class="sig-prename descclassname">pcdsdaq.scan_vars.</code><code class="sig-name descname">ScanVars</code><span class="sig-paren">(</span><em class="sig-param">prefix</em>, <em class="sig-param">*</em>, <em class="sig-param">name</em>, <em class="sig-param">RE</em>, <em class="sig-param">i_start=0</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">pcdsdaq.scan_vars.</code><code class="sig-name descname">ScanVars</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">prefix</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">RE</span></em>, <em class="sig-param"><span class="n">i_start</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars" title="Permalink to this definition">¶</a></dt>
 <dd><p>Collection of PVs to keep track of the scan state.</p>
 <p>Use <a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars.enable" title="pcdsdaq.scan_vars.ScanVars.enable"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">enable</span></code></a> to set up automatic updating of these PVs
 during a <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code> scan. This relies on proper
@@ -257,39 +257,39 @@ which is offset by one from the one-indexed bluesky counter.</p></li>
 </ul>
 </dd>
 </dl>
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.scan_vars.ScanVars.enable">
 <code class="sig-name descname">enable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.enable" title="Permalink to this definition">¶</a></dt>
 <dd><p>Enable automatic updating of PVs during a scan.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.scan_vars.ScanVars.disable">
 <code class="sig-name descname">disable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.disable" title="Permalink to this definition">¶</a></dt>
 <dd><p>Disable automatic updating of PVs during a scan.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.scan_vars.ScanVars.start">
-<code class="sig-name descname">start</code><span class="sig-paren">(</span><em class="sig-param">doc</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.start" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">start</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">doc</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.start" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize the scan variables at the start of a run.</p>
 <p>This inspects the metadata dictionary and will set reasonable values if
 this metadata dictionary is well-formed as in <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> built-ins
 like <code class="docutils literal notranslate"><span class="pre">scan</span></code>. It also inspects the daq object.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.scan_vars.ScanVars.event">
-<code class="sig-name descname">event</code><span class="sig-paren">(</span><em class="sig-param">doc</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.event" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">event</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">doc</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.event" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the step counter at each scan step.</p>
 <p>This actually sets the step counter for the next scan step, because
 this runs immediately after a scan step and recieves an event doc from
 the step that just ran.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.scan_vars.ScanVars.stop">
-<code class="sig-name descname">stop</code><span class="sig-paren">(</span><em class="sig-param">doc</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.stop" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">stop</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">doc</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.stop" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set all fields to their default values at the end of a run.</p>
 <p>These are all 0 for the numeric fields and empty strings for the string
 fields.</p>

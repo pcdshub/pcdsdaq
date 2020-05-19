@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Daq API &mdash; pcdsdaq 2.2.2+2.g8351255 documentation</title>
+  <title>Daq API &mdash; pcdsdaq 2.2.3+5.gb93bb81 documentation</title>
   
 
   
@@ -60,7 +60,7 @@
             
             
               <div class="version">
-                2.2.2+2.g8351255
+                2.2.3+5.gb93bb81
               </div>
             
           
@@ -184,9 +184,9 @@
             
   <div class="section" id="daq-api">
 <h1>Daq API<a class="headerlink" href="#daq-api" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="pcdsdaq.daq.Daq">
-<em class="property">class </em><code class="sig-prename descclassname">pcdsdaq.daq.</code><code class="sig-name descname">Daq</code><span class="sig-paren">(</span><em class="sig-param">RE=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">pcdsdaq.daq.</code><code class="sig-name descname">Daq</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">RE</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq" title="Permalink to this definition">¶</a></dt>
 <dd><p>The LCLS1 daq as a <code class="docutils literal notranslate"><span class="pre">bluesky</span></code>-compatible object.</p>
 <p>This uses the <code class="docutils literal notranslate"><span class="pre">pydaq</span></code> module to connect with a running daq instance,
 controlling it via socket commands.</p>
@@ -202,9 +202,9 @@ will pass into the python layer from the daq.</p>
 <dd class="field-odd"><p><strong>RE</strong> (<code class="docutils literal notranslate"><span class="pre">RunEngine</span></code>, optional) – Set <code class="docutils literal notranslate"><span class="pre">RE</span></code> to the session’s main <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code></p>
 </dd>
 </dl>
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.daq.Daq.begin">
-<code class="sig-name descname">begin</code><span class="sig-paren">(</span><em class="sig-param">events=None</em>, <em class="sig-param">duration=None</em>, <em class="sig-param">record=None</em>, <em class="sig-param">use_l3t=None</em>, <em class="sig-param">controls=None</em>, <em class="sig-param">wait=False</em>, <em class="sig-param">end_run=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.begin" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">begin</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">events</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">duration</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">record</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">use_l3t</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">controls</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">wait</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">end_run</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.begin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Start the daq and block until the daq has begun acquiring data.</p>
 <p>Optionally block with <code class="docutils literal notranslate"><span class="pre">wait=True</span></code> until the daq has finished aquiring
 data. If blocking, a <code class="docutils literal notranslate"><span class="pre">ctrl+c</span></code> will end the run and clean up.</p>
@@ -235,13 +235,13 @@ run and clean up.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.daq.Daq.begin_infinite">
-<code class="sig-name descname">begin_infinite</code><span class="sig-paren">(</span><em class="sig-param">record=None</em>, <em class="sig-param">use_l3t=None</em>, <em class="sig-param">controls=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.begin_infinite" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">begin_infinite</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">record</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">use_l3t</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">controls</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.begin_infinite" title="Permalink to this definition">¶</a></dt>
 <dd><p>Start the daq to run forever in the background.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.daq.Daq.collect">
 <code class="sig-name descname">collect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.collect" title="Permalink to this definition">¶</a></dt>
 <dd><p>Collect data as part of the <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> <code class="docutils literal notranslate"><span class="pre">Flyer</span></code> interface.</p>
@@ -251,7 +251,7 @@ events to report to python, this will be a generator that immediately
 ends.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.daq.Daq.complete">
 <code class="sig-name descname">complete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.complete" title="Permalink to this definition">¶</a></dt>
 <dd><p>If the daq is freely running, this will <a class="reference internal" href="#pcdsdaq.daq.Daq.stop" title="pcdsdaq.daq.Daq.stop"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">stop</span></code></a> the daq.
@@ -267,15 +267,15 @@ acquiring</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.daq.Daq.config">
 <em class="property">property </em><code class="sig-name descname">config</code><a class="headerlink" href="#pcdsdaq.daq.Daq.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>The current configuration, e.g. the last call to <a class="reference internal" href="#pcdsdaq.daq.Daq.configure" title="pcdsdaq.daq.Daq.configure"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">configure</span></code></a></p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.daq.Daq.config_info">
-<code class="sig-name descname">config_info</code><span class="sig-paren">(</span><em class="sig-param">config=None</em>, <em class="sig-param">header='Config:'</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.config_info" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">config_info</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">config</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">header</span><span class="o">=</span><span class="default_value">'Config:'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.config_info" title="Permalink to this definition">¶</a></dt>
 <dd><p>Show the config information as a logger.info message.</p>
 <p>This will print to the screen if the logger is configured correctly.</p>
 <dl class="field-list simple">
@@ -289,9 +289,9 @@ config.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.daq.Daq.configure">
-<code class="sig-name descname">configure</code><span class="sig-paren">(</span><em class="sig-param">events=None</em>, <em class="sig-param">duration=None</em>, <em class="sig-param">record=None</em>, <em class="sig-param">use_l3t=None</em>, <em class="sig-param">controls=None</em>, <em class="sig-param">begin_sleep=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.configure" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">configure</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">events</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">duration</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">record</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">use_l3t</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">controls</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">begin_sleep</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.configure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Changes the daq’s configuration for the next run.</p>
 <p>This is the method that directly interfaces with the daq. If you simply
 want to get a configuration ready for later, use <a class="reference internal" href="#pcdsdaq.daq.Daq.preconfig" title="pcdsdaq.daq.Daq.preconfig"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">preconfig</span></code></a>.</p>
@@ -332,32 +332,32 @@ at which they were configured, as specified by <code class="docutils literal not
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.daq.Daq.configured">
 <em class="property">property </em><code class="sig-name descname">configured</code><a class="headerlink" href="#pcdsdaq.daq.Daq.configured" title="Permalink to this definition">¶</a></dt>
 <dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the daq is configured, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.daq.Daq.connect">
 <code class="sig-name descname">connect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.connect" title="Permalink to this definition">¶</a></dt>
 <dd><p>Connect to the live DAQ, giving full control to the Python process.</p>
 <p>To undo this, you may call <a class="reference internal" href="#pcdsdaq.daq.Daq.disconnect" title="pcdsdaq.daq.Daq.disconnect"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">disconnect</span></code></a>.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.daq.Daq.connected">
 <em class="property">property </em><code class="sig-name descname">connected</code><a class="headerlink" href="#pcdsdaq.daq.Daq.connected" title="Permalink to this definition">¶</a></dt>
 <dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the daq is connected, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.daq.Daq.describe">
 <code class="sig-name descname">describe</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.describe" title="Permalink to this definition">¶</a></dt>
 <dd><p>Explain what read returns. There is nothing  yet.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.daq.Daq.describe_collect">
 <code class="sig-name descname">describe_collect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.describe_collect" title="Permalink to this definition">¶</a></dt>
 <dd><p>As per the <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> interface, this is how you interpret the null
@@ -365,7 +365,7 @@ data from <a class="reference internal" href="#pcdsdaq.daq.Daq.collect" title="p
 collected.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.daq.Daq.describe_configuration">
 <code class="sig-name descname">describe_configuration</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.describe_configuration" title="Permalink to this definition">¶</a></dt>
 <dd><p><code class="docutils literal notranslate"><span class="pre">bluesky</span></code> interface for describing how to interpret the configured
@@ -380,22 +380,22 @@ values</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.daq.Daq.disconnect">
 <code class="sig-name descname">disconnect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.disconnect" title="Permalink to this definition">¶</a></dt>
 <dd><p>Disconnect from the live DAQ, giving control back to the GUI.</p>
 <p>This is the opposite of <a class="reference internal" href="#pcdsdaq.daq.Daq.connect" title="pcdsdaq.daq.Daq.connect"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">connect</span></code></a>.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.daq.Daq.end_run">
 <code class="sig-name descname">end_run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.end_run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call <a class="reference internal" href="#pcdsdaq.daq.Daq.stop" title="pcdsdaq.daq.Daq.stop"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">stop</span></code></a>, then mark the run as finished.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.daq.Daq.kickoff">
-<code class="sig-name descname">kickoff</code><span class="sig-paren">(</span><em class="sig-param">events=None</em>, <em class="sig-param">duration=None</em>, <em class="sig-param">use_l3t=None</em>, <em class="sig-param">controls=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.kickoff" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">kickoff</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">events</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">duration</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">use_l3t</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">controls</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.kickoff" title="Permalink to this definition">¶</a></dt>
 <dd><p>Begin acquisition. This method is non-blocking.
 See <a class="reference internal" href="#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">begin</span></code></a> for a description of the parameters.</p>
 <p>This method does not supply arguments for configuration parameters, it
@@ -412,7 +412,7 @@ configure before running if there are queued configuration changes.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.daq.Daq.next_config">
 <em class="property">property </em><code class="sig-name descname">next_config</code><a class="headerlink" href="#pcdsdaq.daq.Daq.next_config" title="Permalink to this definition">¶</a></dt>
 <dd><p>The next queued configuration.</p>
@@ -420,16 +420,16 @@ configure before running if there are queued configuration changes.</p>
 configuration to be run on the next begin.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.daq.Daq.pause">
 <code class="sig-name descname">pause</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.pause" title="Permalink to this definition">¶</a></dt>
 <dd><p><code class="docutils literal notranslate"><span class="pre">bluesky</span></code> interface for determining what to do when a plan is
 interrupted. This will call <a class="reference internal" href="#pcdsdaq.daq.Daq.stop" title="pcdsdaq.daq.Daq.stop"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">stop</span></code></a>, but it will not call <a class="reference internal" href="#pcdsdaq.daq.Daq.end_run" title="pcdsdaq.daq.Daq.end_run"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">end_run</span></code></a>.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.daq.Daq.preconfig">
-<code class="sig-name descname">preconfig</code><span class="sig-paren">(</span><em class="sig-param">events=None</em>, <em class="sig-param">duration=None</em>, <em class="sig-param">record=None</em>, <em class="sig-param">use_l3t=None</em>, <em class="sig-param">controls=None</em>, <em class="sig-param">begin_sleep=None</em>, <em class="sig-param">show_queued_cfg=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.preconfig" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">preconfig</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">events</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">duration</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">record</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">use_l3t</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">controls</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">begin_sleep</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">show_queued_cfg</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.preconfig" title="Permalink to this definition">¶</a></dt>
 <dd><p>Queue configuration parameters for next call to <a class="reference internal" href="#pcdsdaq.daq.Daq.configure" title="pcdsdaq.daq.Daq.configure"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">configure</span></code></a>.</p>
 <p>These will be overridden by arguments passed directly to <a class="reference internal" href="#pcdsdaq.daq.Daq.configure" title="pcdsdaq.daq.Daq.configure"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">configure</span></code></a>.
 These will be cleared after each call to <a class="reference internal" href="#pcdsdaq.daq.Daq.configure" title="pcdsdaq.daq.Daq.configure"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">configure</span></code></a>.</p>
@@ -438,7 +438,7 @@ These will be cleared after each call to <a class="reference internal" href="#pc
 assuming the logger has been configured.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.daq.Daq.read">
 <code class="sig-name descname">read</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return data. There is no data implemented yet.</p>
@@ -447,7 +447,7 @@ and wait for “everything else” to be done, then stop the daq
 afterwards.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.daq.Daq.read_configuration">
 <code class="sig-name descname">read_configuration</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.read_configuration" title="Permalink to this definition">¶</a></dt>
 <dd><p><code class="docutils literal notranslate"><span class="pre">bluesky</span></code> interface for checking the current configuration</p>
@@ -462,7 +462,7 @@ when it was last set.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.daq.Daq.record">
 <em class="property">property </em><code class="sig-name descname">record</code><a class="headerlink" href="#pcdsdaq.daq.Daq.record" title="Permalink to this definition">¶</a></dt>
 <dd><p>If <code class="docutils literal notranslate"><span class="pre">True</span></code>, we’ll configure the daq to record data. If <code class="docutils literal notranslate"><span class="pre">False</span></code>, we
@@ -471,16 +471,16 @@ will configure the daq to not record data.</p>
 executed later, e.g. <code class="docutils literal notranslate"><span class="pre">configure(record=True)</span></code></p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.daq.Daq.resume">
 <code class="sig-name descname">resume</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.resume" title="Permalink to this definition">¶</a></dt>
 <dd><p><code class="docutils literal notranslate"><span class="pre">bluesky</span></code> interface for determining what to do when an interrupted
 plan is resumed. This will call <a class="reference internal" href="#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">begin</span></code></a>.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.daq.Daq.run_number">
-<code class="sig-name descname">run_number</code><span class="sig-paren">(</span><em class="sig-param">hutch_name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.run_number" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">run_number</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">hutch_name</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.run_number" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine the run number of the last run, or current run if running.</p>
 <p>This requires you to be on an NFS-mounted host. If hutch can be
 determined from the get_hutch_name script from engineering_tools, then
@@ -509,9 +509,9 @@ the hutch based on your session details.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.daq.Daq.set_filter">
-<code class="sig-name descname">set_filter</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">event_codes=None</em>, <em class="sig-param">operator='&amp;'</em>, <em class="sig-param">or_bykik=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.set_filter" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_filter</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">event_codes</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">operator</span><span class="o">=</span><span class="default_value">'&amp;'</span></em>, <em class="sig-param"><span class="n">or_bykik</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.set_filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set up the l3t filters.</p>
 <p>These connect through pyami to call set_l3t or clear_l3t. The function
 takes in arbitrary dets whose prefixes are the ami names, along with low
@@ -548,9 +548,9 @@ the data if we’re in l3t veto mode.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.daq.Daq.set_monitor">
-<code class="sig-name descname">set_monitor</code><span class="sig-paren">(</span><em class="sig-param">det</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.set_monitor" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_monitor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">det</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.set_monitor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Designate one <a class="reference internal" href="ami_api.html#pcdsdaq.ami.AmiDet" title="pcdsdaq.ami.AmiDet"><code class="xref any py py-class docutils literal notranslate"><span class="pre">AmiDet</span></code></a> as the monitor.</p>
 <p>The monitor det is the default normalization detector and the default
 filtering detector when no detector is provided.</p>
@@ -562,7 +562,7 @@ disable the monitor det.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.daq.Daq.stage">
 <code class="sig-name descname">stage</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.stage" title="Permalink to this definition">¶</a></dt>
 <dd><p><code class="docutils literal notranslate"><span class="pre">bluesky</span></code> interface for preparing a device for action.</p>
@@ -581,7 +581,7 @@ new run during the scan.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.daq.Daq.state">
 <em class="property">property </em><code class="sig-name descname">state</code><a class="headerlink" href="#pcdsdaq.daq.Daq.state" title="Permalink to this definition">¶</a></dt>
 <dd><p>State as reported by the daq. Can be any of the following:
@@ -592,13 +592,13 @@ new run during the scan.</p>
 - <code class="docutils literal notranslate"><span class="pre">Running</span></code>:      We are collecting data in a run</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.daq.Daq.stop">
 <code class="sig-name descname">stop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.stop" title="Permalink to this definition">¶</a></dt>
 <dd><p>Stop the current acquisition, ending it early.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.daq.Daq.trigger">
 <code class="sig-name descname">trigger</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.trigger" title="Permalink to this definition">¶</a></dt>
 <dd><p>Begin acquisition. This method blocks until the run begins.</p>
@@ -616,7 +616,7 @@ events or duration.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.daq.Daq.unstage">
 <code class="sig-name descname">unstage</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.unstage" title="Permalink to this definition">¶</a></dt>
 <dd><p><code class="docutils literal notranslate"><span class="pre">bluesky</span></code> interface for undoing the <a class="reference internal" href="#pcdsdaq.daq.Daq.stage" title="pcdsdaq.daq.Daq.stage"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">stage</span></code></a> routine.</p>
@@ -630,9 +630,9 @@ events or duration.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.daq.Daq.wait">
-<code class="sig-name descname">wait</code><span class="sig-paren">(</span><em class="sig-param">timeout=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.wait" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">wait</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">timeout</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.wait" title="Permalink to this definition">¶</a></dt>
 <dd><p>Pause the thread until the DAQ is done aquiring.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>

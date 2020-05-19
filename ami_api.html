@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>AmiDet API &mdash; pcdsdaq 2.2.2+2.g8351255 documentation</title>
+  <title>AmiDet API &mdash; pcdsdaq 2.2.3+5.gb93bb81 documentation</title>
   
 
   
@@ -60,7 +60,7 @@
             
             
               <div class="version">
-                2.2.2+2.g8351255
+                2.2.3+5.gb93bb81
               </div>
             
           
@@ -190,9 +190,9 @@
             
   <div class="section" id="amidet-api">
 <h1>AmiDet API<a class="headerlink" href="#amidet-api" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="pcdsdaq.ami.AmiDet">
-<em class="property">class </em><code class="sig-prename descclassname">pcdsdaq.ami.</code><code class="sig-name descname">AmiDet</code><span class="sig-paren">(</span><em class="sig-param">prefix</em>, <em class="sig-param">*</em>, <em class="sig-param">name</em>, <em class="sig-param">filter_string=None</em>, <em class="sig-param">min_duration=0</em>, <em class="sig-param">normalize=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.ami.AmiDet" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">pcdsdaq.ami.</code><code class="sig-name descname">AmiDet</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">prefix</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">filter_string</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">min_duration</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">normalize</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.ami.AmiDet" title="Permalink to this definition">¶</a></dt>
 <dd><p>Detector that gets data from pyami scalars.</p>
 <p>The data will be in the form of an accumulated mean, rms, and number
 of entries used in the calculations. The raw data is not avaiable via
@@ -218,17 +218,17 @@ in any other detector to normalize against something that is not the
 </ul>
 </dd>
 </dl>
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.ami.AmiDet.get">
-<code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.ami.AmiDet.get" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.ami.AmiDet.get" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the value of all components in the device</p>
 <p>Keyword arguments are passed onto each signal.get(). Components
 beginning with an underscore will not be included.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.ami.AmiDet.put">
-<code class="sig-name descname">put</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.ami.AmiDet.put" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">put</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.ami.AmiDet.put" title="Permalink to this definition">¶</a></dt>
 <dd><p>Put a value to all components of the device</p>
 <p>Keyword arguments are passed onto each signal.put()</p>
 <dl class="field-list simple">
@@ -238,9 +238,9 @@ beginning with an underscore will not be included.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.ami.AmiDet.read">
-<code class="sig-name descname">read</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.ami.AmiDet.read" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">read</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.ami.AmiDet.read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read data from the device.</p>
 <p>This method is expected to be as instantaneous as possible,
 with any substantial acquisition time taken care of in
@@ -264,9 +264,9 @@ with the keys <code class="docutils literal notranslate"><span class="pre">{'val
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.ami.AmiDet.set_det_filter">
-<code class="sig-name descname">set_det_filter</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">event_codes=None</em>, <em class="sig-param">operator='&amp;'</em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.ami.AmiDet.set_det_filter" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_det_filter</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">event_codes</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">operator</span><span class="o">=</span><span class="default_value">'&amp;'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.ami.AmiDet.set_det_filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the filter on this detector only.</p>
 <p>This lets you override the l3t filter for a single AmiDet. Call with
 no arguments to revert to the last l3t filter. Call with a simple
@@ -290,7 +290,7 @@ only happen if all filters pass.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.ami.AmiDet.stage">
 <code class="sig-name descname">stage</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.ami.AmiDet.stage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called early in a bluesky scan to initialize the pyami.Entry object.</p>
@@ -302,7 +302,7 @@ have no effect.</p>
 accumulating data immediately.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.ami.AmiDet.trigger">
 <code class="sig-name descname">trigger</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.ami.AmiDet.trigger" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called during a bluesky scan to clear the accumulated pyami data.</p>
@@ -317,7 +317,7 @@ marked done after min_duration seconds.</p>
 it will be staged during the first trigger in a scan.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pcdsdaq.ami.AmiDet.unstage">
 <code class="sig-name descname">unstage</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.ami.AmiDet.unstage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called late in a bluesky scan to remove the pyami.Entry object and the
