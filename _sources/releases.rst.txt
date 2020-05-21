@@ -1,6 +1,25 @@
 Release History
 ###############
 
+
+v2.2.4 (2020-05-21)
+===================
+
+Fix issue with the begin timeout where the clock started ticking too early.
+
+
+v2.2.3 (2020-3-21)
+==================
+
+Fix issue with pcdsdaq_lib_setup that broke hutch environments.
+
+
+v2.2.2 (2020-1-22)
+==================
+
+Fix issue where daq would fail to load for det and tst hutches.
+
+
 v2.2.1 (2019-6-6)
 =================
 
