@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Configuration &mdash; pcdsdaq 2.2.6+8.geb30cca documentation</title>
+  <title>Configuration &mdash; pcdsdaq 2.2.6+12.gb99675f documentation</title>
   
 
   
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                2.2.6+8.geb30cca
+                2.2.6+12.gb99675f
               </div>
             
           
@@ -191,7 +191,7 @@ Shown here is the default config:</p>
 <span class="go">{&#39;events&#39;: None,</span>
 <span class="go"> &#39;duration&#39;: None,</span>
 <span class="go"> &#39;use_l3t&#39;: False,</span>
-<span class="go"> &#39;record&#39;: False,</span>
+<span class="go"> &#39;record&#39;: None,</span>
 <span class="go"> &#39;controls&#39;: None,</span>
 <span class="go"> &#39;begin_sleep&#39;: 0}</span>
 </pre></div>
@@ -210,8 +210,10 @@ For example, calling <code class="docutils literal notranslate"><span class="pre
 no-arguments behavior of <code class="docutils literal notranslate"><span class="pre">daq.begin()</span></code> to run the daq for 3 seconds.</p>
 <dl class="py method">
 <dt>
-<code class="sig-prename descclassname">Daq.</code><code class="sig-name descname">configure</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">events</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">duration</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">record</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">use_l3t</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">controls</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">begin_sleep</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span></dt>
+<code class="sig-prename descclassname">Daq.</code><code class="sig-name descname">configure</code><span class="sig-paren">(</span><em class="sig-param">events=&lt;object object&gt;</em>, <em class="sig-param">duration=&lt;object object&gt;</em>, <em class="sig-param">record=&lt;object object&gt;</em>, <em class="sig-param">use_l3t=&lt;object object&gt;</em>, <em class="sig-param">controls=&lt;object object&gt;</em>, <em class="sig-param">begin_sleep=&lt;object object&gt;</em><span class="sig-paren">)</span></dt>
 <dd><p>Changes the daq’s configuration for the next run.</p>
+<p>All arguments omitted from the method call will default to the last
+configured value in the python session.</p>
 <p>This is the method that directly interfaces with the daq. If you simply
 want to get a configuration ready for later, use <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.preconfig" title="pcdsdaq.daq.Daq.preconfig"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">preconfig</span></code></a>.</p>
 <dl class="field-list simple">
@@ -219,25 +221,33 @@ want to get a configuration ready for later, use <a class="reference internal" h
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>events</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code>, optional) – If provided, the daq will run for this many events before
 stopping, unless we override in <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">begin</span></code></a>.
-If not provided, we’ll use the <code class="docutils literal notranslate"><span class="pre">duration</span></code> argument instead.</p></li>
+If not provided, we’ll use the <code class="docutils literal notranslate"><span class="pre">duration</span></code> argument instead.
+Defaults to its last configured value, or <code class="docutils literal notranslate"><span class="pre">None</span></code> on the first
+configure.</p></li>
 <li><p><strong>duration</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code>, optional) – If provided, the daq will run for this many seconds before
 stopping, unless we override in <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">begin</span></code></a>.
 If not provided, and <code class="docutils literal notranslate"><span class="pre">events</span></code> was also not provided, an empty
-call like <code class="docutils literal notranslate"><span class="pre">begin()</span></code> will run indefinitely.</p></li>
-<li><p><strong>record</strong> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, we’ll record the data. Otherwise, we’ll run without
-recording. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>, or the last set value for
-<code class="docutils literal notranslate"><span class="pre">record</span></code>.</p></li>
+call like <code class="docutils literal notranslate"><span class="pre">begin()</span></code> will run indefinitely. You can also achieve
+this behavior by passing events=None and/or duration=None, Defaults
+to its last configured value, or <code class="docutils literal notranslate"><span class="pre">None</span></code> on the first configure.</p></li>
+<li><p><strong>record</strong> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, we’ll record the data. If <code class="docutils literal notranslate"><span class="pre">False</span></code>, we’ll run without
+recording. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, we’ll use the option selected in the DAQ
+GUI. Defaults to the its last configured value, or <code class="docutils literal notranslate"><span class="pre">None</span></code> on the
+first configure.</p></li>
 <li><p><strong>use_l3t</strong> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, an <code class="docutils literal notranslate"><span class="pre">events</span></code> argument to begin will be reinterpreted
 to only count events that pass the level 3 trigger. Defaults to
-its last configured value, or <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+its last configured value, or <code class="docutils literal notranslate"><span class="pre">False</span></code> on the first configure.</p></li>
 <li><p><strong>controls</strong> (<code class="docutils literal notranslate"><span class="pre">dict{name:</span> <span class="pre">device}</span></code> or <code class="docutils literal notranslate"><span class="pre">list[device...]</span></code>, optional) – If provided, values from these will make it into the DAQ data
 stream as variables. We will check <code class="docutils literal notranslate"><span class="pre">device.position</span></code> and
 <code class="docutils literal notranslate"><span class="pre">device.value</span></code> for quantities to use and we will update these
 values each time begin is called. To provide a list, all devices
-must have a <code class="docutils literal notranslate"><span class="pre">name</span></code> attribute.</p></li>
+must have a <code class="docutils literal notranslate"><span class="pre">name</span></code> attribute. Defaults to its last configured
+value, or no controls values on the first configure.</p></li>
 <li><p><strong>begin_sleep</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code>, optional) – The amount of time to wait after the DAQ returns begin is done.
 This is a hack because the DAQ often says that a begin transition
-is done without actually being done, so it needs a short delay.</p></li>
+is done without actually being done, so it needs a short delay.
+Defaults to its last configured value, or 0 on the first
+configure.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
