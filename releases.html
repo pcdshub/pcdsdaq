@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Release History &mdash; pcdsdaq 2.2.6+18.g2b8d8d8 documentation</title>
+  <title>Release History &mdash; pcdsdaq 2.2.7 documentation</title>
   
 
   
@@ -60,7 +60,7 @@
             
             
               <div class="version">
-                2.2.6+18.g2b8d8d8
+                2.2.7
               </div>
             
           
@@ -114,6 +114,9 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="env.html">Environments</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Release History</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#v2-2-7-2020-09-17">v2.2.7 (2020-09-17)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#v2-2-6-2020-08-19">v2.2.6 (2020-08-19)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#v2-2-5-2020-29-05">v2.2.5 (2020-29-05)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#v2-2-4-2020-05-21">v2.2.4 (2020-05-21)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#v2-2-3-2020-3-21">v2.2.3 (2020-3-21)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#v2-2-2-2020-1-22">v2.2.2 (2020-1-22)</a></li>
@@ -215,6 +218,29 @@
             
   <div class="section" id="release-history">
 <h1>Release History<a class="headerlink" href="#release-history" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="v2-2-7-2020-09-17">
+<h2>v2.2.7 (2020-09-17)<a class="headerlink" href="#v2-2-7-2020-09-17" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>Change bykik code to False by default in set_filter as per Silke’s instructions</p></li>
+<li><p>Give up on the run_number getter on the first failure per session, it is merely cosmetic and should not slow down the scan.</p></li>
+<li><p>Decrease the get run number timeout to 1s.</p></li>
+<li><p>Copy the good docstring for set_filter over to the daq method</p></li>
+<li><p>Increase timeouts for get_hutch and get_ami_proxy, then cache the result. The result does not change.</p></li>
+<li><p>Allow controls arg to accept pseudopositioners</p></li>
+<li><p>Allow “tri-state” configuration args (True, False, None), and allow the Daq class to know whether the user has passed in <code class="xref any docutils literal notranslate"><span class="pre">None</span></code> versus not passed in anything at all</p></li>
+<li><p>Allow <code class="xref any docutils literal notranslate"><span class="pre">record=None</span></code> to mean “Use the record option selected in the DAQ GUI”</p></li>
+<li><p>Increase the begin timeout to 15s</p></li>
+<li><p>Add more pointed error messages to the wait timeouts</p></li>
+</ul>
+</div>
+<div class="section" id="v2-2-6-2020-08-19">
+<h2>v2.2.6 (2020-08-19)<a class="headerlink" href="#v2-2-6-2020-08-19" title="Permalink to this headline">¶</a></h2>
+<p>Fix issue with ami proxy script changes, making the library compatible with both the old and the new output.</p>
+</div>
+<div class="section" id="v2-2-5-2020-29-05">
+<h2>v2.2.5 (2020-29-05)<a class="headerlink" href="#v2-2-5-2020-29-05" title="Permalink to this headline">¶</a></h2>
+<p>Compatibility for ophyd=1.5.0</p>
+</div>
 <div class="section" id="v2-2-4-2020-05-21">
 <h2>v2.2.4 (2020-05-21)<a class="headerlink" href="#v2-2-4-2020-05-21" title="Permalink to this headline">¶</a></h2>
 <p>Fix issue with the begin timeout where the clock started ticking too early.</p>
