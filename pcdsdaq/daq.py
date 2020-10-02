@@ -13,7 +13,7 @@ from ophyd.status import Status
 from ophyd.utils import StatusTimeoutError, WaitTimeoutError
 
 from . import ext_scripts
-from .ami import set_pyami_filter, set_monitor_det
+from .ami import set_ami_hutch, set_pyami_filter, set_monitor_det
 
 logger = logging.getLogger(__name__)
 pydaq = None
@@ -87,7 +87,7 @@ class Daq:
     name = 'daq'
     parent = None
 
-    def __init__(self, RE=None):
+    def __init__(self, RE=None, hutch_name=None):
         if pydaq is None:
             globals()['pydaq'] = import_module('pydaq')
         super().__init__()
@@ -103,6 +103,7 @@ class Daq:
         self._pre_run_state = None
         self._last_stop = 0
         self._check_run_number_has_failed = False
+        self.hutch_name = hutch_name
         register_daq(self)
 
     # Convenience properties
@@ -1045,8 +1046,10 @@ class Daq:
             if the get run number script fails
         """
         try:
+            hutch_name = hutch_name or self.hutch_name
             if hutch_name is None:
-                hutch_name = ext_scripts.hutch_name()
+                hutch_name = ext_scripts.get_hutch_name()
+            hutch_name = hutch_name.lower()
             if hutch_name not in ('amo', 'sxr', 'xpp', 'xcs', 'mfx', 'cxi',
                                   'mec', 'tst'):
                 raise ValueError(('{} is not a valid hutch, cannot determine '
@@ -1132,6 +1135,8 @@ def register_daq(daq):
     """
     global _daq_instance
     _daq_instance = daq
+    if daq.hutch_name is not None:
+        set_ami_hutch(daq.hutch_name.lower())
 
 
 def get_daq():

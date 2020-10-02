@@ -475,7 +475,7 @@ def test_run_number(daq, monkeypatch):
     def no_file(*args, **kwargs):
         raise FileNotFoundError('test')
 
-    monkeypatch.setattr(ext, 'hutch_name', no_file)
+    monkeypatch.setattr(ext, 'get_hutch_name', no_file)
 
     with pytest.raises(RuntimeError):
         daq.run_number()

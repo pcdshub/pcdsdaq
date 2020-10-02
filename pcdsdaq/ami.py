@@ -10,7 +10,7 @@ from ophyd.status import Status
 from ophyd.utils.errors import ReadOnlyError
 from toolz.itertoolz import partition
 
-from .ext_scripts import hutch_name, get_ami_proxy
+from .ext_scripts import get_hutch_name, get_ami_proxy
 
 logger = logging.getLogger(__name__)
 L3T_DEFAULT = '/reg/neh/operator/{}opr/l3t/amifil.l3t'
@@ -22,6 +22,7 @@ ami_proxy = None
 l3t_file = None
 monitor_det = None
 last_filter_string = None
+hutch_name = None
 
 
 # Define default starting values. Can also use to reset module.
@@ -31,7 +32,8 @@ def _reset_globals():
                     ami_proxy=None,
                     l3t_file=None,
                     monitor_det=None,
-                    last_filter_string=None)
+                    last_filter_string=None,
+                    hutch_name=None)
     globals().update(defaults)
 
 
@@ -54,8 +56,9 @@ def auto_setup_pyami():
     pyami isn't in the environment, which is semi-frequent.
     """
     if None in (ami_proxy, l3t_file):
-        # This fails if not on nfs, so only do if 100% needed
-        hutch = hutch_name()
+        # get_hutch_name fails if not on nfs
+        # or on a bad nfs day, so only do if 100% needed
+        hutch = hutch_name or get_hutch_name()
 
     if ami_proxy is None:
         proxy = get_ami_proxy(hutch)
@@ -76,6 +79,18 @@ def auto_setup_pyami():
         except Exception:
             globals()['pyami_connected'] = False
             raise
+
+
+def set_ami_hutch(hutch_name):
+    """
+    Pick the hutch name to skip a shell out to get_hutch_name.
+
+    Parameters
+    ----------
+    hutch_name: ``str``
+        Name of the hutch
+    """
+    globals()['hutch_name'] = hutch_name.lower()
 
 
 def set_pyami_proxy(proxy):

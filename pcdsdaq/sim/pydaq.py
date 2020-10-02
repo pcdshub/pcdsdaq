@@ -4,7 +4,7 @@ import threading
 import logging
 
 from pcdsdaq.daq import Daq
-from pcdsdaq.ext_scripts import hutch_name, get_run_number  # NOQA
+from pcdsdaq.ext_scripts import get_hutch_name, get_run_number  # NOQA
 
 logger = logging.getLogger(__name__)
 
@@ -195,7 +195,7 @@ class Control:
         self._done_flag.wait()
 
 
-def sim_hutch_name():
+def sim_get_hutch_name():
     return 'tst'
 
 

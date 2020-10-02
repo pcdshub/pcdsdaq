@@ -27,7 +27,7 @@ def test_hutch_name(nosim, monkeypatch):
         return 'tst\n'
 
     monkeypatch.setattr(ext, 'call_script', fake_hutch_name)
-    assert ext.hutch_name() == 'tst'
+    assert ext.get_hutch_name() == 'tst'
 
 
 def test_run_number(nosim, monkeypatch):
