@@ -536,3 +536,10 @@ def test_timeouts(daq, monkeypatch):
         daq._control._begin_delay = 3
         daq.begin(duration=1)
     daq.stop()
+
+
+def test_pass_hutch(sim):
+    logger.debug('test_pass_hutch')
+    # Mainly for coverage, make sure no typos in the chain here
+    daq = daq_module.Daq(hutch_name='tst')
+    assert daq.hutch_name == 'tst'
