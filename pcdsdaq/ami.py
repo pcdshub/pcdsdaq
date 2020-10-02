@@ -55,6 +55,9 @@ def auto_setup_pyami():
     top of this file because we need to be able to import this file even if
     pyami isn't in the environment, which is semi-frequent.
     """
+    global pyami
+    global pyami_connected
+
     if None in (ami_proxy, l3t_file):
         # get_hutch_name fails if not on nfs
         # or on a bad nfs day, so only do if 100% needed
@@ -69,28 +72,29 @@ def auto_setup_pyami():
 
     if pyami is None:
         logger.debug('importing pyami')
-        globals()['pyami'] = import_module('pyami')
+        pyami = import_module('pyami')
 
     if not pyami_connected:
         logger.debug('initializing pyami')
         try:
             pyami.connect(ami_proxy)
-            globals()['pyami_connected'] = True
+            pyami_connected = True
         except Exception:
-            globals()['pyami_connected'] = False
+            pyami_connected = False
             raise
 
 
-def set_ami_hutch(hutch_name):
+def set_ami_hutch(name):
     """
     Pick the hutch name to skip a shell out to get_hutch_name.
 
     Parameters
     ----------
-    hutch_name: ``str``
+    name: ``str``
         Name of the hutch
     """
-    globals()['hutch_name'] = hutch_name.lower()
+    global hutch_name
+    hutch_name = name.lower()
 
 
 def set_pyami_proxy(proxy):
@@ -102,19 +106,21 @@ def set_pyami_proxy(proxy):
     proxy: ``str`` or ``int``
         Either the server name or group number
     """
-    globals()['ami_proxy'] = proxy
+    global ami_proxy
+    ami_proxy = proxy
 
 
-def set_l3t_file(l3t_file):
+def set_l3t_file(filename):
     """
     Pick the file to write out for the l3t trigger
 
     Parameters
     ----------
-    l3t_file: ``str``
+    filename: ``str``
         Full file path
     """
-    globals()['l3t_file'] = l3t_file
+    global l3t_file
+    l3t_file = filename
 
 
 def set_monitor_det(det):
@@ -130,10 +136,11 @@ def set_monitor_det(det):
         The detector to set as the monitor. Alternatively, pass in ``False`` to
         disable the monitor det.
     """
+    global monitor_det
     if det:
-        globals()['monitor_det'] = det
+        monitor_det = det
     else:
-        globals()['monitor_det'] = None
+        monitor_det = None
 
 
 def set_pyami_filter(*args, event_codes=None, operator='&', or_bykik=False):
@@ -176,6 +183,7 @@ def set_pyami_filter(*args, event_codes=None, operator='&', or_bykik=False):
         when we see the bykik event code. This makes sure the off shots
         make it into the data if we're in l3t veto mode.
     """
+    global last_filter_string
 
     auto_setup_pyami()
     filter_string = dets_filter(*args, event_codes=event_codes,
@@ -184,7 +192,7 @@ def set_pyami_filter(*args, event_codes=None, operator='&', or_bykik=False):
         pyami.clear_l3t()
     else:
         pyami.set_l3t(filter_string, l3t_file)
-        globals()['last_filter_string'] = filter_string
+        last_filter_string = filter_string
 
 
 def dets_filter(*args, event_codes=None, operator='&', or_bykik=True):
