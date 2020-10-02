@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Daq API &mdash; pcdsdaq 2.2.7 documentation</title>
+  <title>Daq API &mdash; pcdsdaq 2.2.7+9.gab2da71 documentation</title>
   
 
   
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                2.2.7
+                2.2.7+9.gab2da71
               </div>
             
           
@@ -189,7 +189,7 @@
 <h1>Daq API<a class="headerlink" href="#daq-api" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="pcdsdaq.daq.Daq">
-<em class="property">class </em><code class="sig-prename descclassname">pcdsdaq.daq.</code><code class="sig-name descname">Daq</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">RE</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">pcdsdaq.daq.</code><code class="sig-name descname">Daq</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">RE</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">hutch_name</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq" title="Permalink to this definition">¶</a></dt>
 <dd><p>The LCLS1 daq as a <code class="docutils literal notranslate"><span class="pre">bluesky</span></code>-compatible object.</p>
 <p>This uses the <code class="docutils literal notranslate"><span class="pre">pydaq</span></code> module to connect with a running daq instance,
 controlling it via socket commands.</p>
@@ -202,7 +202,10 @@ report to the <code class="docutils literal notranslate"><span class="pre">RunEn
 will pass into the python layer from the daq.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>RE</strong> (<code class="docutils literal notranslate"><span class="pre">RunEngine</span></code>, optional) – Set <code class="docutils literal notranslate"><span class="pre">RE</span></code> to the session’s main <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code></p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>RE</strong> (<code class="docutils literal notranslate"><span class="pre">RunEngine</span></code>, optional) – Set <code class="docutils literal notranslate"><span class="pre">RE</span></code> to the session’s main <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code></p></li>
+<li><p><strong>hutch_name</strong> (<em>str</em><em>, </em><em>optional</em>) – Define a hutch name to use instead of shelling out to get_hutch_name.</p></li>
+</ul>
 </dd>
 </dl>
 <dl class="py method">

@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Basic Usage &mdash; pcdsdaq 2.2.7 documentation</title>
+  <title>Basic Usage &mdash; pcdsdaq 2.2.7+9.gab2da71 documentation</title>
   
 
   
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                2.2.7
+                2.2.7+9.gab2da71
               </div>
             
           
@@ -263,7 +263,7 @@ In [5]: time.sleep(1)
 In [6]: daq.stop()
 
 In [7]: print(time.time() - start)
-1.0056633949279785
+1.0055394172668457
 
 In [8]: daq.state
 Out[8]: 'Open'
@@ -291,7 +291,7 @@ Out[14]: 'Running'
 In [15]: daq.wait()
 
 In [16]: print(time.time() - start)
-2.993713855743408
+2.9944777488708496
 
 In [17]: daq.state
 Out[17]: 'Open'
@@ -313,7 +313,7 @@ In [21]: start = time.time()
 In [22]: daq.begin(duration=1.5, wait=True)
 
 In [23]: print(time.time() - start)
-2.496929407119751
+2.4973654747009277
 
 In [24]: daq.state
 Out[24]: 'Open'
