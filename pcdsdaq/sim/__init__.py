@@ -44,5 +44,4 @@ def set_sim_mode(sim_mode):
         except ImportError:
             logger.error('pydaq not available in this session')
         ext.get_hutch_name = pydaq.get_hutch_name
-        ext.get_hutch_name = pydaq.get_hutch_name
         ext.get_run_number = pydaq.get_run_number
