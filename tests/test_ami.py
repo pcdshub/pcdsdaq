@@ -203,7 +203,7 @@ def test_auto_setup_pyami(sim, monkeypatch):
         else:
             return importlib.import_module(module)
 
-    monkeypatch.setattr(pcdsdaq.ami, 'hutch_name', fake_hutch_name)
+    monkeypatch.setattr(pcdsdaq.ami, 'get_hutch_name', fake_hutch_name)
     monkeypatch.setattr(pcdsdaq.ami, 'get_ami_proxy', fake_get_proxy)
     monkeypatch.setattr(pcdsdaq.ami, 'import_module', fake_import)
 

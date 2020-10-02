@@ -46,10 +46,14 @@ def clear_script_cache():
     cache = {}
 
 
-def hutch_name(timeout=10):
+def get_hutch_name(timeout=10):
     script = SCRIPTS.format('latest', 'get_hutch_name')
     name = cache_script(script, timeout=timeout)
     return name.lower().strip(' \n')
+
+
+# API Backwards compatibility
+hutch_name = get_hutch_name
 
 
 def get_run_number(hutch=None, live=False, timeout=1):

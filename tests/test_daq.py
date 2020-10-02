@@ -475,7 +475,7 @@ def test_run_number(daq, monkeypatch):
     def no_file(*args, **kwargs):
         raise FileNotFoundError('test')
 
-    monkeypatch.setattr(ext, 'hutch_name', no_file)
+    monkeypatch.setattr(ext, 'get_hutch_name', no_file)
 
     with pytest.raises(RuntimeError):
         daq.run_number()
@@ -537,3 +537,9 @@ def test_timeouts(daq, monkeypatch):
         daq.begin(duration=1)
     daq.stop()
 
+
+def test_pass_hutch(sim):
+    logger.debug('test_pass_hutch')
+    # Mainly for coverage, make sure no typos in the chain here
+    daq = daq_module.Daq(hutch_name='tst')
+    assert daq.hutch_name == 'tst'

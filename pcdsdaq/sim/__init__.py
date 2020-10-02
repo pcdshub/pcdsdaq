@@ -28,7 +28,7 @@ def set_sim_mode(sim_mode):
             ami.set_pyami_proxy('tstproxy')
             ami.set_l3t_file('tstfile')
         daq.pydaq = pydaq
-        ext.hutch_name = pydaq.sim_hutch_name
+        ext.get_hutch_name = pydaq.sim_get_hutch_name
         ext.get_run_number = pydaq.sim_get_run_number
     else:
         if ami.ami_proxy == 'tstproxy':
@@ -43,6 +43,5 @@ def set_sim_mode(sim_mode):
             daq.pydaq = real_pydaq
         except ImportError:
             logger.error('pydaq not available in this session')
-        ext.hutch_name = pydaq.hutch_name
-        ext.hutch_name = pydaq.hutch_name
+        ext.get_hutch_name = pydaq.get_hutch_name
         ext.get_run_number = pydaq.get_run_number
