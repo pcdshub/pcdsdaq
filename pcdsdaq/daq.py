@@ -74,6 +74,9 @@ class Daq:
     ----------
     RE: ``RunEngine``, optional
         Set ``RE`` to the session's main ``RunEngine``
+
+    hutch_name: str, optional
+        Definte a hutch name to use instead of shelling out to get_hutch_name.
     """
     _state_enum = enum.Enum('PydaqState',
                             'Disconnected Connected Configured Open Running',
