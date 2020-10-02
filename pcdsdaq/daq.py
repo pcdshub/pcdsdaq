@@ -225,7 +225,7 @@ class Daq:
         """
         logger.debug('Daq.wait()')
         if self.state == 'Running':
-            if self._events or self._duration:
+            if not self._infinite_run:
                 status = self._get_end_status()
                 try:
                     status.wait(timeout=timeout)
@@ -502,7 +502,7 @@ class Daq:
         """
         logger.debug('Daq.complete()')
         end_status = self._get_end_status()
-        if not (self._events or self._duration):
+        if self._infinite_run:
             # Configured to run forever
             self.stop()
         return end_status
@@ -523,7 +523,8 @@ class Daq:
 
         events = self._events
         duration = self._duration
-        if events or duration:
+
+        if not self._infinite_run:
             logger.debug('Getting end status for events=%s, duration=%s',
                          events, duration)
 
@@ -1003,6 +1004,10 @@ class Daq:
         if duration is _CONFIG_VAL:
             duration = self.config['duration']
         return duration
+
+    @property
+    def _infinite_run(self):
+        return self._events in (-1, 0)
 
     def _reset_begin(self):
         """
