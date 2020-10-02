@@ -536,4 +536,3 @@ def test_timeouts(daq, monkeypatch):
         daq._control._begin_delay = 3
         daq.begin(duration=1)
     daq.stop()
-
