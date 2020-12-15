@@ -130,11 +130,11 @@ class Control:
                      l1t_events, l3t_events, duration)
         for ev in (events, l1t_events, l3t_events):
             if ev is not None:
-                if ev < 0:
+                if ev < -1:
                     raise RuntimeError('This is bad in real daq')
                 elif not isinstance(ev, int):
                     raise RuntimeError('This is bad in real daq')
-                elif ev == 0:
+                elif ev in [0, -1]:
                     return float('inf')
                 else:
                     return ev / 120
