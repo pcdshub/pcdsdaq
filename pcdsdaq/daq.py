@@ -1009,7 +1009,7 @@ class Daq:
     def _infinite_run(self):
         if self._events is None and self._duration is None:
             return True
-        if self._events in (-1, 0):
+        return self._events in (-1, 0)
             return True
         return False
 
