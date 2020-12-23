@@ -6,7 +6,6 @@ v2.2.8 (2020-12-22)
 
 - Fix issue where ``events=-1`` was a rejected argument rather than a
   valid configuration for infinite running.
-- Mark package as noarch in conda recipe.
 
 
 v2.2.7 (2020-09-17)
