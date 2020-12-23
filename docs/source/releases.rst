@@ -1,11 +1,17 @@
 Release History
 ###############
 
-v2.2.8 (2020-12-22)
+v2.3.1 (2020-12-22)
 ==================
 
 - Fix issue where ``events=-1`` was a rejected argument rather than a
   valid configuration for infinite running.
+
+
+v2.3.0 (2020-10-02)
+===================
+
+- Add ``hutch_name`` argument to ``Daq`` class to allow bypassing of the external ``get_hutch_name`` script.
 
 
 v2.2.7 (2020-09-17)
