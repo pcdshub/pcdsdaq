@@ -20,7 +20,6 @@ requirements:
     - ophyd >=1.5.0
     - bluesky >=1.6.0
     - toolz
-    - matplotlib <3
 
 test:
   imports:
