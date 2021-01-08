@@ -16,28 +16,29 @@ fi
 
 OS_VER="$(uname -r | rev | cut -d . -f 2 | rev)"
 if [ "${OS_VER}" = el6 ]; then
-  OS_DIR=x86_64-linux
+  OS_DIR=x86_64-linux-opt
 elif [ "${OS_VER}" = el7 ]; then
-  OS_DIR=x86_64-rhel7
+  OS_DIR=x86_64-rhel7-opt
 fi
 
 if [ -z "${OS_DIR}" ]; then
   echo "OS must be rhel6 or rhel7"
 else
-  # Expand pythonpath with correct link
-  pcdsdaq_init="$(python -c 'import pcdsdaq; print(pcdsdaq.__file__)')"
-  pydaq_links="$(dirname ${pcdsdaq_init})/pydaq_links/links/${HUTCH}/${OS_DIR}"
-  export PYTHONPATH="${PYTHONPATH}:${pydaq_links}"
+  # Add pydaq, pydcb, pyami to the python path
+  export PYTHONPATH="${PYTHONPATH}:${DAQREL}/pdsapp/lib/${OS_DIR}"
+
+  # Add pyami to the python path
+  export PYTHONPATH="${PYTHONPATH}:${AMIREL}/ami/lib/${OS_DIR}"
 
   # Add ami libraries
   for dir in ami gsl qt
   do
-    export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${AMIREL}/${dir}/lib/${OS_DIR}-opt"
+    export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${AMIREL}/${dir}/lib/${OS_DIR}"
   done
 
   # Add daq libraries
   for dir in pdsapp psalg pds pdsdata offlinedb
   do
-    export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${DAQREL}/${dir}/lib/${OS_DIR}-opt"
+    export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${DAQREL}/${dir}/lib/${OS_DIR}"
   done
 fi
