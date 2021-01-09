@@ -1,72 +1,48 @@
-language: python
-sudo: false
+version: ~> 1.0
 
 env:
   global:
-    - OFFICIAL_REPO="pcdshub/pcdsdaq"
     - secure: "BrDoqAjZeFnW5vGe3AtVSHgXWb16DthqQwiefN+lNhcllQw6WXFx4PvpwNGM1PI3voLg6YJM/9mOrVOk5nSYjh65DQmlJ6jNX1ezJoI30hURhykoXJNrKr25JTF54GhgMgk/KiR3fhGQYJgpXUxPxYPBt3PvXd7uY0cMIYCFAW8gwrupVfHbPo1zGbxHzxysBlxpQQAclBj4pVMIX5chkVM/Yviv72mEkyoKPJpQgCCn7CstQSLhHtM+EK+bHpqjIk37cnGi/lTZYxlmrMjEeU/UXxL2/y2uA43W8sdsD2vCEiMcexjD2cqhjOr1Qn1zZgzHchSapkHsju1KHdCOeiWE/yV9Ni/fteb4doKnSQOIY/hqofqkyETFfNarOa9Zsm5i03QUyFNub2hr6k6lWRal5MaOErGiUAVlKCYj5KBe/AYHC758rmm1YIukYXKn2cBfApt+sCSc50WGEqjiT1iiUBD6dCP1p4Skd6RpLbwIL6f9THvzAqpQRJpZAtOmffIKpQ0+RUjEQF9UlwPKOgpdAOw2XrK0asrgfh9goiiB7QrzJ0GPa0Wy7BTfi3ksNXskdnatGAFAJiRPBkmcshRFrLx4UIlLx5pTW88G2T0yYXNGi+mEQHXY9rcozZJlVIESYSL1NgRV5aW/gfYC4hqmFfB+93MFG5g05HJ/dlA="
 
-matrix:
-  include:
-    - python: 3.6
-      env: BUILD_DOCS=1
-    - python: 3.7
-      dist: xenial
-      sudo: true
+    # enable the usage of versions menu which allow versioning of the docs
+    # pages and not only the master branch
+    - DOCTR_VERSIONS_MENU="1"
+    # Dependency files used to build the documentation (space separated)
+    - DOCS_REQUIREMENTS="docs-requirements.txt dev-requirements.txt requirements.txt"
+    # Options to be passed to flake8 for package linting. Usually this is just
+    # the package name but you can enable other flake8 options via this config
+    - PYTHON_LINT_OPTIONS="pcdsdaq"
+
+    # The name of the conda package
+    - CONDA_PACKAGE="pcdsdaq"
+    # The folder containing the conda recipe (meta.yaml)
+    - CONDA_RECIPE_FOLDER="conda-recipe"
+    # Extra dependencies needed to run the tests which are not included
+    # at the recipe and dev-requirements.txt. E.g. PyQt
+    - CONDA_EXTRAS="pip"
+    # Requirements file with contents for tests dependencies
+    - CONDA_REQUIREMENTS="dev-requirements.txt"
+
+    # Extra dependencies needed to run the test with Pip (similar to
+    # CONDA_EXTRAS) but for pip
+    - PIP_EXTRAS=""
+
+jobs:
   allow_failures:
-    - python: 3.7
-      dist: xenial
-      sudo: true
+    - name: "Python 3.6 - PIP"
 
-install:
-  - sudo apt-get update
-  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-  - bash miniconda.sh -b -p $HOME/miniconda
-  - export PATH="$HOME/miniconda/bin:$PATH"
-  - hash -r
-  - conda config --set always_yes yes --set changeps1 no --set channel_priority strict
-  - conda install conda-build anaconda-client
-  - conda update -q conda conda-build
-  - conda config --add channels pcds-tag
-  - conda config --add channels conda-forge
-  # Useful for debugging any issues with conda
-  - conda info -a
-  # Test conda build
-  - conda build -q conda-recipe --python $TRAVIS_PYTHON_VERSION --output-folder bld-dir
-  - conda config --add channels "file://`pwd`/bld-dir"
-  # Create test environment
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pcdsdaq --file dev-requirements.txt
-  - source activate test-environment
-  # Test uninstall, reinstall linker scripts
-  - conda uninstall pcdsdaq
-  - conda install pcdsdaq
-
-script:
-  - coverage run run_tests.py
-  - coverage report -m
-  - flake8 pcdsdaq
-  # Make sure the links folder was created
-  - ls "$(dirname $(which python))/../lib/python3.6/site-packages/pcdsdaq/pydaq_links/links"
-  # Build docs
-  - set -e
-  - |
-    if [[ -n "$DOCTR_DEPLOY_ENCRYPTION_KEY_PCDSHUB_PCDSDAQ" && $BUILD_DOCS ]]; then
-      conda install --file docs-requirements.txt
-      pushd docs
-      make html
-      popd
-      doctr deploy . --built-docs docs/build/html --deploy-branch-name gh-pages
-    fi
-
-after_success:
-  - codecov
-  - |
-    if [[ $TRAVIS_PULL_REQUEST == false && $TRAVIS_REPO_SLUG == $OFFICIAL_REPO && $TRAVIS_BRANCH == $TRAVIS_TAG  && $TRAVIS_TAG != '' && $CONDA_UPLOAD_TOKEN_TAG != '' ]]; then
-      export ANACONDA_API_TOKEN=$CONDA_UPLOAD_TOKEN_TAG
-      anaconda upload bld-dir/linux-64/*.tar.bz2
-    fi
-  - |
-    if [[ $TRAVIS_PULL_REQUEST == false && $TRAVIS_REPO_SLUG == $OFFICIAL_REPO && $TRAVIS_BRANCH == 'master' && $TRAVIS_TAG == '' && $CONDA_UPLOAD_TOKEN_DEV != '' ]]; then
-      export ANACONDA_API_TOKEN=$CONDA_UPLOAD_TOKEN_DEV
-      anaconda upload bld-dir/linux-64/*.tar.bz2
-    fi
+import:
+  # This import enables a set of standard python jobs including:
+  # - Build
+  #   - Anaconda Package Build
+  # - Tests
+  #   - Python Linter
+  #   - Package Linter
+  #   - Documentation
+  #   - Python 3.6 - PIP based
+  #   - Python 3.6, 3.7 & 3.8 - Conda base
+  # - Deploy
+  #   - Documentation using doctr
+  #   - Conda Package - uploaded to pcds-dev and pcds-tag
+  #   - PyPI
+  - pcdshub/pcds-ci-helpers:travis/shared_configs/standard-python-conda.yml
