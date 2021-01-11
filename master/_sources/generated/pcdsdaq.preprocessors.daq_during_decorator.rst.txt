@@ -1,0 +1,6 @@
+pcdsdaq.preprocessors.daq\_during\_decorator
+============================================
+
+.. currentmodule:: pcdsdaq.preprocessors
+
+.. autofunction:: daq_during_decorator

@@ -1,0 +1,6 @@
+pcdsdaq.daq.get\_daq
+====================
+
+.. currentmodule:: pcdsdaq.daq
+
+.. autofunction:: get_daq
