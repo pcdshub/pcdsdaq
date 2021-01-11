@@ -1,0 +1,6 @@
+pcdsdaq.ami.set\_monitor\_det
+=============================
+
+.. currentmodule:: pcdsdaq.ami
+
+.. autofunction:: set_monitor_det

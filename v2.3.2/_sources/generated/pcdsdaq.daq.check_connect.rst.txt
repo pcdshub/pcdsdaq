@@ -1,0 +1,6 @@
+pcdsdaq.daq.check\_connect
+==========================
+
+.. currentmodule:: pcdsdaq.daq
+
+.. autofunction:: check_connect
