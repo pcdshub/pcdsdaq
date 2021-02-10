@@ -368,7 +368,7 @@ class AmiDet(Device):
     """
     mean = Cpt(Signal, value=0., kind='hinted')
     err = Cpt(Signal, value=0., kind='hinted')
-    entries = Cpt(Signal, value=0, kind='hinted')
+    entries = Cpt(Signal, value=0, kind='normal')
     mean_raw = Cpt(Signal, value=0., kind='normal')
     err_raw = Cpt(Signal, value=0., kind='normal')
     mean_mon = Cpt(Signal, value=0., kind='normal')
