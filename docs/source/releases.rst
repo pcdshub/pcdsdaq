@@ -1,6 +1,13 @@
 Release History
 ###############
 
+v2.3.2 (2021-02-10)
+===================
+
+- Fix issue where the ``AmiDet`` had a hinted ``entries`` field that got in
+  the way when using the ``BestEffortCallback``.
+
+
 v2.3.1 (2020-12-22)
 ==================
 
