@@ -1,0 +1,6 @@
+pcdsdaq.ami.set\_l3t\_file
+==========================
+
+.. currentmodule:: pcdsdaq.ami
+
+.. autofunction:: set_l3t_file

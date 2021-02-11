@@ -1,0 +1,358 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Scan PVs &mdash; pcdsdaq 2.3.3 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Miscellaneous" href="misc.html" />
+    <link rel="prev" title="pcdsdaq.preprocessors.daq_during_decorator" href="generated/pcdsdaq.preprocessors.daq_during_decorator.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> pcdsdaq
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.3.3
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Running the DAQ</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="daq_basic.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="daq_config.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="daq_api.html">Daq API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Getting AMI Data</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ami_basic.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ami_api.html">AmiDet API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Bluesky Plans</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="plans_basic.html">Using the DAQ with Bluesky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="preprocessors_api.html">Preprocessors API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Auxiliary Features</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Scan PVs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pvs">PVs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#api">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="misc.html">Miscellaneous</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Sim Mode</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="sim.html">Simulated DAQ</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Developer Notes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="env.html">Environments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="releases.html">Release History</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pcdsdaq</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Scan PVs</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/scan_pvs.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="scan-pvs">
+<h1>Scan PVs<a class="headerlink" href="#scan-pvs" title="Permalink to this headline">¶</a></h1>
+<p>When using the DAQ, it is convenient to keep track of the state of the scan
+in EPICS to set up nice run tables. This is implemented as the <a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars" title="pcdsdaq.scan_vars.ScanVars"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ScanVars</span></code></a>
+class.</p>
+<p>In this document I will use “scan vars” and “scan pvs” interchangably.</p>
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>Once instantiated, you can use <a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars.enable" title="pcdsdaq.scan_vars.ScanVars.enable"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">ScanVars.enable</span></code></a> and
+<a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars.disable" title="pcdsdaq.scan_vars.ScanVars.disable"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">ScanVars.disable</span></code></a> to control whether or not we will update the PVs
+during a scan.</p>
+<p>The class is instantiated as
+<code class="docutils literal notranslate"><span class="pre">scan_vars</span> <span class="pre">=</span> <span class="pre">ScanVars('XPP:SCAN',</span> <span class="pre">name='scan_vars',</span> <span class="pre">RE=RE)</span></code>,
+replacing <code class="docutils literal notranslate"><span class="pre">XPP</span></code> with the correct hutch.</p>
+</div>
+<div class="section" id="pvs">
+<h2>PVs<a class="headerlink" href="#pvs" title="Permalink to this headline">¶</a></h2>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 31%" />
+<col style="width: 69%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>PV Suffix</p></td>
+<td><p>Function</p></td>
+</tr>
+<tr class="row-even"><td><p>ISTEP</p></td>
+<td><p>Current scan step, 0-indexed by default</p></td>
+</tr>
+<tr class="row-odd"><td><p>ISSCAN</p></td>
+<td><p>1 if we are doing a scan, 0 otherwise</p></td>
+</tr>
+<tr class="row-even"><td><p>SCANVAR0{0,1,2}</p></td>
+<td><p>The name of our {1st, 2nd, 3rd} positioner</p></td>
+</tr>
+<tr class="row-odd"><td><p>MAX0{0,1,2}</p></td>
+<td><p>The max scan position of each positioner</p></td>
+</tr>
+<tr class="row-even"><td><p>MIN0{0,1,2}</p></td>
+<td><p>The min scan position of each positioner</p></td>
+</tr>
+<tr class="row-odd"><td><p>NSTEPS</p></td>
+<td><p>The total number of steps in the scan</p></td>
+</tr>
+<tr class="row-even"><td><p>NSHOTS</p></td>
+<td><p>Number of events per point in the DAQ</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="api">
+<h2>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars" title="pcdsdaq.scan_vars.ScanVars"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ScanVars</span></code></a> class is an <code class="docutils literal notranslate"><span class="pre">ophyd</span></code> <code class="docutils literal notranslate"><span class="pre">Device</span></code> with special <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code>
+subscription mechanisms for updating the scan PVs. It reads plan metadata
+and daq configuration to update the PVs.</p>
+<dl class="py class">
+<dt id="pcdsdaq.scan_vars.ScanVars">
+<em class="property">class </em><code class="sig-prename descclassname">pcdsdaq.scan_vars.</code><code class="sig-name descname">ScanVars</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">prefix</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">RE</span></em>, <em class="sig-param"><span class="n">i_start</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collection of PVs to keep track of the scan state.</p>
+<p>Use <a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars.enable" title="pcdsdaq.scan_vars.ScanVars.enable"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">enable</span></code></a> to set up automatic updating of these PVs
+during a <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code> scan. This relies on proper
+metadata like the metadata in the built in <code class="docutils literal notranslate"><span class="pre">scan</span></code>
+and <code class="docutils literal notranslate"><span class="pre">count</span></code> plans to populate the PVS.</p>
+<p>Use <a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars.disable" title="pcdsdaq.scan_vars.ScanVars.disable"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">disable</span></code></a> to remove this from the <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prefix</strong> (<code class="docutils literal notranslate"><span class="pre">str</span></code>) – The PV prefix, e.g. <code class="docutils literal notranslate"><span class="pre">XPP:SCAN</span></code></p></li>
+<li><p><strong>name</strong> (<code class="docutils literal notranslate"><span class="pre">str</span></code>, required keyword) – A name to refer to this object by</p></li>
+<li><p><strong>RE</strong> (<code class="docutils literal notranslate"><span class="pre">RunEngine</span></code>, required keyword) – The <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code> instance associated with the session.</p></li>
+<li><p><strong>i_start</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code>, optional) – The starting count for the i_step tracker. This defaults to zero,
+which is offset by one from the one-indexed bluesky counter.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="pcdsdaq.scan_vars.ScanVars.enable">
+<code class="sig-name descname">enable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.enable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enable automatic updating of PVs during a scan.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pcdsdaq.scan_vars.ScanVars.disable">
+<code class="sig-name descname">disable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.disable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disable automatic updating of PVs during a scan.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pcdsdaq.scan_vars.ScanVars.start">
+<code class="sig-name descname">start</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">doc</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the scan variables at the start of a run.</p>
+<p>This inspects the metadata dictionary and will set reasonable values if
+this metadata dictionary is well-formed as in <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> built-ins
+like <code class="docutils literal notranslate"><span class="pre">scan</span></code>. It also inspects the daq object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pcdsdaq.scan_vars.ScanVars.event">
+<code class="sig-name descname">event</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">doc</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the step counter at each scan step.</p>
+<p>This actually sets the step counter for the next scan step, because
+this runs immediately after a scan step and recieves an event doc from
+the step that just ran.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pcdsdaq.scan_vars.ScanVars.stop">
+<code class="sig-name descname">stop</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">doc</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set all fields to their default values at the end of a run.</p>
+<p>These are all 0 for the numeric fields and empty strings for the string
+fields.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="misc.html" class="btn btn-neutral float-right" title="Miscellaneous" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="generated/pcdsdaq.preprocessors.daq_during_decorator.html" class="btn btn-neutral float-left" title="pcdsdaq.preprocessors.daq_during_decorator" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright .
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
