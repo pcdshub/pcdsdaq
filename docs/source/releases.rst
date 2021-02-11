@@ -1,11 +1,19 @@
 Release History
 ###############
 
-v2.3.2 (2021-02-10)
+v2.3.3 (2021-02-10)
 ===================
 
 - Fix issue where the ``AmiDet`` had a hinted ``entries`` field that got in
   the way when using the ``BestEffortCallback``.
+
+
+v2.3.2 (2021-01-11)
+===================
+
+- Update recipe and build for python 3.7+ and noarch compatibility
+- Remove pydaq linkage scripts in favor of using the corrected sym links
+  in the daq build
 
 
 v2.3.1 (2020-12-22)
