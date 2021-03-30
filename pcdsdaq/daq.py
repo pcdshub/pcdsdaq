@@ -961,12 +961,11 @@ class Daq:
         # If we're still running, end now
         if self.state in ('Open', 'Running'):
             self.end_run()
-        # Return to the state we had at stage
-        if self._pre_run_state == 'Disconnected':
-            self.disconnect()
-        elif self._pre_run_state == 'Running':
+        # Return to running if we already were (to keep AMI running)
+        if self._pre_run_state == 'Running':
             self.begin_infinite()
         # For other states, end_run was sufficient.
+        # E.g. do not disconnect, or this would close the open plots!
         return [self]
 
     def pause(self):
