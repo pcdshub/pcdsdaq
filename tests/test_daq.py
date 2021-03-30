@@ -374,7 +374,7 @@ def test_restore_state(daq, RE):
     assert daq.state == 'Disconnected'
     daq.preconfig(events=1)
     RE(count([daq]))
-    assert daq.state == 'Disconnected'
+    assert daq.state == 'Configured'
 
     daq.begin_infinite()
     assert daq.state == 'Running'
