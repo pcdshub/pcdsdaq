@@ -1,6 +1,13 @@
 Release History
 ###############
 
+v2.3.4 (2021-04-02)
+===================
+
+- Fix issue where the ``Daq`` could automatically disconnect after a scan
+  was complete, causing all ``ami`` windows to close.
+
+
 v2.3.3 (2021-02-10)
 ===================
 
