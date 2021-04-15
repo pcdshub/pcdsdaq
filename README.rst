@@ -4,9 +4,6 @@ pcdsdaq
 .. image:: https://travis-ci.org/pcdshub/pcdsdaq.svg?branch=master
    :target: https://travis-ci.org/pcdshub/pcdsdaq
    :alt: Build Status
-.. image:: https://codecov.io/gh/pcdshub/pcdsdaq/branch/master/graph/badge.svg
-   :target: https://codecov.io/gh/pcdshub/pcdsdaq
-   :alt: Code Coverage
 
 The ``pcdsdaq`` module provides a higher-level interface for user control of the
 LCLS1 DAQ through the LCLS1 DAQ's Python C libraries, ``pydaq``, ``pycdb``,
