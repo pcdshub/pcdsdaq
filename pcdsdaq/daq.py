@@ -7,8 +7,16 @@ import logging
 import os
 import time
 import threading
+from enum import Enum
+from functools import cache
 from importlib import import_module
+from typing import Any, ClassVar, Optional
 
+from bluesky import RunEngine
+
+from ophyd.device import Component as Cpt, Device
+from ophyd.ophydobj import Kind
+from ophyd.signal import AttributeSignal, Signal
 from ophyd.status import Status
 from ophyd.utils import StatusTimeoutError, WaitTimeoutError
 
@@ -53,7 +61,347 @@ class DaqTimeoutError(Exception):
     pass
 
 
-class Daq:
+class Daq(Device):
+    """
+    Base class to define shared DAQ API
+
+    All subclasses should implement the "not implemented" methods here.
+
+    Also defines some shared features so that different DAQ versions
+    do not have to reinvent the wheel for basic API choices.
+    """
+    state_sig = Cpt(AttributeSignal, 'state', kind='normal', name='state')
+    configured_sig = Cpt(
+        Signal,
+        value=False,
+        kind='normal',
+        name='configured',
+    )
+
+    events_cfg = Cpt(Signal, value=None, kind='config', name='events')
+    duration_cfg = Cpt(Signal, value=None, kind='config', name='duration')
+    record_cfg = Cpt(Signal, value=None, kind='config', name='record')
+    controls_cfg = Cpt(Signal, value=None, kind='config', name='controls')
+
+    # Define these in subclass
+    state_enum: ClassVar[Enum]
+
+    def __init__(
+        self,
+        RE: Optional[RunEngine] = None,
+        hutch_name: Optional[str] = None,
+        platform: Optional[int] = None,
+        *,
+        name: str ='daq',
+    ):
+        self._RE = RE
+        self.hutch_name = hutch_name
+        self.platform = platform
+        super().__init__(name=name)
+        register_daq(self)
+
+    # Convenience properties
+    @property
+    def configured(self) -> bool:
+        """
+        ``True`` if the daq is configured, ``False`` otherwise.
+        """
+        return self.configured_sig.get()
+
+    @property
+    @cache
+    def default_config(self) -> dict[str, Any]:
+        """
+        The default configuration defined in the class definition.
+        """
+        default = {}
+        for walk in self.walk_components():
+            if walk.item.kind == Kind.config:
+                default[walk.item.name] = walk.item.kwargs['value']
+        return default
+
+    @property
+    def config(self) -> dict[str, Any]:
+        """
+        The current configuration, e.g. the last call to `configure`
+        """
+        if self.configured:
+            cfg = self.read_configuration()
+            return {key: value['value'] for key, value in cfg.items()}
+        else:
+            return self.default_config.copy()
+
+    @property
+    def state(self) -> str:
+        """
+        API to show the state as reported by the DAQ.
+        """
+        raise NotImplementedError('Please implement state in subclass.')
+
+    def wait(self, timeout: Optional[float] = None) -> None:
+        """
+        Pause the thread until the DAQ is done aquiring.
+
+        Parameters
+        ----------
+        timeout: ``float``, optional
+            Maximum time to wait in seconds.
+        """
+        raise NotImplementedError('Please implement wait in subclass.')
+
+    def begin(self):
+        # TODO evaluate DaqLCLS1.begin and see if we can generalize it here
+        raise NotImplementedError('Please implement begin in subclass')
+
+    def begin_infinite(self):
+        raise NotImplementedError(
+            'Please implement begin_infinite in subclass.'
+        )
+
+    def stop(self, success: bool = False) -> None:
+        """
+        Stop the current acquisition, ending it early.
+
+        Parameters
+        ----------
+        success : bool, optional
+            Flag set by bluesky to signify whether this was a good stop or a
+            bad stop. Currently unused.
+        """
+        raise NotImplementedError('Please implement stop in subclass.')
+
+    def end_run(self) -> None:
+        """
+        Call `stop`, then mark the run as finished.
+        """
+        raise NotImplementedError('Please implement end_run in subclass.')
+
+    def trigger(self) -> Status:
+        """
+        Begin acquisition.
+
+        Returns a status object that will be marked done when the daq has
+        stopped acquiring.
+
+        This will raise a RuntimeError if the daq was never configured for
+        events or duration.
+
+        Returns
+        -------
+        done_status: ``Status``
+            ``Status`` that will be marked as done when the daq has begun.
+        """
+        raise NotImplementedError('Please implement trigger in subclass.')
+
+    def read(self):
+        """
+        Return data about the status of the daq.
+
+        This also stops if running so you can use this device in a bluesky scan
+        and wait for "everything else" to be done, then stop the daq
+        afterwards.
+        """
+        if self.state == 'Running':
+            self.stop()
+        return super().read()
+
+    def kickoff(self) -> Status:
+        """
+        Begin acquisition. This method is non-blocking.
+        See `begin` for a description of the parameters.
+
+        This method does not supply arguments for configuration parameters, it
+        supplies arguments directly to ``pydaq.Control.begin``. It will
+        configure before running if there are queued configuration changes.
+
+        This is part of the ``bluesky`` ``Flyer`` interface.
+
+        Returns
+        -------
+        ready_status: ``Status``
+            ``Status`` that will be marked as done when the daq has begun.
+        """
+        raise NotImplementedError('Please implement kickoff in subclass.')
+
+    def complete(self) -> Status:
+        """
+        If the daq is freely running, this will `stop` the daq.
+        Otherwise, we'll simply collect the end_status object.
+
+        Returns
+        -------
+        end_status: ``Status``
+            ``Status`` that will be marked as done when the DAQ has finished
+            acquiring
+        """
+        raise NotImplementedError('Please implement complete in subclass.')
+
+    def collect(self):
+        """
+        Collect data as part of the ``bluesky`` ``Flyer`` interface.
+
+        As per the ``bluesky`` interface, this is a generator that is expected
+        to output partial event documents. However, since we don't have any
+        events to report to python, this will be a generator that immediately
+        ends.
+        """
+        logger.debug('Daq.collect()')
+        yield from ()
+
+    def describe_collect(self):
+        """
+        As per the ``bluesky`` interface, this is how you interpret the null
+        data from `collect`. There isn't anything here, as nothing will be
+        collected.
+        """
+        logger.debug('Daq.describe_collect()')
+        return {}
+
+    def configure(self, **kwargs) -> tuple[dict, dict]:
+        """
+        Write to the configuration signals.
+
+        May be extended in the subclass to perform additional tasks.
+        """
+        # TODO see if lcls1 daq can be refactored to use this
+        old = self.read_configuration()
+        for key, value in kwargs.items():
+            try:
+                sig = getattr(self, key + '_cfg')
+            except AttributeError as exc:
+                raise ValueError(
+                    f'Did not find config parameter {key}'
+                ) from exc
+            if isinstance(sig, Signal) and sig.kind == 'config':
+                sig.put(value)
+            else:
+                raise ValueError(
+                    f'{key} is not a config parameter!'
+                )
+        return old, self.read_configuration()
+
+    def config_info(self, config=None, header='Config:'):
+        """
+        Show the config information as a logger.info message.
+
+        This will print to the screen if the logger is configured correctly.
+
+        Parameters
+        ----------
+        config: ``dict``, optional
+            The configuration to show. If omitted, we'll use the current
+            config.
+
+        header: ``str``, optional
+            A prefix for the config line.
+        """
+        if config is None:
+            config = self.config
+
+        txt = []
+        for key, value in config.items():
+            if value is not None:
+                txt.append('{}={}'.format(key, value))
+        if header:
+            header += ' '
+        logger.info(header + ', '.join(txt))
+
+    # TODO see if DaqLCLS1 can be refactored to use this
+    @property
+    def record(self) -> bool:
+        """
+        If ``True``, we'll configure the daq to record data. If ``False``, we
+        will configure the daq to not record data.
+
+        Setting this is the equivalent of scheduling a `configure` call to be
+        executed later, e.g. ``configure(record=True)``, or putting to the
+        record_cfg signal.
+        """
+        return self.record_cfg.get()
+
+    @record.setter
+    def record(self, record: bool):
+        self.record_cfg.put(record)
+
+    def stage(self):
+        """
+        ``bluesky`` interface for preparing a device for action.
+
+        This sets up the daq to end runs on run stop documents.
+        It also caches the current state, so we know what state to return to
+        after the ``bluesky`` scan.
+        If a run is already started, we'll end it here so that we can start a
+        new run during the scan.
+
+        Returns
+        -------
+        staged: ``list``
+            list of devices staged
+        """
+        logger.debug('Daq.stage()')
+        self._pre_run_state = self.state
+        if self._re_cbid is None:
+            self._re_cbid = self._RE.subscribe(self._re_manage_runs)
+        self.end_run()
+        return [self]
+
+    def _re_manage_runs(self, name, doc):
+        """
+        Callback for the RunEngine to manage run stop.
+        """
+        if name == 'stop':
+            self.end_run()
+
+    def unstage(self):
+        """
+        ``bluesky`` interface for undoing the `stage` routine.
+
+        Returns
+        -------
+        unstaged: ``list``
+            list of devices unstaged
+        """
+        logger.debug('Daq.unstage()')
+        if self._re_cbid is not None:
+            self._RE.unsubscribe(self._re_cbid)
+            self._re_cbid = None
+        # If we're still running, end now
+        if self.state in ('Open', 'Running'):
+            self.end_run()
+        # Return to running if we already were (to keep AMI running)
+        if self._pre_run_state == 'Running':
+            self.begin_infinite()
+        # For other states, end_run was sufficient.
+        # E.g. do not disconnect, or this would close the open plots!
+        return [self]
+
+    # TODO see if pause/resume need to be bifurcated between lcls1 and lcls2
+    def pause(self):
+        """
+        ``bluesky`` interface for determining what to do when a plan is
+        interrupted. This will call `stop`, but it will not call `end_run`.
+        """
+        logger.debug('Daq.pause()')
+        if self.state == 'Running':
+            self.stop()
+
+    def resume(self):
+        """
+        ``bluesky`` interface for determining what to do when an interrupted
+        plan is resumed. This will call `begin`.
+        """
+        logger.debug('Daq.resume()')
+        if self.state == 'Open':
+            self.begin()
+
+    def run_number(self, hutch_name=None):
+        ... # TODO determine how to handle this one
+        # LCLS1 uses an external script to get the run number because
+        # the pydaq implementation does not work if done during a run
+        # LCLS2 might have a better way
+
+
+class DaqLCLS1(Daq):
     """
     The LCLS1 daq as a ``bluesky``-compatible object.
 
@@ -72,42 +420,36 @@ class Daq:
 
     Parameters
     ----------
-    RE: ``RunEngine``, optional
+    RE: ``RunEngine``, optional 
         Set ``RE`` to the session's main ``RunEngine``
 
     hutch_name: str, optional
         Define a hutch name to use instead of shelling out to get_hutch_name.
     """
-    _state_enum = enum.Enum('PydaqState',
-                            'Disconnected Connected Configured Open Running',
-                            start=0)
-    default_config = dict(events=None,
-                          duration=None,
-                          use_l3t=False,
-                          record=None,
-                          controls=None,
-                          begin_sleep=0)
-    name = 'daq'
-    parent = None
+    use_l3t_cfg = Cpt(Signal, value=False, kind='config', name='use_l3t')
+    begin_sleep_cfg = Cpt(Signal, value=0, kind='config', name='begin_sleep')
+
+    state_enum = enum.Enum(
+        'PydaqState',
+        'Disconnected Connected Configured Open Running',
+        start=0,
+    )
 
     def __init__(self, RE=None, hutch_name=None):
         if pydaq is None:
             globals()['pydaq'] = import_module('pydaq')
-        super().__init__()
+        super().__init__(RE=RE, hutch_name=hutch_name)
         self._control = None
         self._config = None
         self._desired_config = {}
         self._reset_begin()
         self._host = os.uname()[1]
-        self._RE = RE
         self._re_cbid = None
         self._config_ts = {}
         self._update_config_ts()
         self._pre_run_state = None
         self._last_stop = 0
         self._check_run_number_has_failed = False
-        self.hutch_name = hutch_name
-        register_daq(self)
 
     # Convenience properties
     @property
@@ -116,23 +458,6 @@ class Daq:
         ``True`` if the daq is connected, ``False`` otherwise.
         """
         return self._control is not None
-
-    @property
-    def configured(self):
-        """
-        ``True`` if the daq is configured, ``False`` otherwise.
-        """
-        return self._config is not None
-
-    @property
-    def config(self):
-        """
-        The current configuration, e.g. the last call to `configure`
-        """
-        if self.configured:
-            return self._config.copy()
-        else:
-            return self.default_config.copy()
 
     @property
     def next_config(self):
@@ -224,7 +549,7 @@ class Daq:
 
         Parameters
         ----------
-        timeout: ``float``
+        timeout: ``float``, optional
             Maximum time to wait in seconds.
         """
         logger.debug('Daq.wait()')
@@ -342,9 +667,15 @@ class Daq:
         self.end_run()
 
     @check_connect
-    def stop(self):
+    def stop(self, success: bool = False):
         """
         Stop the current acquisition, ending it early.
+
+        Parameters
+        ----------
+        success : bool, optional
+            Flag set by bluesky to signify whether this was a good stop or a
+            bad stop. Currently unused.
         """
         logger.debug('Daq.stop()')
         self._control.stop()
@@ -383,24 +714,6 @@ class Daq:
                                'configure events or duration.')
         self.begin()
         return self._get_end_status()
-
-    def read(self):
-        """
-        Return data. There is no data implemented yet.
-
-        This also stops if running so you can use this device in a bluesky scan
-        and wait for "everything else" to be done, then stop the daq
-        afterwards.
-        """
-        if self.state == 'Running':
-            self.stop()
-        return {}
-
-    def describe(self):
-        """
-        Explain what read returns. There is nothing  yet.
-        """
-        return {}
 
     # Flyer interface
     @check_connect
@@ -556,27 +869,6 @@ class Daq:
             status.set_finished()
             return status
 
-    def collect(self):
-        """
-        Collect data as part of the ``bluesky`` ``Flyer`` interface.
-
-        As per the ``bluesky`` interface, this is a generator that is expected
-        to output partial event documents. However, since we don't have any
-        events to report to python, this will be a generator that immediately
-        ends.
-        """
-        logger.debug('Daq.collect()')
-        yield from ()
-
-    def describe_collect(self):
-        """
-        As per the ``bluesky`` interface, this is how you interpret the null
-        data from `collect`. There isn't anything here, as nothing will be
-        collected.
-        """
-        logger.debug('Daq.describe_collect()')
-        return {}
-
     def preconfig(self, events=_CONFIG_VAL, duration=_CONFIG_VAL,
                   record=_CONFIG_VAL, use_l3t=_CONFIG_VAL,
                   controls=_CONFIG_VAL, begin_sleep=_CONFIG_VAL,
@@ -720,32 +1012,6 @@ class Daq:
         self._desired_config = {}
         return old, new
 
-    def config_info(self, config=None, header='Config:'):
-        """
-        Show the config information as a logger.info message.
-
-        This will print to the screen if the logger is configured correctly.
-
-        Parameters
-        ----------
-        config: ``dict``, optional
-            The configuration to show. If omitted, we'll use the current
-            config.
-
-        header: ``str``, optional
-            A prefix for the config line.
-        """
-        if config is None:
-            config = self.config
-
-        txt = []
-        for key, value in config.items():
-            if value is not None:
-                txt.append('{}={}'.format(key, value))
-        if header:
-            header += ' '
-        logger.info(header + ', '.join(txt))
-
     @property
     def record(self):
         """
@@ -868,6 +1134,7 @@ class Daq:
                    'very short runs.')
             raise RuntimeError(msg)
 
+    # TODO see if we can refactor LCLS1 daq to remove these custom handlers
     def read_configuration(self):
         """
         ``bluesky`` interface for checking the current configuration
@@ -915,76 +1182,6 @@ class Daq:
                                      dtype='number',
                                      shape=[]),
                     )
-
-    def stage(self):
-        """
-        ``bluesky`` interface for preparing a device for action.
-
-        This sets up the daq to end runs on run stop documents.
-        It also caches the current state, so we know what state to return to
-        after the ``bluesky`` scan.
-        If a run is already started, we'll end it here so that we can start a
-        new run during the scan.
-
-        Returns
-        -------
-        staged: ``list``
-            list of devices staged
-        """
-        logger.debug('Daq.stage()')
-        self._pre_run_state = self.state
-        if self._re_cbid is None:
-            self._re_cbid = self._RE.subscribe(self._re_manage_runs)
-        self.end_run()
-        return [self]
-
-    def _re_manage_runs(self, name, doc):
-        """
-        Callback for the RunEngine to manage run stop.
-        """
-        if name == 'stop':
-            self.end_run()
-
-    def unstage(self):
-        """
-        ``bluesky`` interface for undoing the `stage` routine.
-
-        Returns
-        -------
-        unstaged: ``list``
-            list of devices unstaged
-        """
-        logger.debug('Daq.unstage()')
-        if self._re_cbid is not None:
-            self._RE.unsubscribe(self._re_cbid)
-            self._re_cbid = None
-        # If we're still running, end now
-        if self.state in ('Open', 'Running'):
-            self.end_run()
-        # Return to running if we already were (to keep AMI running)
-        if self._pre_run_state == 'Running':
-            self.begin_infinite()
-        # For other states, end_run was sufficient.
-        # E.g. do not disconnect, or this would close the open plots!
-        return [self]
-
-    def pause(self):
-        """
-        ``bluesky`` interface for determining what to do when a plan is
-        interrupted. This will call `stop`, but it will not call `end_run`.
-        """
-        logger.debug('Daq.pause()')
-        if self.state == 'Running':
-            self.stop()
-
-    def resume(self):
-        """
-        ``bluesky`` interface for determining what to do when an interrupted
-        plan is resumed. This will call `begin`.
-        """
-        logger.debug('Daq.resume()')
-        if self.state == 'Open':
-            self.begin()
 
     @property
     def _events(self):
