@@ -82,6 +82,13 @@ class Daq(Device):
     duration_cfg = Cpt(Signal, value=None, kind='config', name='duration')
     record_cfg = Cpt(Signal, value=None, kind='config', name='record')
     controls_cfg = Cpt(Signal, value=None, kind='config', name='controls')
+    begin_timeout_cfg = Cpt(
+        Signal,
+        value=BEGIN_TIMEOUT,
+        kind='config',
+        name='begin_timeout',
+    )
+    begin_sleep_cfg = Cpt(Signal, value=0, kind='config', name='begin_sleep')
 
     # Define these in subclass
     state_enum: ClassVar[Enum]
@@ -138,7 +145,11 @@ class Daq(Device):
         """
         raise NotImplementedError('Please implement state in subclass.')
 
-    def wait(self, timeout: Optional[float] = None) -> None:
+    def wait(
+        self,
+        timeout: Optional[float] = None,
+        end_run: bool = False,
+    ) -> None:
         """
         Pause the thread until the DAQ is done aquiring.
 
@@ -146,12 +157,56 @@ class Daq(Device):
         ----------
         timeout: ``float``, optional
             Maximum time to wait in seconds.
+        end_run: ``bool``, optional
+            If ``True``, end the run after we're done waiting.
         """
         raise NotImplementedError('Please implement wait in subclass.')
 
-    def begin(self):
-        # TODO evaluate DaqLCLS1.begin and see if we can generalize it here
-        raise NotImplementedError('Please implement begin in subclass')
+    def begin(self, wait: bool = False, end_run: bool = False, **kwargs):
+        """
+        Start the daq.
+        
+        This is the equivalent of "kickoff" but for interactive sessions.
+        All kwargs except for "wait" and "end_run" are passed through to
+        kickoff.
+
+        Parameters
+        ----------
+        wait : ``bool``, optional
+            If True, wait for the daq to be done running.
+        end_run : ``bool``, optional
+            If True, end the daq after we're done running.
+        """
+        logger.debug(f'Daq.begin(kwargs={kwargs})')
+        try:
+            kickoff_status = self.kickoff(**kwargs)
+            try:
+                kickoff_status.wait(timeout=self.begin_timeout_cfg.get())
+            except (StatusTimeoutError, WaitTimeoutError) as exc:
+                raise DaqTimeoutError(
+                    f'Timeout after {self.begin_timeout_cfg.get()} seconds '
+                    'waiting for daq to begin.'
+                ) from exc
+
+            # In some daq configurations the begin status returns very early,
+            # so we allow the user to configure an emperically derived extra
+            # sleep.
+            time.sleep(self.begin_sleep_cfg.get())
+            if wait:
+                self.wait(end_run=end_run)
+            elif end_run:
+                threading.Thread(
+                    target=self.wait,
+                    args=(),
+                    kwargs={'end_run': end_run},
+                ).start()
+        except KeyboardInterrupt:
+            if end_run:
+                logger.info('%s.begin interrupted, ending run', self.name)
+                self.end_run()
+            else:
+                logger.info('%s.begin interrupted, stopping', self.name)
+                self.stop()
 
     def begin_infinite(self):
         raise NotImplementedError(
@@ -543,7 +598,7 @@ class DaqLCLS1(Daq):
         logger.info('DAQ is disconnected.')
 
     @check_connect
-    def wait(self, timeout=None):
+    def wait(self, timeout=None, end_run=False):
         """
         Pause the thread until the DAQ is done aquiring.
 
@@ -551,6 +606,8 @@ class DaqLCLS1(Daq):
         ----------
         timeout: ``float``, optional
             Maximum time to wait in seconds.
+        end_run: ``bool``, optional
+            If ``True``, end the run after we're done waiting.
         """
         logger.debug('Daq.wait()')
         if self.state == 'Running':
@@ -565,6 +622,8 @@ class DaqLCLS1(Daq):
             else:
                 raise RuntimeError('Cannot wait, daq configured to run '
                                    'forever.')
+        if end_run:
+            self.end_run()
 
     def begin(self, events=_CONFIG_VAL, duration=_CONFIG_VAL,
               record=_CONFIG_VAL, use_l3t=_CONFIG_VAL, controls=_CONFIG_VAL,
@@ -612,35 +671,21 @@ class DaqLCLS1(Daq):
         end_run: ``bool``, optional
             If ``True``, we'll end the run after the daq has stopped.
         """
-        logger.debug(('Daq.begin(events=%s, duration=%s, record=%s, '
+        logger.debug(('DaqLCLS1.begin(events=%s, duration=%s, record=%s, '
                       'use_l3t=%s, controls=%s, wait=%s)'),
                      events, duration, record, use_l3t, controls, wait)
         try:
             if record is not _CONFIG_VAL and record != self.record:
                 old_record = self.record
                 self.preconfig(record=record, show_queued_cfg=False)
-            begin_status = self.kickoff(events=events, duration=duration,
-                                        use_l3t=use_l3t, controls=controls)
-            try:
-                begin_status.wait(timeout=self._begin_timeout)
-            except (StatusTimeoutError, WaitTimeoutError):
-                msg = (f'Timeout after {self._begin_timeout} seconds waiting '
-                       'for daq to begin.')
-                raise DaqTimeoutError(msg) from None
-
-            # In some daq configurations the begin status returns very early,
-            # so we allow the user to configure an emperically derived extra
-            # sleep.
-            time.sleep(self.config['begin_sleep'])
-            if wait:
-                self.wait()
-                if end_run:
-                    self.end_run()
-            if end_run and not wait:
-                threading.Thread(target=self._ender_thread, args=()).start()
-        except KeyboardInterrupt:
-            self.end_run()
-            logger.info('%s.begin interrupted, ending run', self.name)
+            return super().begin(
+                events=events,
+                duration=duration,
+                record=record,
+                use_l3t=use_l3t,
+                controls=controls,
+                wait=wait,
+            )
         finally:
             try:
                 self.preconfig(record=old_record, show_queued_cfg=False)
