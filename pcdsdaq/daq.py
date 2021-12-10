@@ -1292,6 +1292,123 @@ class DaqLCLS1(Daq):
     set_monitor.__doc__ = set_monitor_det.__doc__
 
 
+class DaqLCLS2(Daq):
+    # Need to add all the config options as components
+
+    state_enum = None
+    requires_configure_transition = {}
+
+    def __init__(self, RE=None, hutch_name=None, platform=None):
+        ...
+
+    @property
+    def state(self) -> str:
+        """
+        API to show the state as reported by the DAQ.
+        """
+        raise NotImplementedError('Please implement state in subclass.')
+
+    def wait(
+        self,
+        timeout: Optional[float] = None,
+        end_run: bool = False,
+    ) -> None:
+        """
+        Pause the thread until the DAQ is done aquiring.
+
+        Parameters
+        ----------
+        timeout: ``float``, optional
+            Maximum time to wait in seconds.
+        end_run: ``bool``, optional
+            If ``True``, end the run after we're done waiting.
+        """
+        raise NotImplementedError('Please implement wait in subclass.')
+
+    def begin_infinite(self):
+        raise NotImplementedError(
+            'Please implement begin_infinite in subclass.'
+        )
+
+    def stop(self, success: bool = False) -> None:
+        """
+        Stop the current acquisition, ending it early.
+
+        Parameters
+        ----------
+        success : bool, optional
+            Flag set by bluesky to signify whether this was a good stop or a
+            bad stop. Currently unused.
+        """
+        raise NotImplementedError('Please implement stop in subclass.')
+
+    def end_run(self) -> None:
+        """
+        Call `stop`, then mark the run as finished.
+        """
+        raise NotImplementedError('Please implement end_run in subclass.')
+
+    def trigger(self) -> Status:
+        """
+        Begin acquisition.
+
+        Returns a status object that will be marked done when the daq has
+        stopped acquiring.
+
+        This will raise a RuntimeError if the daq was never configured for
+        events or duration.
+
+        Returns
+        -------
+        done_status: ``Status``
+            ``Status`` that will be marked as done when the daq has begun.
+        """
+        raise NotImplementedError('Please implement trigger in subclass.')
+
+    def kickoff(self) -> Status:
+        """
+        Begin acquisition. This method is non-blocking.
+        See `begin` for a description of the parameters.
+
+        This method does not supply arguments for configuration parameters, it
+        supplies arguments directly to ``pydaq.Control.begin``. It will
+        configure before running if there are queued configuration changes.
+
+        This is part of the ``bluesky`` ``Flyer`` interface.
+
+        Returns
+        -------
+        ready_status: ``Status``
+            ``Status`` that will be marked as done when the daq has begun.
+        """
+        raise NotImplementedError('Please implement kickoff in subclass.')
+
+    def complete(self) -> Status:
+        """
+        If the daq is freely running, this will `stop` the daq.
+        Otherwise, we'll simply collect the end_status object.
+
+        Returns
+        -------
+        end_status: ``Status``
+            ``Status`` that will be marked as done when the DAQ has finished
+            acquiring
+        """
+        raise NotImplementedError('Please implement complete in subclass.')
+
+    def configure(self):
+        ...
+
+    def stage(self):
+        ...
+
+    def unstage(self):
+        ...
+
+    def run_number(self):
+        ...
+
+
 class StateTransitionError(Exception):
     pass
 
