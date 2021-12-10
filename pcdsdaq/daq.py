@@ -92,6 +92,9 @@ class Daq(Device):
 
     # Define these in subclass
     state_enum: ClassVar[Enum]
+    requires_configure_transition: ClassVar[set[str]]
+
+    # TODO init type hints
 
     def __init__(
         self,
@@ -104,10 +107,12 @@ class Daq(Device):
         self._RE = RE
         self.hutch_name = hutch_name
         self.platform = platform
+        self._queue_configure_transition = True
         super().__init__(name=name)
         register_daq(self)
 
     # Convenience properties
+    # TODO handle configured correctly
     @property
     def configured(self) -> bool:
         """
@@ -312,15 +317,16 @@ class Daq(Device):
         logger.debug('Daq.describe_collect()')
         return {}
 
-    def configure(self, **kwargs) -> tuple[dict, dict]:
+    def preconfig(self, show_queued_cfg=True, **kwargs):
         """
-        Write to the configuration signals.
+        Write to the configuration signals without executing any transitions.
 
-        May be extended in the subclass to perform additional tasks.
+        Will store the boolean _queue_configure_transition if any
+        configurations were changed that require a configure transition. 
         """
-        # TODO see if lcls1 daq can be refactored to use this
-        old = self.read_configuration()
         for key, value in kwargs.items():
+            if value is _CONFIG_VAL:
+                continue
             try:
                 sig = getattr(self, key + '_cfg')
             except AttributeError as exc:
@@ -333,6 +339,21 @@ class Daq(Device):
                 raise ValueError(
                     f'{key} is not a config parameter!'
                 )
+            if key in self.requires_configure_transition:
+                self._queue_configure_transition = True
+
+        if show_queued_cfg:
+            self.config_info(self.config, 'Queued config:')
+
+    def configure(self, **kwargs) -> tuple[dict, dict]:
+        """
+        Write to the configuration signals and execute a configure transition.
+
+        Must be extended in subclass to cause the configure transition when
+        needed and to reset the _queue_configure_transition attribute.
+        """
+        old = self.read_configuration()
+        self.preconfig(show_queued_cfg=False, **kwargs)
         return old, self.read_configuration()
 
     def config_info(self, config=None, header='Config:'):
@@ -361,7 +382,6 @@ class Daq(Device):
             header += ' '
         logger.info(header + ', '.join(txt))
 
-    # TODO see if DaqLCLS1 can be refactored to use this
     @property
     def record(self) -> bool:
         """
@@ -375,8 +395,8 @@ class Daq(Device):
         return self.record_cfg.get()
 
     @record.setter
-    def record(self, record: bool):
-        self.record_cfg.put(record)
+    def record(self, record):
+        self.preconfig(record=record, show_queued_cfg=False)
 
     def stage(self):
         """
@@ -489,19 +509,16 @@ class DaqLCLS1(Daq):
         'Disconnected Connected Configured Open Running',
         start=0,
     )
+    requires_configure_transition = {'record', 'use_l3t'}
 
     def __init__(self, RE=None, hutch_name=None):
         if pydaq is None:
             globals()['pydaq'] = import_module('pydaq')
         super().__init__(RE=RE, hutch_name=hutch_name)
         self._control = None
-        self._config = None
-        self._desired_config = {}
         self._reset_begin()
         self._host = os.uname()[1]
         self._re_cbid = None
-        self._config_ts = {}
-        self._update_config_ts()
         self._pre_run_state = None
         self._last_stop = 0
         self._check_run_number_has_failed = False
@@ -513,18 +530,6 @@ class DaqLCLS1(Daq):
         ``True`` if the daq is connected, ``False`` otherwise.
         """
         return self._control is not None
-
-    @property
-    def next_config(self):
-        """
-        The next queued configuration.
-
-        This can be different than `config` if we have queued up a
-        configuration to be run on the next begin.
-        """
-        cfg = self.config
-        cfg.update(self._desired_config)
-        return cfg
 
     @property
     def state(self):
@@ -593,8 +598,7 @@ class DaqLCLS1(Daq):
             self._control.disconnect()
         del self._control
         self._control = None
-        self._desired_config = self._config or {}
-        self._config = None
+        self.preconfig(**self.default_config)
         logger.info('DAQ is disconnected.')
 
     @check_connect
@@ -753,7 +757,7 @@ class DaqLCLS1(Daq):
         done_status: ``Status``
             ``Status`` that will be marked as done when the daq has begun.
         """
-        cfg = self.next_config
+        cfg = self.config
         if all(cfg[key] is None for key in ('events', 'duration')):
             raise RuntimeError('Cannot start daq in scan step, did not '
                                'configure events or duration.')
@@ -782,13 +786,13 @@ class DaqLCLS1(Daq):
         logger.debug('Daq.kickoff()')
 
         self._check_duration(duration)
-        if self._desired_config or not self.configured:
+        if self._queue_configure_transition or not self.configured:
             try:
                 self.configure()
             except StateTransitionError:
                 err = ('Illegal reconfigure with {} during an open run. End '
                        'the current run with daq.end_run() before running '
-                       'with a new configuration'.format(self._desired_config))
+                       'with a new configuration'.format(self.config))
                 logger.debug(err, exc_info=True)
                 raise StateTransitionError(err)
 
@@ -931,19 +935,17 @@ class DaqLCLS1(Daq):
         """
         # Only one of (events, duration) should be preconfigured.
         if events is not _CONFIG_VAL:
-            self._desired_config['events'] = events
-            self._desired_config['duration'] = None
-        elif duration is not _CONFIG_VAL:
-            self._desired_config['events'] = None
-            self._desired_config['duration'] = duration
+            duration = _CONFIG_VAL
 
-        for arg, name in zip((record, use_l3t, controls, begin_sleep),
-                             ('record', 'use_l3t', 'controls', 'begin_sleep')):
-            if arg is not _CONFIG_VAL:
-                self._desired_config[name] = arg
-
-        if show_queued_cfg:
-            self.config_info(self.next_config, 'Queued config:')
+        return super().preconfig(
+            events=events,
+            duration=duration,
+            record=record,
+            use_l3t=use_l3t,
+            controls=controls,
+            begin_sleep=begin_sleep,
+            show_queued_cfg=show_queued_cfg,
+        )
 
     @check_connect
     def configure(self, events=_CONFIG_VAL, duration=_CONFIG_VAL,
@@ -1017,12 +1019,17 @@ class DaqLCLS1(Daq):
             raise StateTransitionError(err)
 
         self._check_duration(duration)
-        old = self.read_configuration()
 
-        self.preconfig(events=events, duration=duration, record=record,
-                       use_l3t=use_l3t, controls=controls,
-                       begin_sleep=begin_sleep, show_queued_cfg=False)
-        config = self.next_config
+        old, new = super().configure(
+            events=events,
+            duration=duration,
+            record=record,
+            use_l3t=use_l3t,
+            controls=controls,
+            begin_sleep=begin_sleep,
+        )
+
+        config = self.config
 
         events = config['events']
         duration = config['duration']
@@ -1041,47 +1048,13 @@ class DaqLCLS1(Daq):
             logger.debug('Daq.control.configure(%s)',
                          config_args)
             self._control.configure(**config_args)
-            # self._config should reflect exactly the arguments to configure,
-            # this is different than the arguments that pydaq.Control expects
-            self._config = dict(events=events, duration=duration,
-                                record=record, use_l3t=use_l3t,
-                                controls=controls, begin_sleep=begin_sleep)
-            self._update_config_ts()
             self.config_info(header='Daq configured:')
+            self._queue_configure_transition = False
         except Exception as exc:
-            self._config = None
             msg = 'Failed to configure!'
             logger.debug(msg, exc_info=True)
             raise RuntimeError(msg) from exc
-        new = self.read_configuration()
-        self._desired_config = {}
         return old, new
-
-    @property
-    def record(self):
-        """
-        If ``True``, we'll configure the daq to record data. If ``False``, we
-        will configure the daq to not record data.
-
-        Setting this is the equivalent of scheduling a `configure` call to be
-        executed later, e.g. ``configure(record=True)``
-        """
-        return self.next_config['record']
-
-    @record.setter
-    def record(self, record):
-        self.preconfig(record=record)
-
-    def _update_config_ts(self):
-        """
-        Create timestamps and update the ``bluesky`` readback for
-        `read_configuration`
-        """
-        for k, v in self.config.items():
-            old_value = self._config_ts.get(k, {}).get('value')
-            if old_value is None or v != old_value:
-                self._config_ts[k] = dict(value=v,
-                                          timestamp=time.time())
 
     def _config_args(self, record, use_l3t, controls):
         """
@@ -1178,55 +1151,6 @@ class DaqLCLS1(Daq):
                    'use the events argument to specify the length of '
                    'very short runs.')
             raise RuntimeError(msg)
-
-    # TODO see if we can refactor LCLS1 daq to remove these custom handlers
-    def read_configuration(self):
-        """
-        ``bluesky`` interface for checking the current configuration
-
-        Returns
-        -------
-        config: ``dict``
-            Mapping of config key to current configured value and timestamp
-            when it was last set.
-        """
-        logger.debug('Daq.read_configuration()')
-        return self._config_ts.copy()
-
-    def describe_configuration(self):
-        """
-        ``bluesky`` interface for describing how to interpret the configured
-        values
-
-        Returns
-        -------
-        config_desc: ``dict``
-            Mapping of config key to field metadata.
-        """
-        logger.debug('Daq.describe_configuration()')
-        try:
-            controls_shape = [len(self.config['controls']), 2]
-        except (TypeError, RuntimeError, AttributeError):
-            controls_shape = []
-        return dict(events=dict(source='daq_events_in_run',
-                                dtype='number',
-                                shape=[]),
-                    duration=dict(source='daq_run_duration',
-                                  dtype='number',
-                                  shape=[]),
-                    use_l3t=dict(source='daq_use_l3trigger',
-                                 dtype='number',
-                                 shape=[]),
-                    record=dict(source='daq_record_run',
-                                dtype='number',
-                                shape=[]),
-                    controls=dict(source='daq_control_vars',
-                                  dtype='array',
-                                  shape=controls_shape),
-                    begin_sleep=dict(source='daq_begin_sleep',
-                                     dtype='number',
-                                     shape=[]),
-                    )
 
     @property
     def _events(self):
