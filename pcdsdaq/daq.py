@@ -23,6 +23,11 @@ from ophyd.utils import StatusTimeoutError, WaitTimeoutError
 from . import ext_scripts
 from .ami import set_ami_hutch, set_pyami_filter, set_monitor_det
 
+try:
+    from psdaq.control.DaqControl import DaqControl
+except ImportError:
+    DaqControl = None
+
 logger = logging.getLogger(__name__)
 pydaq = None
 
@@ -1293,20 +1298,141 @@ class DaqLCLS1(Daq):
 
 
 class DaqLCLS2(Daq):
-    # Need to add all the config options as components
+    transition_sig = Cpt(
+        Signal,
+        value=None,
+        kind='normal',
+        name='transition',
+    )
+    transition_elapsed_sig = Cpt(
+        Signal,
+        value=None,
+        kind='normal',
+        name='transition_elapsed',
+    )
+    transition_total_sig = Cpt(
+        Signal,
+        value=None,
+        kind='normal',
+        name='transition_total',
+    )
+    config_alias_sig = Cpt(
+        Signal,
+        value=None,
+        kind='normal',
+        name='config_alias',
+    )
+    recording_sig = Cpt(
+        Signal,
+        value=None,
+        kind='normal',
+        name='recording',
+    )
+    bypass_activedet_sig = Cpt(
+        Signal,
+        value=None,
+        kind='normal',
+        name='bypass_activedet',
+    )
+    experiment_name_sig = Cpt(
+        Signal,
+        value=None,
+        kind='normal',
+        name='experiment_name',
+    )
+    run_number_sig = Cpt(
+        Signal,
+        value=None,
+        kind='normal',
+        name='run_number',
+    )
+    last_run_number_sig = Cpt(
+        Signal,
+        value=None,
+        kind='normal',
+        name='last_run_number',
+    )
+    # TODO add all the config options as components
+
+    last_err_sig = Cpt(
+        Signal,
+        value=None,
+        kind='omitted',
+        name='last_err',
+    )
+    last_warning_sig = Cpt(
+        Signal,
+        value=None,
+        kind='omitted',
+        name='last_warning',
+    )
+    last_file_report_sig = Cpt(
+        Signal,
+        value=None,
+        kind='omitted',
+        name='last_file_report',
+    )
+    step_done_sig = Cpt(
+        Signal,
+        value=None,
+        kind='omitted',
+        name='step_done',
+    )
 
     state_enum = None
     requires_configure_transition = {}
 
-    def __init__(self, RE=None, hutch_name=None, platform=None):
-        ...
+    def __init__(self, platform, host, timeout, RE=None, hutch_name=None):
+        if DaqControl is None:
+            raise RuntimeError('psdaq is not installed, cannot use LCLS2 daq')
+        super().__init__(RE=RE, hutch_name=hutch_name, platform=platform)
+        self._control = DaqControl(host=host, platform=platform, timeout=timeout)
+        self._start_monitor_thread()
+
+    def _start_monitor_thread(self):
+        """
+        Monitor the DAQ state in a background thread.
+        """
+        threading.Thread(target=self._monitor_thread, args=()).start()
+
+    def _monitor_thread(self):
+        """
+        Pick up our ZMQ subscription messages, put into our signals.
+        """
+        while not self._destroyed:
+            try:
+                info = self._control.monitorStatus()
+                if info[0] == 'error':
+                    self.last_err_sig.put(info[1])
+                elif info[0] == 'warning':
+                    self.last_warning_sig.put(info[1])
+                elif info[0] == 'fileReport':
+                    self.last_file_report_sig.put(info[1])
+                elif info[0] == 'progress':
+                    self.transition_sig.put(info[1])
+                    self.transition_elapsed_sig.put(info[2])
+                    self.transition_total_sig.put(info[3])
+                elif info[0] == 'step':
+                    self.step_done_sig.put(info[1])
+                else:
+                    # Last case is normal status
+                    self.transition_sig.put(info[0])
+                    self.state_sig.put(info[1])
+                    self.config_alias_sig.put(info[2])
+                    self.recording_sig.put(info[3])
+                    self.bypass_activedet_sig.put(info[4])
+                    self.experiment_name_sig.put(info[5])
+                    self.run_number_sig.put(info[6])
+                    self.last_run_number_sig.put(info[7])
+            except Exception:
+                ...
 
     @property
     def state(self) -> str:
         """
         API to show the state as reported by the DAQ.
         """
-        raise NotImplementedError('Please implement state in subclass.')
+        return self.state_sig.get()
 
     def wait(
         self,
@@ -1316,6 +1442,9 @@ class DaqLCLS2(Daq):
         """
         Pause the thread until the DAQ is done aquiring.
 
+        The DAQ is done acquiring if the most recent transition was not
+        "BeginRun", "BeginStep", or "Enable".
+
         Parameters
         ----------
         timeout: ``float``, optional
@@ -1323,7 +1452,25 @@ class DaqLCLS2(Daq):
         end_run: ``bool``, optional
             If ``True``, end the run after we're done waiting.
         """
-        raise NotImplementedError('Please implement wait in subclass.')
+        # TODO check if this idea is correct
+        def check_transition(value, **kwargs):
+            if value not in ("BeginRun", "BeginStep", "Enable", None):
+                ev.set()
+                self.transition_sig.unsubscribe(cbid)
+
+        if timeout is not None:
+            timeout=float(timeout)
+        ev = threading.event()
+        ok = False
+        try:
+            cbid = self.transition_sig.subscribe(check_transition, run=True)
+            ok = ev.wait(timeout)
+        finally:
+            self.transition_sig.unsubscribe(cbid)
+        if not ok:
+            raise DaqTimeoutError(
+                'DAQ did not finish within {timeout} seconds!'
+            )
 
     def begin_infinite(self):
         raise NotImplementedError(
@@ -1340,13 +1487,15 @@ class DaqLCLS2(Daq):
             Flag set by bluesky to signify whether this was a good stop or a
             bad stop. Currently unused.
         """
-        raise NotImplementedError('Please implement stop in subclass.')
+        if self.state in ('Paused', 'Running'):
+            self._control.setTransition('EndStep')
 
     def end_run(self) -> None:
         """
         Call `stop`, then mark the run as finished.
         """
-        raise NotImplementedError('Please implement end_run in subclass.')
+        if self.state in ('Starting', 'Paused', 'Running'):
+            self._control.setTransition('EndRun')
 
     def trigger(self) -> Status:
         """
@@ -1381,7 +1530,42 @@ class DaqLCLS2(Daq):
         ready_status: ``Status``
             ``Status`` that will be marked as done when the daq has begun.
         """
-        raise NotImplementedError('Please implement kickoff in subclass.')
+        if self.state in ('Reset', 'Unallocated', 'Allocated'):
+            raise RuntimeError('DAQ is not ready to run!')
+        if self.state == 'Running':
+            raise RuntimeError('DAQ is already running!')
+        phase1_info = {}
+        data = {
+            'motors': self._get_motors_for_configure(),
+            'timestamp': 0,
+            'detname': self.detname_sig.get(),
+            'dettype': 'scan',
+            'scantype': self.scan_type_sig.get(),
+            'serial_number': 1234,
+            'alg_name': 'raw',
+            'alg_version': [1, 0, 0],
+        },
+        if self.state == 'Connected':
+            # Add info for the Configure transition
+            phase1_info['configure'] = {
+                'NamesBlockHex': self._getBlock(
+                    transition='Configure',
+                    data=data,
+                ),
+            }
+        if self.state in ('Connected', 'Configured', 'Starting'):
+            # Add info for the BeginStep transition
+            phase1_info['beginstep'] = {
+                'ShapesDataBlockHex': self._getBlock(
+                    transition='BeginStep',
+                    data=data,
+                ),
+            }
+        # TODO make a transition to running status here
+        self._control.setState('Running', phase1_info)
+        # TODO return the status here
+        # TODO maybe we need a "get status of transition or state" method
+
 
     def complete(self) -> Status:
         """
