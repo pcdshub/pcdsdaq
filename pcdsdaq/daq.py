@@ -484,11 +484,11 @@ class Daq(Device):
         if self.state == 'Open':
             self.begin()
 
-    def run_number(self, hutch_name=None):
-        ... # TODO determine how to handle this one
-        # LCLS1 uses an external script to get the run number because
-        # the pydaq implementation does not work if done during a run
-        # LCLS2 might have a better way
+    def run_number(self) -> int:
+        """
+        Return the number of the current run, or the previous run otherwise.
+        """
+        raise NotImplementedError('Please implement run_number in subclass.')
 
 
 class DaqLCLS1(Daq):
@@ -1433,9 +1433,7 @@ class DaqLCLS2(Daq):
         name='step_done',
     )
 
-    requires_configure_transition = {}
-    all_transitions = set() # TODO fill this in
-    _infinite_run: bool
+    requires_configure_transition = {'record'}
 
     def __init__(self, platform, host, timeout, RE=None, hutch_name=None):
         if DaqControl is None:
@@ -1445,7 +1443,6 @@ class DaqLCLS2(Daq):
         self.transition_sig.put(self.transition_enum.from_any('reset'))
         self.group_mask_cfg.put(1 << platform)
         self._control = DaqControl(host=host, platform=platform, timeout=timeout)
-        self._infinite_run = False
         self._start_monitor_thread()
 
     @property
@@ -1509,6 +1506,8 @@ class DaqLCLS2(Daq):
 
         The LCLS2 DAQ is considered configured based on the state machine.
         """
+        # TODO identify when from_any is not appropriate and fix
+        # (use only for public API)
         self.configured_sig.put(
             value >= self.state_enum.from_any('configured')
         )
@@ -1535,7 +1534,7 @@ class DaqLCLS2(Daq):
         end_run: ``bool``, optional
             If ``True``, end the run after we're done waiting.
         """
-        done_status = self.get_done_status(timeout=timeout)
+        done_status = self.get_done_status(timeout=timeout, check_now=True)
         done_status.wait()
         if end_run:
             self.end_run()
@@ -1617,8 +1616,11 @@ class DaqLCLS2(Daq):
         status.add_callback(clean_up)
         return status
 
-
-    def get_done_status(self, timeout: Optional[float] = None):
+    def get_done_status(
+        self,
+        timeout: Optional[float] = None,
+        check_now: bool = True,
+    ):
         """
         The DAQ is done acquiring if the most recent transition was not
         "beginrun", "beginstep", or "enable".
@@ -1628,7 +1630,7 @@ class DaqLCLS2(Daq):
                 ['beginrun', 'beginstep', 'enable']
             ),
             timeout=timeout,
-            check_now=True,
+            check_now=check_now,
         )
 
     def state_transition(
@@ -1680,17 +1682,32 @@ class DaqLCLS2(Daq):
                     data=data,
                 ),
             }
+        if (
+            self.state_sig.get()
+            < self.state_enum.from_any('running')
+            <= state
+        ):
+            # enable transition:
+            phase1_info['enable'] = {
+                'readout_count': self.events_cfg.get() or 0,
+                'group_mask': self.group_mask_cfg.get(),
+            }
         status = self.get_status_for(
             state=[state],
             timeout=timeout,
         )
         threading.Thread(
-            self._control.setState,
+            self._transition_thread,
             args=(state.name, phase1_info),
         ).start()
         if wait:
             status.wait()
         return status
+
+    def _transition_thread(self):
+        raise NotImplementedError(
+            'Have not done this one yet'
+        )
 
     def _get_motors_for_configure(self):
         raise NotImplementedError(
@@ -1701,12 +1718,28 @@ class DaqLCLS2(Daq):
         raise NotImplementedError(
             'Have not done this one yet'
         )
-        
+    
+    def begin(self, wait: bool = False, end_run: bool = False, **kwargs):
+        original_config = self.config
+        self.preconfig(show_queued_cfg=False, **kwargs)
+        if wait or end_run:
+            status = self.get_done_status(check_now=False)
+            if end_run:
+                status.add_callback(self._end_run_callback)
+        self.kickoff()
+        if wait:
+            status.wait()
+        self.preconfig(show_queued_cfg=False, **original_config)
+
+    def _end_run_callback(self, status):
+        self.end_run()
+
     def begin_infinite(self):
-        raise NotImplementedError(
-            'Please implement begin_infinite in subclass.'
-        )
-        self._infinite_run = True
+        self.begin(events=0)
+
+    @property
+    def _infinite_run(self):
+        return self.events_cfg.get() == 0
 
     def stop(self, success: bool = False) -> None:
         """
@@ -1772,7 +1805,6 @@ class DaqLCLS2(Daq):
             raise RuntimeError('DAQ is not ready to run!')
         if self.state_sig.get() == self.state_enum.from_any('running'):
             raise RuntimeError('DAQ is already running!')
-        time.sleep(self.begin_sleep_cfg.get())
         return self.state_transition(
             'running',
             timeout=self.begin_timeout_cfg.get(),
@@ -1790,7 +1822,7 @@ class DaqLCLS2(Daq):
             ``Status`` that will be marked as done when the DAQ has finished
             acquiring
         """
-        done_status = self.get_done_status()
+        done_status = self.get_done_status(check_now=True)
         if self._infinite_run:
             # Configured to run forever
             self.stop()
@@ -1827,6 +1859,7 @@ class DaqLCLS2(Daq):
             alg_name=alg_name,
             alg_version=alg_version,
         )
+        # TODO don't configure if we changed and changed back
         if self._queue_configure_transition:
             if self.state_sig.get() < self.state_enum.from_any('connected'):
                 raise RuntimeError('Not ready to configure.')
