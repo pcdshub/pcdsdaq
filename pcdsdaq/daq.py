@@ -873,7 +873,7 @@ class DaqLCLS1(Daq):
     def complete(self):
         """
         If the daq is freely running, this will `stop` the daq.
-        Otherwise, we'll simply collect the end_status object.
+        Otherwise, we'll simply return the end_status object.
 
         Returns
         -------
@@ -1398,6 +1398,7 @@ class DaqLCLS2(Daq):
 
     requires_configure_transition = {}
     all_transitions = set() # TODO fill this in
+    _infinite_run: bool
 
     def __init__(self, platform, host, timeout, RE=None, hutch_name=None):
         if DaqControl is None:
@@ -1406,6 +1407,7 @@ class DaqLCLS2(Daq):
         self.state_sig.put(self.state_enum.from_any('reset'))
         self.transition_sig.put(self.transition_enum.from_any('reset'))
         self._control = DaqControl(host=host, platform=platform, timeout=timeout)
+        self._infinite_run = False
         self._start_monitor_thread()
 
     @property
@@ -1591,11 +1593,11 @@ class DaqLCLS2(Daq):
             check_now=True,
         )
 
-
     def begin_infinite(self):
         raise NotImplementedError(
             'Please implement begin_infinite in subclass.'
         )
+        self._infinite_run = True
 
     def stop(self, success: bool = False) -> None:
         """
@@ -1707,7 +1709,7 @@ class DaqLCLS2(Daq):
     def complete(self) -> Status:
         """
         If the daq is freely running, this will `stop` the daq.
-        Otherwise, we'll simply collect the end_status object.
+        Otherwise, we'll simply return the end_status object.
 
         Returns
         -------
@@ -1715,7 +1717,11 @@ class DaqLCLS2(Daq):
             ``Status`` that will be marked as done when the DAQ has finished
             acquiring
         """
-        raise NotImplementedError('Please implement complete in subclass.')
+        done_status = self.get_done_status()
+        if self._infinite_run:
+            # Configured to run forever
+            self.stop()
+        return done_status
 
     def configure(self):
         ...
