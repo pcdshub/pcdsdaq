@@ -123,7 +123,6 @@ class Daq(Device):
         register_daq(self)
 
     # Convenience properties
-    # TODO handle configured correctly
     @property
     def configured(self) -> bool:
         """
@@ -610,6 +609,7 @@ class DaqLCLS1(Daq):
         del self._control
         self._control = None
         self.preconfig(**self.default_config)
+        self.configured_sig.put(False)
         logger.info('DAQ is disconnected.')
 
     @check_connect
@@ -1061,6 +1061,7 @@ class DaqLCLS1(Daq):
             self._control.configure(**config_args)
             self.config_info(header='Daq configured:')
             self._queue_configure_transition = False
+            self.configred_sig.put(True)
         except Exception as exc:
             msg = 'Failed to configure!'
             logger.debug(msg, exc_info=True)
@@ -1304,6 +1305,12 @@ class DaqLCLS1(Daq):
 
 
 class DaqLCLS2(Daq):
+    state_sig = Cpt(
+        Signal,
+        value=None,
+        kind='normal',
+        name='state',
+    )
     transition_sig = Cpt(
         Signal,
         value=None,
@@ -1433,6 +1440,17 @@ class DaqLCLS2(Daq):
                     self.last_run_number_sig.put(info[7])
             except Exception:
                 ...
+
+    @state_sig.sub_value
+    def _configured_cb(self, value, **kwargs):
+        """
+        Callback on the state signal to update the configured signal.
+
+        The LCLS2 DAQ is considered configured based on the state machine.
+        """
+        self.configured_sig.put(
+            value in ("Configured", "Starting", "Paused", "Running")
+        )
 
     @property
     def state(self) -> str:
