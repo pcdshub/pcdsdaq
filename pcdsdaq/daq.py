@@ -100,7 +100,12 @@ class Daq(Device):
     state_enum: ClassVar[Enum]
     requires_configure_transition: ClassVar[set[str]]
 
-    # TODO init type hints
+    # Variables from init
+    _RE: Optional[RunEngine]
+    hutch_name: Optional[str]
+    platform: Optional[int]
+    _queue_configure_transition: bool
+
 
     def __init__(
         self,
