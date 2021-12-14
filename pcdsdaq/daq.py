@@ -17,8 +17,9 @@ from bluesky import RunEngine
 from ophyd.device import Component as Cpt, Device
 from ophyd.ophydobj import Kind
 from ophyd.signal import AttributeSignal, Signal
-from ophyd.status import Status
+from ophyd.status import DeviceStatus, Status
 from ophyd.utils import StatusTimeoutError, WaitTimeoutError
+from ophyd.utils.errors import InvalidState
 
 from . import ext_scripts
 from .ami import set_ami_hutch, set_pyami_filter, set_monitor_det
@@ -1381,6 +1382,7 @@ class DaqLCLS2(Daq):
 
     state_enum = None
     requires_configure_transition = {}
+    all_transitions = set() # TODO fill this in
 
     def __init__(self, platform, host, timeout, RE=None, hutch_name=None):
         if DaqControl is None:
@@ -1442,9 +1444,6 @@ class DaqLCLS2(Daq):
         """
         Pause the thread until the DAQ is done aquiring.
 
-        The DAQ is done acquiring if the most recent transition was not
-        "BeginRun", "BeginStep", or "Enable".
-
         Parameters
         ----------
         timeout: ``float``, optional
@@ -1452,25 +1451,88 @@ class DaqLCLS2(Daq):
         end_run: ``bool``, optional
             If ``True``, end the run after we're done waiting.
         """
-        # TODO check if this idea is correct
-        def check_transition(value, **kwargs):
-            if value not in ("BeginRun", "BeginStep", "Enable", None):
-                ev.set()
-                self.transition_sig.unsubscribe(cbid)
+        done_status = self.get_done_status(timeout=timeout)
+        done_status.wait()
+        if end_run:
+            self.end_run()
 
-        if timeout is not None:
-            timeout=float(timeout)
-        ev = threading.event()
-        ok = False
-        try:
-            cbid = self.transition_sig.subscribe(check_transition, run=True)
-            ok = ev.wait(timeout)
-        finally:
-            self.transition_sig.unsubscribe(cbid)
-        if not ok:
-            raise DaqTimeoutError(
-                'DAQ did not finish within {timeout} seconds!'
-            )
+    def get_status_for(
+        self,
+        state: Optional[list[str]] = None,
+        transition: Optional[list[str]] = None,
+        timeout: Optional[float] = None,
+    ):
+        """
+        Return a status object for DAQ state transitions.
+
+        This status object will be marked done when we're at the given state
+        or when we're doing the given transition, if either state or
+        transition was given.
+
+        If both state and transition are given, then we need to arrive at
+        the given state using the given transition to mark the status as
+        done.
+
+        State and transition are both lists so we can check for multiple
+        states.
+        """
+        if state is None:
+            state = [None]
+        if transition is None:
+            transition = [None]
+
+        def check_state(value, **kwargs):
+            nonlocal last_state
+            with lock:
+                if value in state and last_transition in transition:
+                    success()
+                else:
+                    last_state = value
+
+        def check_transition(value, **kwargs):
+            nonlocal last_transition
+            with lock:
+                if value in transition and last_state in state:
+                    success()
+                else:
+                    last_transition = value
+
+        def success():
+            try:
+                status.set_finished()
+            except InvalidState:
+                ...
+
+        def clean_up(status):
+            self.state_sig.unsubscribe(state_cbid)
+            self.transition_sig.unsubscribe(transition_cbid)
+
+        last_state = None
+        last_transition = None
+        lock = threading.Lock()
+        state_cbid = self.state_sig.subscribe(
+            check_state,
+            run=True,
+        )
+        transition_cbid = self.transition_sig.subscribe(
+            check_transition,
+            run=True,
+        )
+        status = DeviceStatus(self, timeout=timeout)
+        status.add_callback(clean_up)
+        return status
+
+
+    def get_done_status(self, timeout: Optional[float] = None):
+        """
+        The DAQ is done acquiring if the most recent transition was not
+        "BeginRun", "BeginStep", or "Enable".
+        """
+        return self.get_status_for(
+            transition=self.all_transitions - ["BeginRun", "BeginStep", "Enable"],
+            timeout=timeout,
+        )
+
 
     def begin_infinite(self):
         raise NotImplementedError(
@@ -1512,7 +1574,8 @@ class DaqLCLS2(Daq):
         done_status: ``Status``
             ``Status`` that will be marked as done when the daq has begun.
         """
-        raise NotImplementedError('Please implement trigger in subclass.')
+        self.kickoff().wait()
+        return self.get_done_status()
 
     def kickoff(self) -> Status:
         """
@@ -1535,6 +1598,7 @@ class DaqLCLS2(Daq):
         if self.state == 'Running':
             raise RuntimeError('DAQ is already running!')
         phase1_info = {}
+        # TODO where do I put the events per step
         data = {
             'motors': self._get_motors_for_configure(),
             'timestamp': 0,
@@ -1561,10 +1625,9 @@ class DaqLCLS2(Daq):
                     data=data,
                 ),
             }
-        # TODO make a transition to running status here
+        status = self.get_status_for(state=['Running'])
         self._control.setState('Running', phase1_info)
-        # TODO return the status here
-        # TODO maybe we need a "get status of transition or state" method
+        return status
 
 
     def complete(self) -> Status:
