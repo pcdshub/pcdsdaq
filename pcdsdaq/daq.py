@@ -1,16 +1,18 @@
 """
 This module defines a control interface for the LCLS1 DAQ.
 """
+from __future__ import annotations
+
 import enum
 import functools
 import logging
 import os
 import time
 import threading
-from enum import Enum
+from enum import Enum, IntEnum
 from functools import cache
 from importlib import import_module
-from typing import Any, ClassVar, Optional
+from typing import Any, ClassVar, Iterator, Optional, Type
 
 from bluesky import RunEngine
 
@@ -26,8 +28,10 @@ from .ami import set_ami_hutch, set_pyami_filter, set_monitor_det
 
 try:
     from psdaq.control.DaqControl import DaqControl
+    from psdaq.control.ControlDef import ControlDef
 except ImportError:
     DaqControl = None
+    ControlDef = None
 
 logger = logging.getLogger(__name__)
 pydaq = None
@@ -1392,7 +1396,6 @@ class DaqLCLS2(Daq):
         name='step_done',
     )
 
-    state_enum = None
     requires_configure_transition = {}
     all_transitions = set() # TODO fill this in
 
@@ -1400,8 +1403,20 @@ class DaqLCLS2(Daq):
         if DaqControl is None:
             raise RuntimeError('psdaq is not installed, cannot use LCLS2 daq')
         super().__init__(RE=RE, hutch_name=hutch_name, platform=platform)
+        self.state_sig.put(self.state_enum.from_any('reset'))
+        self.transition_sig.put(self.transition_enum.from_any('reset'))
         self._control = DaqControl(host=host, platform=platform, timeout=timeout)
         self._start_monitor_thread()
+
+    @property
+    @cache
+    def state_enum(self) -> Type[HelpfulIntEnum]:
+        return HelpfulIntEnum('PsdaqState', ControlDef.states)
+
+    @property
+    @cache
+    def transition_enum(self) -> Type[HelpfulIntEnum]:
+        return HelpfulIntEnum('PsdaqTransition', ControlDef.transitions)
 
     def _start_monitor_thread(self):
         """
@@ -1423,15 +1438,21 @@ class DaqLCLS2(Daq):
                 elif info[0] == 'fileReport':
                     self.last_file_report_sig.put(info[1])
                 elif info[0] == 'progress':
-                    self.transition_sig.put(info[1])
+                    self.transition_sig.put(
+                        self.transition_enum.from_any(self.info[1])
+                    )
                     self.transition_elapsed_sig.put(info[2])
                     self.transition_total_sig.put(info[3])
                 elif info[0] == 'step':
                     self.step_done_sig.put(info[1])
                 else:
                     # Last case is normal status
-                    self.transition_sig.put(info[0])
-                    self.state_sig.put(info[1])
+                    self.transition_sig.put(
+                        self.transition_enum.from_any(info[0])
+                    )
+                    self.state_sig.put(
+                        self.state_enum.from_any(info[1])
+                    )
                     self.config_alias_sig.put(info[2])
                     self.recording_sig.put(info[3])
                     self.bypass_activedet_sig.put(info[4])
@@ -1449,7 +1470,7 @@ class DaqLCLS2(Daq):
         The LCLS2 DAQ is considered configured based on the state machine.
         """
         self.configured_sig.put(
-            value in ("Configured", "Starting", "Paused", "Running")
+            value >= self.state_enum.from_any('configured')
         )
 
     @property
@@ -1457,7 +1478,7 @@ class DaqLCLS2(Daq):
         """
         API to show the state as reported by the DAQ.
         """
-        return self.state_sig.get()
+        return self.state_sig.get().name
 
     def wait(
         self,
@@ -1481,9 +1502,10 @@ class DaqLCLS2(Daq):
 
     def get_status_for(
         self,
-        state: Optional[list[str]] = None,
-        transition: Optional[list[str]] = None,
+        state: Optional[Iterator[Any]] = None,
+        transition: Optional[Iterator[Any]] = None,
         timeout: Optional[float] = None,
+        check_now: bool = True,
     ):
         """
         Return a status object for DAQ state transitions.
@@ -1500,20 +1522,30 @@ class DaqLCLS2(Daq):
         states.
         """
         if state is None:
-            state = [None]
+            state = {None}
+        else:
+            state = {self.state_enum.from_any(s) for s in state}
         if transition is None:
-            transition = [None]
+            transition = {None}
+        else:
+            transition = {
+                self.transition_enum.from_any(t) for t in transition
+            }
 
-        def check_state(value, **kwargs):
+        def check_state(value, old_value, **kwargs):
             nonlocal last_state
+            if value == old_value and not check_now:
+                return
             with lock:
                 if value in state and last_transition in transition:
                     success()
                 else:
                     last_state = value
 
-        def check_transition(value, **kwargs):
+        def check_transition(value, old_value, **kwargs):
             nonlocal last_transition
+            if value == old_value and not check_now:
+                return
             with lock:
                 if value in transition and last_state in state:
                     success()
@@ -1533,15 +1565,15 @@ class DaqLCLS2(Daq):
         last_state = None
         last_transition = None
         lock = threading.Lock()
+        status = DeviceStatus(self, timeout=timeout)
         state_cbid = self.state_sig.subscribe(
             check_state,
-            run=True,
+            run=check_now,
         )
         transition_cbid = self.transition_sig.subscribe(
             check_transition,
-            run=True,
+            run=check_now,
         )
-        status = DeviceStatus(self, timeout=timeout)
         status.add_callback(clean_up)
         return status
 
@@ -1549,11 +1581,14 @@ class DaqLCLS2(Daq):
     def get_done_status(self, timeout: Optional[float] = None):
         """
         The DAQ is done acquiring if the most recent transition was not
-        "BeginRun", "BeginStep", or "Enable".
+        "beginrun", "beginstep", or "enable".
         """
         return self.get_status_for(
-            transition=self.all_transitions - ["BeginRun", "BeginStep", "Enable"],
+            transition=self.transition_enum.exclude(
+                ['beginrun', 'beginstep', 'enable']
+            ),
             timeout=timeout,
+            check_now=True,
         )
 
 
@@ -1572,15 +1607,19 @@ class DaqLCLS2(Daq):
             Flag set by bluesky to signify whether this was a good stop or a
             bad stop. Currently unused.
         """
-        if self.state in ('Paused', 'Running'):
-            self._control.setTransition('EndStep')
+        if self.state_sig.get() in self.state_enum.include(
+            ['paused', 'running']
+        ):
+            self._control.setTransition('endstep')
 
     def end_run(self) -> None:
         """
         Call `stop`, then mark the run as finished.
         """
-        if self.state in ('Starting', 'Paused', 'Running'):
-            self._control.setTransition('EndRun')
+        if self.state_sig.get() in self.state_enum.include(
+            ['starting', 'paused', 'running']
+        ):
+            self._control.setTransition('endrun')
 
     def trigger(self) -> Status:
         """
@@ -1595,10 +1634,16 @@ class DaqLCLS2(Daq):
         Returns
         -------
         done_status: ``Status``
-            ``Status`` that will be marked as done when the daq has begun.
+            ``Status`` that will be marked as done when the daq is done.
         """
-        self.kickoff().wait()
-        return self.get_done_status()
+        status = self.get_status_for(
+            state=['starting'],
+            transition=['endstep'],
+            check_now=False,
+            timeout=self.begin_timeout_cfg.get(),
+        )
+        self.kickoff()
+        return status
 
     def kickoff(self) -> Status:
         """
@@ -1616,9 +1661,9 @@ class DaqLCLS2(Daq):
         ready_status: ``Status``
             ``Status`` that will be marked as done when the daq has begun.
         """
-        if self.state in ('Reset', 'Unallocated', 'Allocated'):
+        if self.state_sig.get() < self.state_enum.from_any('connected'):
             raise RuntimeError('DAQ is not ready to run!')
-        if self.state == 'Running':
+        if self.state_sig.get() == self.state_enum.from_any('running'):
             raise RuntimeError('DAQ is already running!')
         phase1_info = {}
         # TODO where do I put the events per step
@@ -1632,7 +1677,7 @@ class DaqLCLS2(Daq):
             'alg_name': 'raw',
             'alg_version': [1, 0, 0],
         },
-        if self.state == 'Connected':
+        if self.state_cfg.get() == self.state_enum.from_any('connected'):
             # Add info for the Configure transition
             phase1_info['configure'] = {
                 'NamesBlockHex': self._getBlock(
@@ -1640,7 +1685,9 @@ class DaqLCLS2(Daq):
                     data=data,
                 ),
             }
-        if self.state in ('Connected', 'Configured', 'Starting'):
+        if self.state_cfg.get() in self.state_enum.include(
+            ['connected', 'configured', 'starting']
+        ):
             # Add info for the BeginStep transition
             phase1_info['beginstep'] = {
                 'ShapesDataBlockHex': self._getBlock(
@@ -1648,9 +1695,12 @@ class DaqLCLS2(Daq):
                     data=data,
                 ),
             }
-        status = self.get_status_for(state=['Running'])
+        status = self.get_status_for(
+            state=['running'],
+            timeout=self.begin_timeout_cfg.get(),
+        )
         # TODO handle state transitions in background thread to not block
-        self._control.setState('Running', phase1_info)
+        self._control.setState('running', phase1_info)
         return status
 
 
@@ -1678,6 +1728,36 @@ class DaqLCLS2(Daq):
 
     def run_number(self):
         ...
+
+
+# TODO replace Any with the correct type hint, here and elsewhere
+class HelpfulIntEnum(IntEnum):
+    def from_any(self, identifier: Any) -> Type[HelpfulIntEnum]:
+        """
+        Try all the ways to interpret identifier as the enum
+        """
+        try:
+            return self[identifier]
+        except KeyError:
+            return self(identifier)
+
+    def include(
+        self,
+        identifiers: Iterator[Any],
+    ) -> set[Type[HelpfulIntEnum]]:
+        """
+        Return all enum values matching the ones given.
+        """
+        return {self.from_any(ident) for ident in identifiers}
+
+    def exclude(
+        self,
+        identifiers: Iterator[Any],
+    ) -> set[Type[HelpfulIntEnum]]:
+        """
+        Return all enum values other than the ones given.
+        """
+        return set(self.__members__.values()) - self.include(identifiers)
 
 
 class StateTransitionError(Exception):
