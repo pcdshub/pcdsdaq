@@ -1733,7 +1733,10 @@ class DaqLCLS2(Daq):
         ...
 
     def run_number(self):
-        ...
+        """
+        Determine the run number of the last run, or current run if running.
+        """
+        return self.run_number_sig.get()
 
 
 # TODO replace Any with the correct type hint, here and elsewhere
