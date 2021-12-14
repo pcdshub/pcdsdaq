@@ -109,6 +109,7 @@ class Daq(Device):
     _RE: Optional[RunEngine]
     hutch_name: Optional[str]
     platform: Optional[int]
+    _last_config: dict[str, Any]
     _queue_configure_transition: bool
 
 
@@ -123,6 +124,7 @@ class Daq(Device):
         self._RE = RE
         self.hutch_name = hutch_name
         self.platform = platform
+        self._last_config = {}
         self._queue_configure_transition = True
         super().__init__(name=name)
         register_daq(self)
@@ -354,8 +356,15 @@ class Daq(Device):
                 raise ValueError(
                     f'{key} is not a config parameter!'
                 )
-            if key in self.requires_configure_transition:
-                self._queue_configure_transition = True
+
+        if self._last_config:
+            self._queue_configure_transition = False
+            for key in self.requires_configure_transition:
+                if self.config[key] != self._last_config[key]:
+                    self._queue_configure_transition = True
+                    break
+        else:
+            self._queue_configure_transition = True
 
         if show_queued_cfg:
             self.config_info(self.config, 'Queued config:')
@@ -456,10 +465,10 @@ class Daq(Device):
             self._RE.unsubscribe(self._re_cbid)
             self._re_cbid = None
         # If we're still running, end now
-        if self.state in ('Open', 'Running'):
+        if self.state in ('Open', 'Running', 'running'):
             self.end_run()
         # Return to running if we already were (to keep AMI running)
-        if self._pre_run_state == 'Running':
+        if self._pre_run_state in ('Running', 'running'):
             self.begin_infinite()
         # For other states, end_run was sufficient.
         # E.g. do not disconnect, or this would close the open plots!
@@ -1065,6 +1074,7 @@ class DaqLCLS1(Daq):
                          config_args)
             self._control.configure(**config_args)
             self.config_info(header='Daq configured:')
+            self._last_config = self.config
             self._queue_configure_transition = False
             self.configred_sig.put(True)
         except Exception as exc:
@@ -1853,7 +1863,6 @@ class DaqLCLS2(Daq):
             alg_name=alg_name,
             alg_version=alg_version,
         )
-        # TODO don't configure if we changed and changed back
         if self._queue_configure_transition:
             if self.state_sig.get() < self.state_enum.from_any('connected'):
                 raise RuntimeError('Not ready to configure.')
@@ -1865,14 +1874,9 @@ class DaqLCLS2(Daq):
                 # Already configured, so we should unconfigure first
                 self.state_transition('connected', wait=True)
             self.state_transition('configured', wait=True)
+            self._last_config = self.config
             self._queue_configure_transition = False
         return old, new
-
-    def stage(self):
-        ...
-
-    def unstage(self):
-        ...
 
     def run_number(self):
         """
