@@ -1626,6 +1626,7 @@ class DaqLCLS2(Daq):
                 ),
             }
         status = self.get_status_for(state=['Running'])
+        # TODO handle state transitions in background thread to not block
         self._control.setState('Running', phase1_info)
         return status
 
