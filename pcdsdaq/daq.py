@@ -12,12 +12,13 @@ import threading
 from enum import Enum, IntEnum
 from functools import cache
 from importlib import import_module
-from typing import Any, ClassVar, Iterator, Optional, Type
+from typing import Any, ClassVar, Iterator, Optional, Type, Union
 
 from bluesky import RunEngine
 
 from ophyd.device import Component as Cpt, Device
 from ophyd.ophydobj import Kind
+from ophyd.positioner import PositionerBase
 from ophyd.signal import AttributeSignal, Signal
 from ophyd.status import DeviceStatus, Status
 from ophyd.utils import StatusTimeoutError, WaitTimeoutError
@@ -1369,7 +1370,43 @@ class DaqLCLS2(Daq):
         kind='normal',
         name='last_run_number',
     )
-    # TODO add all the config options as components
+
+    group_mask_cfg = Cpt(
+        Signal,
+        value=None,
+        kind='config',
+        name='group_mask',
+    )
+    detname_cfg = Cpt(
+        Signal,
+        value='scan',
+        kind='config',
+        name='detname',
+    )
+    scantype_cfg = Cpt(
+        Signal,
+        value='scan',
+        kind='config',
+        name='scantype',
+    )
+    serial_number_cfg = Cpt(
+        Signal,
+        value='1234',
+        kind='config',
+        name='serial_number',
+    )
+    alg_name_cfg = Cpt(
+        Signal,
+        value='raw',
+        kind='config',
+        name='alg_name',
+    )
+    alg_version_cfg = Cpt(
+        Signal,
+        value=[1, 0, 0],
+        kind='config',
+        name='alg_version_cfg',
+    )
 
     last_err_sig = Cpt(
         Signal,
@@ -1406,6 +1443,7 @@ class DaqLCLS2(Daq):
         super().__init__(RE=RE, hutch_name=hutch_name, platform=platform)
         self.state_sig.put(self.state_enum.from_any('reset'))
         self.transition_sig.put(self.transition_enum.from_any('reset'))
+        self.group_mask_cfg.put(1 << platform)
         self._control = DaqControl(host=host, platform=platform, timeout=timeout)
         self._infinite_run = False
         self._start_monitor_thread()
@@ -1593,6 +1631,77 @@ class DaqLCLS2(Daq):
             check_now=True,
         )
 
+    def state_transition(
+        self,
+        state: Any,
+        timeout: Optional[float] = None,
+        wait: bool = True,
+    ) -> DeviceStatus:
+        """
+        Undergo a daq state transition appropriately.
+
+        This passes extra data if we need to do the 'configure' or 'beginstep'
+        transitions.
+        """
+        state = self.state_enum.from_any(state)
+        phase1_info = {}
+        # TODO where do the other config values go?
+        data = {
+            'motors': self._get_motors_for_configure(),
+            'timestamp': 0,
+            'detname': self.detname_cfg.get(),
+            'dettype': 'scan',
+            'scantype': self.scan_type_sig.get(),
+            'serial_number': self.serial_number_cfg.get(),
+            'alg_name': self.alg_name_cfg.get(),
+            'alg_version': self.alg_version_cfg.get(),
+        },
+        if (
+            self.state_sig.get()
+            < self.state_enum.from_any('configure')
+            <= state
+        ):
+            # configure transition
+            phase1_info['configure'] = {
+                'NamesBlockHex': self._getBlock(
+                    transition='Configure',
+                    data=data,
+                ),
+            }
+        if (
+            self.state_sig.get()
+            < self.state_enum.from_any('starting')
+            <= state
+        ):
+            # beginstep transition 
+            phase1_info['beginstep'] = {
+                'ShapesDataBlockHex': self._getBlock(
+                    transition='BeginStep',
+                    data=data,
+                ),
+            }
+        status = self.get_status_for(
+            state=[state],
+            timeout=timeout,
+        )
+        threading.Thread(
+            self._control.setState,
+            args=(state.name, phase1_info),
+        ).start()
+        if wait:
+            status.wait()
+        return status
+
+    def _get_motors_for_configure(self):
+        raise NotImplementedError(
+            'Have not done this one yet'
+        )
+
+    def _get_block(self, transition, data):
+        raise NotImplementedError(
+            'Have not done this one yet'
+        )
+        
     def begin_infinite(self):
         raise NotImplementedError(
             'Please implement begin_infinite in subclass.'
@@ -1609,19 +1718,15 @@ class DaqLCLS2(Daq):
             Flag set by bluesky to signify whether this was a good stop or a
             bad stop. Currently unused.
         """
-        if self.state_sig.get() in self.state_enum.include(
-            ['paused', 'running']
-        ):
-            self._control.setTransition('endstep')
+        if self.state_sig.get() > self.state_enum.from_any('starting'):
+            self.state_transition('starting', wait=False)
 
     def end_run(self) -> None:
         """
         Call `stop`, then mark the run as finished.
         """
-        if self.state_sig.get() in self.state_enum.include(
-            ['starting', 'paused', 'running']
-        ):
-            self._control.setTransition('endrun')
+        if self.state_sig.get() > self.state_enum.from_any('configured'):
+            self.state_transition('configured', wait=False)
 
     def trigger(self) -> Status:
         """
@@ -1647,7 +1752,7 @@ class DaqLCLS2(Daq):
         self.kickoff()
         return status
 
-    def kickoff(self) -> Status:
+    def kickoff(self) -> DeviceStatus:
         """
         Begin acquisition. This method is non-blocking.
         See `begin` for a description of the parameters.
@@ -1667,46 +1772,14 @@ class DaqLCLS2(Daq):
             raise RuntimeError('DAQ is not ready to run!')
         if self.state_sig.get() == self.state_enum.from_any('running'):
             raise RuntimeError('DAQ is already running!')
-        phase1_info = {}
-        # TODO where do I put the events per step
-        data = {
-            'motors': self._get_motors_for_configure(),
-            'timestamp': 0,
-            'detname': self.detname_sig.get(),
-            'dettype': 'scan',
-            'scantype': self.scan_type_sig.get(),
-            'serial_number': 1234,
-            'alg_name': 'raw',
-            'alg_version': [1, 0, 0],
-        },
-        if self.state_cfg.get() == self.state_enum.from_any('connected'):
-            # Add info for the Configure transition
-            phase1_info['configure'] = {
-                'NamesBlockHex': self._getBlock(
-                    transition='Configure',
-                    data=data,
-                ),
-            }
-        if self.state_cfg.get() in self.state_enum.include(
-            ['connected', 'configured', 'starting']
-        ):
-            # Add info for the BeginStep transition
-            phase1_info['beginstep'] = {
-                'ShapesDataBlockHex': self._getBlock(
-                    transition='BeginStep',
-                    data=data,
-                ),
-            }
-        status = self.get_status_for(
-            state=['running'],
+        time.sleep(self.begin_sleep_cfg.get())
+        return self.state_transition(
+            'running',
             timeout=self.begin_timeout_cfg.get(),
+            wait=False,
         )
-        # TODO handle state transitions in background thread to not block
-        self._control.setState('running', phase1_info)
-        return status
 
-
-    def complete(self) -> Status:
+    def complete(self) -> DeviceStatus:
         """
         If the daq is freely running, this will `stop` the daq.
         Otherwise, we'll simply return the end_status object.
@@ -1723,8 +1796,50 @@ class DaqLCLS2(Daq):
             self.stop()
         return done_status
 
-    def configure(self):
-        ...
+    def configure(
+        self,
+        events: Optional[int] = None,
+        duration: Optional[int] = None,
+        record: Union[bool, None, _CONFIG_VAL] = _CONFIG_VAL,
+        controls: Optional[list[Union[PositionerBase, Signal]]] = None,
+        motors: Optional[list[Union[PositionerBase, Signal]]] = None,
+        begin_timeout: Optional[float] = None,
+        begin_sleep: Optional[float] = None,
+        group_mask: Optional[int] = None,
+        detname: Optional[str] = None,
+        scantype: Optional[str] = None,
+        serial_number: Optional[str] = None,
+        alg_name: Optional[str] = None,
+        alg_version: Optional[list[int]] = None,
+    ):
+        old, new = super().configure(
+            events=events,
+            duration=duration,
+            record=record,
+            controls=controls,
+            motors=motors,
+            begin_timeout=begin_timeout,
+            begin_sleep=begin_sleep,
+            group_mask=group_mask,
+            detname=detname,
+            scantype=scantype,
+            serial_number=serial_number,
+            alg_name=alg_name,
+            alg_version=alg_version,
+        )
+        if self._queue_configure_transition:
+            if self.state_sig.get() < self.state_enum.from_any('connected'):
+                raise RuntimeError('Not ready to configure.')
+            if self.state_sig.get() > self.state_enum.from_any('configured'):
+                raise RuntimeError(
+                    'Cannot configure transition during an open run!'
+                )
+            if self.state_sig.get() == self.state_enum.from_any('configured'):
+                # Already configured, so we should unconfigure first
+                self.state_transition('connected', wait=True)
+            self.state_transition('configured', wait=True)
+            self._queue_configure_transition = False
+        return old, new
 
     def stage(self):
         ...
