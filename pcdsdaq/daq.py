@@ -1722,13 +1722,7 @@ class DaqLCLS2(Daq):
     def begin(self, wait: bool = False, end_run: bool = False, **kwargs):
         original_config = self.config
         self.preconfig(show_queued_cfg=False, **kwargs)
-        if wait or end_run:
-            status = self.get_done_status(check_now=False)
-            if end_run:
-                status.add_callback(self._end_run_callback)
-        self.kickoff()
-        if wait:
-            status.wait()
+        super().begin(wait=wait, end_run=end_run)
         self.preconfig(show_queued_cfg=False, **original_config)
 
     def _end_run_callback(self, status):
