@@ -1442,6 +1442,12 @@ class DaqLCLS2(Daq):
         kind='omitted',
         name='step_done',
     )
+    last_transition_err_sig = Cpt(
+        Signal,
+        value=None,
+        kind='omitted',
+        name='last_transition_err',
+    )
 
     requires_configure_transition = {'record'}
 
@@ -1663,7 +1669,7 @@ class DaqLCLS2(Daq):
             'timestamp': 0,
             'detname': self.detname_cfg.get(),
             'dettype': 'scan',
-            'scantype': self.scan_type_sig.get(),
+            'scantype': self.scantype_cfg.get(),
             'serial_number': self.serial_number_cfg.get(),
             'alg_name': self.alg_name_cfg.get(),
             'alg_version': self.alg_version_cfg.get(),
@@ -1710,14 +1716,42 @@ class DaqLCLS2(Daq):
             self._transition_thread,
             args=(state.name, phase1_info),
         ).start()
+        if (
+            state == self.state_enum.from_any('running')
+            and self.events_cfg.get() is None
+            and self.duration_cfg.get() is not None
+        ):
+            threading.Thread(
+                self._handle_duration_thread,
+                args=(self.duration_cfg.get())
+            ).start()
         if wait:
             status.wait()
         return status
 
-    def _transition_thread(self):
-        raise NotImplementedError(
-            'Have not done this one yet'
+    def _transition_thread(self, state, phase1_info):
+        error_msg = self._control.setState(state, phase1_info)
+        self.last_transition_err_sig.put(error_msg)
+
+    def _handle_duration_thread(self, duration):
+        end_status = self.get_status_for(
+            state=['starting'],
+            transition=['endstep'],
+            timeout=duration,
+            check_now=False,
         )
+        try:
+            # If this succeeds, someone else stopped the DAQ
+            # So in success, nothing to do
+            end_status.wait()
+        except (StatusTimeoutError, WaitTimeoutError):
+            # The error means our wait expired
+            # Time to stop the DAQ
+            self.state_transition(
+                'starting',
+                wait=True,
+                timeout=self.begin_timeout_cfg.get(),
+            )
 
     def _get_motors_for_configure(self):
         raise NotImplementedError(
@@ -1873,6 +1907,8 @@ class DaqLCLS2(Daq):
             if self.state_sig.get() == self.state_enum.from_any('configured'):
                 # Already configured, so we should unconfigure first
                 self.state_transition('connected', wait=True)
+            if self.record_cfg.get() is not None:
+                self._control.setRecord(self.record_cfg.get())
             self.state_transition('configured', wait=True)
             self._last_config = self.config
             self._queue_configure_transition = False
