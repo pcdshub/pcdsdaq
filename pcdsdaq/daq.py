@@ -1916,41 +1916,63 @@ class DaqLCLS2(Daq):
 
     def preconfig(
         self,
-        events: Optional[int] = None,
-        duration: Optional[int] = None,
+        events: Optional[int] = _CONFIG_VAL,
+        duration: Optional[int] = _CONFIG_VAL,
         record: Union[bool, None, _CONFIG_VAL] = _CONFIG_VAL,
-        controls: Optional[list[Union[PositionerBase, Signal]]] = None,
-        motors: Optional[list[Union[PositionerBase, Signal]]] = None,
-        begin_timeout: Optional[float] = None,
-        begin_sleep: Optional[float] = None,
-        group_mask: Optional[int] = None,
-        detname: Optional[str] = None,
-        scantype: Optional[str] = None,
-        serial_number: Optional[str] = None,
-        alg_name: Optional[str] = None,
-        alg_version: Optional[list[int]] = None,
+        controls: Optional[list[Union[PositionerBase, Signal]]] = _CONFIG_VAL,
+        motors: Optional[list[Union[PositionerBase, Signal]]] = _CONFIG_VAL,
+        begin_timeout: Optional[float] = _CONFIG_VAL,
+        begin_sleep: Optional[float] = _CONFIG_VAL,
+        group_mask: Optional[int] = _CONFIG_VAL,
+        detname: Optional[str] = _CONFIG_VAL,
+        scantype: Optional[str] = _CONFIG_VAL,
+        serial_number: Optional[str] = _CONFIG_VAL,
+        alg_name: Optional[str] = _CONFIG_VAL,
+        alg_version: Optional[list[int]] = _CONFIG_VAL,
+        show_queued_config: bool = _CONFIG_VAL,
     ):
-        # Enforce typing on all arguments
+        # TODO Enforce typing on all arguments
         # Enforce only events or duration, not both
-        # Handle unsetting of the record boolean
+        if events is not _CONFIG_VAL:
+            duration = None
+        elif duration is not _CONFIG_VAL:
+            events = None
         # Handle motors as an alias for controls
-        ...
+        if motors is not _CONFIG_VAL:
+            controls = motors
+        # Call super
+        super().preconfig(
+            events=events,
+            duration=duration,
+            record=record,
+            controls=controls,
+            begin_timeout=begin_timeout,
+            begin_sleep=begin_sleep,
+            group_mask=group_mask,
+            detname=detname,
+            scantype=scantype,
+            serial_number=serial_number,
+            alg_name=alg_name,
+            alg_version=alg_version,
+            show_queued_cfg=show_queued_config,
+        )
 
+    # TODO fix type hinting for default of _CONFIG_VAL instead of None
     def configure(
         self,
-        events: Optional[int] = None,
-        duration: Optional[int] = None,
+        events: Optional[int] = _CONFIG_VAL,
+        duration: Optional[int] = _CONFIG_VAL,
         record: Union[bool, None, _CONFIG_VAL] = _CONFIG_VAL,
-        controls: Optional[list[Union[PositionerBase, Signal]]] = None,
-        motors: Optional[list[Union[PositionerBase, Signal]]] = None,
-        begin_timeout: Optional[float] = None,
-        begin_sleep: Optional[float] = None,
-        group_mask: Optional[int] = None,
-        detname: Optional[str] = None,
-        scantype: Optional[str] = None,
-        serial_number: Optional[str] = None,
-        alg_name: Optional[str] = None,
-        alg_version: Optional[list[int]] = None,
+        controls: Optional[list[Union[PositionerBase, Signal]]] = _CONFIG_VAL,
+        motors: Optional[list[Union[PositionerBase, Signal]]] = _CONFIG_VAL,
+        begin_timeout: Optional[float] = _CONFIG_VAL,
+        begin_sleep: Optional[float] = _CONFIG_VAL,
+        group_mask: Optional[int] = _CONFIG_VAL,
+        detname: Optional[str] = _CONFIG_VAL,
+        scantype: Optional[str] = _CONFIG_VAL,
+        serial_number: Optional[str] = _CONFIG_VAL,
+        alg_name: Optional[str] = _CONFIG_VAL,
+        alg_version: Optional[list[int]] = _CONFIG_VAL,
     ):
         old, new = super().configure(
             events=events,
