@@ -1668,43 +1668,24 @@ class DaqLCLS2(Daq):
         This passes extra data if we need to do the 'configure' or 'beginstep'
         transitions.
         """
+        # Normalize state
         state = self.state_enum.from_any(state)
+        # Determine what extra info to send to the DAQ
         phase1_info = {}
-        # TODO where do the other config values go?
-        data = {
-            'motors': self._get_motors_for_transition(),
-            'timestamp': 0,
-            'detname': self.detname_cfg.get(),
-            'dettype': 'scan',
-            'scantype': self.scantype_cfg.get(),
-            'serial_number': self.serial_number_cfg.get(),
-            'alg_name': self.alg_name_cfg.get(),
-            'alg_version': self.alg_version_cfg.get(),
-        },
         if (
             self.state_sig.get()
             < self.state_enum['configure']
             <= state
         ):
             # configure transition
-            phase1_info['configure'] = {
-                'NamesBlockHex': self._getBlock(
-                    transition='Configure',
-                    data=data,
-                ),
-            }
+            phase1_info['configure'] = self._get_phase1('Configure')
         if (
             self.state_sig.get()
             < self.state_enum['starting']
             <= state
         ):
-            # beginstep transition 
-            phase1_info['beginstep'] = {
-                'ShapesDataBlockHex': self._getBlock(
-                    transition='BeginStep',
-                    data=data,
-                ),
-            }
+            # beginstep transition
+            phase1_info['beginstep'] = self._get_phase1('BeginStep')
         if (
             self.state_sig.get()
             < self.state_enum['running']
@@ -1712,17 +1693,21 @@ class DaqLCLS2(Daq):
         ):
             # enable transition:
             phase1_info['enable'] = {
+                # this is the event count, 0 means run forever
                 'readout_count': self.events_cfg.get() or 0,
                 'group_mask': self.group_mask_cfg.get(),
             }
+        # Get a status to track the transition's success or failure
         status = self.get_status_for(
             state=[state],
             timeout=timeout,
         )
+        # Set the transition in background thread, can be blocking
         threading.Thread(
             self._transition_thread,
             args=(state.name, phase1_info),
         ).start()
+        # Handle duration ourselves in another thread for LCLS1 compat
         if (
             state == self.state_enum['running']
             and self.events_cfg.get() is None
@@ -1730,8 +1715,9 @@ class DaqLCLS2(Daq):
         ):
             threading.Thread(
                 self._handle_duration_thread,
-                args=(self.duration_cfg.get())
+                args=(self.duration_cfg.get(), status)
             ).start()
+
         if wait:
             status.wait()
         return status
@@ -1759,6 +1745,40 @@ class DaqLCLS2(Daq):
                 wait=True,
                 timeout=self.begin_timeout_cfg.get(),
             )
+
+    def _get_phase1(self, transition):
+        if transition == 'Configure':
+            phase1_key = 'NamesBlockHex'
+        elif transition == 'BeginStep':
+            phase1_key = 'ShapesDataBlockHex'
+        else:
+            raise RuntimeError('Only Configure and BeginStep are supported.')
+
+        data = {
+            'motors': self._get_motors_for_transition(),
+            'timestamp': 0,
+            'detname': self.detname_cfg.get(),
+            'dettype': 'scan',
+            'scantype': self.scantype_cfg.get(),
+            'serial_number': self.serial_number_cfg.get(),
+            'alg_name': self.alg_name_cfg.get(),
+            'alg_version': self.alg_version_cfg.get(),
+        }
+        try:
+            data['transitionid'] = ControlDef.transitionId[transition]
+        except KeyError as exc:
+            raise RuntimeError(f'Invalid transition {transition}')
+
+        if transition == "Configure":
+            data["add_names"] = True
+            data["add_shapes_data"] = False
+        else:
+            data["add_names"] = False
+            data["add_shapes_data"] = True
+
+        data["namesid"] = ControlDef.STEPINFO
+        block = self._control.getBlock(transition=transition, data=data)
+        return {phase1_key: block}
 
     def _get_motors_for_transition(self):
         controls = self.controls_cfg.get()
