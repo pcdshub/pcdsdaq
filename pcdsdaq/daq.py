@@ -1320,6 +1320,12 @@ class DaqLCLS1(Daq):
 
 
 class DaqLCLS2(Daq):
+    step_value_sig = Cpt(
+        Signal,
+        value=1,
+        kind='normal',
+        name='step_value',
+    )
     state_sig = Cpt(
         Signal,
         value=None,
@@ -1497,9 +1503,12 @@ class DaqLCLS2(Daq):
                     self.transition_elapsed_sig.put(info[2])
                     self.transition_total_sig.put(info[3])
                 elif info[0] == 'step':
+                    self.step_value_sig.put(self.step_value_sig.get() + 1)
                     self.step_done_sig.put(info[1])
                 else:
                     # Last case is normal status
+                    if info[0] == 'endrun':
+                        self.step_value_sig.put(1)
                     self.transition_sig.put(
                         self.transition_enum.from_any(info[0])
                     )
@@ -1665,7 +1674,7 @@ class DaqLCLS2(Daq):
         phase1_info = {}
         # TODO where do the other config values go?
         data = {
-            'motors': self._get_motors_for_configure(),
+            'motors': self._get_motors_for_transition(),
             'timestamp': 0,
             'detname': self.detname_cfg.get(),
             'dettype': 'scan',
@@ -1753,10 +1762,49 @@ class DaqLCLS2(Daq):
                 timeout=self.begin_timeout_cfg.get(),
             )
 
-    def _get_motors_for_configure(self):
-        raise NotImplementedError(
-            'Have not done this one yet'
-        )
+    def _get_motors_for_transition(self):
+        controls = self.controls_cfg.get()
+
+        # Always includes a step value, and let the user override it
+        step_value = self.step_value_sig.get()
+
+        if isinstance(controls, dict):
+            try:
+                step_value = get_controls_value(
+                    controls[ControlDef.STEP_VALUE]
+                )
+            except KeyError:
+                ...
+        elif isinstance(controls, (list, tuple)):
+            for ctrl in controls:
+                if ctrl.name == ControlDef.STEP_VALUE:
+                    step_value = get_controls_value(ctrl)
+        elif controls is not None:
+            raise RuntimeError(
+                f'Expected controls={controls} to be dict, list, or None'
+            )
+
+        data = {
+            'step_value': step_value,
+            'step_docstring': (
+                f'{{"detname": "{self.detname_cfg.get()}", }}'
+                f'{{"scantype": "{self.scantype_cfg.get()}", }}'
+                f'{{"step": {step_value}}}'
+            )
+        }
+
+        # Add all the other controls/motors
+        if isinstance(controls, dict):
+            for key, ctrl in controls.items():
+                if key != ControlDef.STEP_VALUE:
+                    data[key] = get_controls_value(ctrl)
+        if isinstance(controls, list):
+            for ctrl in controls:
+                if ctrl.name != ControlDef.STEP_VALUE:
+                    data[ctrl.name] = get_controls_value(ctrl)
+
+        return data
+    
 
     def _get_block(self, transition, data):
         raise NotImplementedError(
@@ -1866,6 +1914,28 @@ class DaqLCLS2(Daq):
             self.stop()
         return done_status
 
+    def preconfig(
+        self,
+        events: Optional[int] = None,
+        duration: Optional[int] = None,
+        record: Union[bool, None, _CONFIG_VAL] = _CONFIG_VAL,
+        controls: Optional[list[Union[PositionerBase, Signal]]] = None,
+        motors: Optional[list[Union[PositionerBase, Signal]]] = None,
+        begin_timeout: Optional[float] = None,
+        begin_sleep: Optional[float] = None,
+        group_mask: Optional[int] = None,
+        detname: Optional[str] = None,
+        scantype: Optional[str] = None,
+        serial_number: Optional[str] = None,
+        alg_name: Optional[str] = None,
+        alg_version: Optional[list[int]] = None,
+    ):
+        # Enforce typing on all arguments
+        # Enforce only events or duration, not both
+        # Handle unsetting of the record boolean
+        # Handle motors as an alias for controls
+        ...
+
     def configure(
         self,
         events: Optional[int] = None,
@@ -1953,6 +2023,13 @@ class HelpfulIntEnum(IntEnum):
 
 class StateTransitionError(Exception):
     pass
+
+
+def get_controls_value(obj):
+    try:
+        return obj.position
+    except:
+        return obj.get()
 
 
 _daq_instance = None
