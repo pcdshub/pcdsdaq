@@ -1461,8 +1461,8 @@ class DaqLCLS2(Daq):
         if DaqControl is None:
             raise RuntimeError('psdaq is not installed, cannot use LCLS2 daq')
         super().__init__(RE=RE, hutch_name=hutch_name, platform=platform)
-        self.state_sig.put(self.state_enum.from_any('reset'))
-        self.transition_sig.put(self.transition_enum.from_any('reset'))
+        self.state_sig.put(self.state_enum['reset'])
+        self.transition_sig.put(self.transition_enum['reset'])
         self.group_mask_cfg.put(1 << platform)
         self._control = DaqControl(host=host, platform=platform, timeout=timeout)
         self._start_monitor_thread()
@@ -1498,7 +1498,7 @@ class DaqLCLS2(Daq):
                     self.last_file_report_sig.put(info[1])
                 elif info[0] == 'progress':
                     self.transition_sig.put(
-                        self.transition_enum.from_any(self.info[1])
+                        self.transition_enum[self.info[1]]
                     )
                     self.transition_elapsed_sig.put(info[2])
                     self.transition_total_sig.put(info[3])
@@ -1510,10 +1510,10 @@ class DaqLCLS2(Daq):
                     if info[0] == 'endrun':
                         self.step_value_sig.put(1)
                     self.transition_sig.put(
-                        self.transition_enum.from_any(info[0])
+                        self.transition_enum[info[0]]
                     )
                     self.state_sig.put(
-                        self.state_enum.from_any(info[1])
+                        self.state_enum[info[1]]
                     )
                     self.config_alias_sig.put(info[2])
                     self.recording_sig.put(info[3])
@@ -1531,10 +1531,8 @@ class DaqLCLS2(Daq):
 
         The LCLS2 DAQ is considered configured based on the state machine.
         """
-        # TODO identify when from_any is not appropriate and fix
-        # (use only for public API)
         self.configured_sig.put(
-            value >= self.state_enum.from_any('configured')
+            value >= self.state_enum['configured']
         )
 
     @property
@@ -1566,8 +1564,8 @@ class DaqLCLS2(Daq):
 
     def get_status_for(
         self,
-        state: Optional[Iterator[Any]] = None,
-        transition: Optional[Iterator[Any]] = None,
+        state: Optional[Iterator[EnumId]] = None,
+        transition: Optional[Iterator[EnumId]] = None,
         timeout: Optional[float] = None,
         check_now: bool = True,
     ):
@@ -1660,7 +1658,7 @@ class DaqLCLS2(Daq):
 
     def state_transition(
         self,
-        state: Any,
+        state: EnumId,
         timeout: Optional[float] = None,
         wait: bool = True,
     ) -> DeviceStatus:
@@ -1685,7 +1683,7 @@ class DaqLCLS2(Daq):
         },
         if (
             self.state_sig.get()
-            < self.state_enum.from_any('configure')
+            < self.state_enum['configure']
             <= state
         ):
             # configure transition
@@ -1697,7 +1695,7 @@ class DaqLCLS2(Daq):
             }
         if (
             self.state_sig.get()
-            < self.state_enum.from_any('starting')
+            < self.state_enum['starting']
             <= state
         ):
             # beginstep transition 
@@ -1709,7 +1707,7 @@ class DaqLCLS2(Daq):
             }
         if (
             self.state_sig.get()
-            < self.state_enum.from_any('running')
+            < self.state_enum['running']
             <= state
         ):
             # enable transition:
@@ -1726,7 +1724,7 @@ class DaqLCLS2(Daq):
             args=(state.name, phase1_info),
         ).start()
         if (
-            state == self.state_enum.from_any('running')
+            state == self.state_enum['running']
             and self.events_cfg.get() is None
             and self.duration_cfg.get() is not None
         ):
@@ -1837,14 +1835,14 @@ class DaqLCLS2(Daq):
             Flag set by bluesky to signify whether this was a good stop or a
             bad stop. Currently unused.
         """
-        if self.state_sig.get() > self.state_enum.from_any('starting'):
+        if self.state_sig.get() > self.state_enum['starting']:
             self.state_transition('starting', wait=False)
 
     def end_run(self) -> None:
         """
         Call `stop`, then mark the run as finished.
         """
-        if self.state_sig.get() > self.state_enum.from_any('configured'):
+        if self.state_sig.get() > self.state_enum['configured']:
             self.state_transition('configured', wait=False)
 
     def trigger(self) -> Status:
@@ -1887,9 +1885,9 @@ class DaqLCLS2(Daq):
         ready_status: ``Status``
             ``Status`` that will be marked as done when the daq has begun.
         """
-        if self.state_sig.get() < self.state_enum.from_any('connected'):
+        if self.state_sig.get() < self.state_enum['connected']:
             raise RuntimeError('DAQ is not ready to run!')
-        if self.state_sig.get() == self.state_enum.from_any('running'):
+        if self.state_sig.get() == self.state_enum['running']:
             raise RuntimeError('DAQ is already running!')
         return self.state_transition(
             'running',
@@ -1990,13 +1988,13 @@ class DaqLCLS2(Daq):
             alg_version=alg_version,
         )
         if self._queue_configure_transition:
-            if self.state_sig.get() < self.state_enum.from_any('connected'):
+            if self.state_sig.get() < self.state_enum['connected']:
                 raise RuntimeError('Not ready to configure.')
-            if self.state_sig.get() > self.state_enum.from_any('configured'):
+            if self.state_sig.get() > self.state_enum['configured']:
                 raise RuntimeError(
                     'Cannot configure transition during an open run!'
                 )
-            if self.state_sig.get() == self.state_enum.from_any('configured'):
+            if self.state_sig.get() == self.state_enum['configured']:
                 # Already configured, so we should unconfigure first
                 self.state_transition('connected', wait=True)
             if self.record_cfg.get() is not None:
@@ -2013,9 +2011,10 @@ class DaqLCLS2(Daq):
         return self.run_number_sig.get()
 
 
-# TODO replace Any with the correct type hint, here and elsewhere
+EnumId = Union[Type[Enum], int, str]
+
 class HelpfulIntEnum(IntEnum):
-    def from_any(self, identifier: Any) -> Type[HelpfulIntEnum]:
+    def from_any(self, identifier: EnumId) -> Type[HelpfulIntEnum]:
         """
         Try all the ways to interpret identifier as the enum
         """
@@ -2026,7 +2025,7 @@ class HelpfulIntEnum(IntEnum):
 
     def include(
         self,
-        identifiers: Iterator[Any],
+        identifiers: Iterator[EnumId],
     ) -> set[Type[HelpfulIntEnum]]:
         """
         Return all enum values matching the ones given.
@@ -2035,7 +2034,7 @@ class HelpfulIntEnum(IntEnum):
 
     def exclude(
         self,
-        identifiers: Iterator[Any],
+        identifiers: Iterator[EnumId],
     ) -> set[Type[HelpfulIntEnum]]:
         """
         Return all enum values other than the ones given.
