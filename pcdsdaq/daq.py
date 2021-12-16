@@ -12,7 +12,8 @@ import threading
 from enum import Enum, IntEnum
 from functools import cache
 from importlib import import_module
-from typing import Any, ClassVar, Iterator, Optional, Type, Union
+from numbers import Real
+from typing import Any, ClassVar, Iterator, Optional, Type, Union, NewType, get_type_hints
 
 from bluesky import RunEngine
 
@@ -44,7 +45,8 @@ BEGIN_THROTTLE = 1
 
 # Not-None sentinal for default value when None has a special meaning
 # Indicates that the last configured value should be used
-_CONFIG_VAL = object()
+SENTINEL = NewType('SENTINEL')
+_CONFIG_VAL = SENTINEL()
 
 
 def check_connect(f):
@@ -342,7 +344,7 @@ class Daq(Device):
         configurations were changed that require a configure transition. 
         """
         for key, value in kwargs.items():
-            if value is _CONFIG_VAL:
+            if isinstance(value, SENTINEL):
                 continue
             try:
                 sig = getattr(self, key + '_cfg')
@@ -350,6 +352,8 @@ class Daq(Device):
                 raise ValueError(
                     f'Did not find config parameter {key}'
                 ) from exc
+            if isinstance(value, None):
+                value = self.default_config[key]
             if isinstance(sig, Signal) and sig.kind == 'config':
                 sig.put(value)
             else:
@@ -1932,31 +1936,52 @@ class DaqLCLS2(Daq):
             self.stop()
         return done_status
 
+    def _enforce_config(self, name, value):
+        hint = get_type_hints(self.preconfig)[name]
+        if not typing_check(value, hint):
+            raise TypeError(
+                f'Incorrect type for {name}={value}, expected {hint}'
+            )
+
     def preconfig(
         self,
-        events: Optional[int] = _CONFIG_VAL,
-        duration: Optional[int] = _CONFIG_VAL,
-        record: Union[bool, None, _CONFIG_VAL] = _CONFIG_VAL,
-        controls: Optional[list[Union[PositionerBase, Signal]]] = _CONFIG_VAL,
-        motors: Optional[list[Union[PositionerBase, Signal]]] = _CONFIG_VAL,
-        begin_timeout: Optional[float] = _CONFIG_VAL,
-        begin_sleep: Optional[float] = _CONFIG_VAL,
-        group_mask: Optional[int] = _CONFIG_VAL,
-        detname: Optional[str] = _CONFIG_VAL,
-        scantype: Optional[str] = _CONFIG_VAL,
-        serial_number: Optional[str] = _CONFIG_VAL,
-        alg_name: Optional[str] = _CONFIG_VAL,
-        alg_version: Optional[list[int]] = _CONFIG_VAL,
-        show_queued_config: bool = _CONFIG_VAL,
+        events: Union[int, None, SENTINEL] = _CONFIG_VAL,
+        duration: Union[Real, None, SENTINEL] = _CONFIG_VAL,
+        record: Union[bool, None, SENTINEL] = _CONFIG_VAL,
+        controls: Union[ControlsArg, None, SENTINEL] = _CONFIG_VAL,
+        motors: Union[ControlsArg, None, SENTINEL] = _CONFIG_VAL,
+        begin_timeout: Union[Real, None, SENTINEL] = _CONFIG_VAL,
+        begin_sleep: Union[Real, None, SENTINEL] = _CONFIG_VAL,
+        group_mask: Union[int, None, SENTINEL] = _CONFIG_VAL,
+        detname: Union[str, None, SENTINEL] = _CONFIG_VAL,
+        scantype: Union[str, None, SENTINEL] = _CONFIG_VAL,
+        serial_number: Union[str, None, SENTINEL] = _CONFIG_VAL,
+        alg_name: Union[str, None, SENTINEL] = _CONFIG_VAL,
+        alg_version: Union[list[str], None, SENTINEL] = _CONFIG_VAL,
+        show_queued_config: bool = True,
     ):
-        # TODO Enforce typing on all arguments
+        self._enforce_config('events', events)
+        self._enforce_config('duration', duration)
+        self._enforce_config('record', record)
+        self._enforce_config('controls', controls)
+        self._enforce_config('motors', motors)
+        self._enforce_config('begin_timeout', begin_timeout)
+        self._enforce_config('begin_sleep', begin_sleep)
+        self._enforce_config('group_mask', group_mask)
+        self._enforce_config('detname', detname)
+        self._enforce_config('scantype', scantype)
+        self._enforce_config('serial_number', serial_number)
+        self._enforce_config('alg_name', alg_name)
+        self._enforce_config('alg_version', alg_version)
+
         # Enforce only events or duration, not both
-        if events is not _CONFIG_VAL:
+        if isinstance(events, int):
             duration = None
-        elif duration is not _CONFIG_VAL:
+        elif isinstance(duration, Real):
+            duration = float(duration)
             events = None
         # Handle motors as an alias for controls
-        if motors is not _CONFIG_VAL:
+        if not isinstance(motors, SENTINEL):
             controls = motors
         # Call super
         super().preconfig(
@@ -1978,19 +2003,19 @@ class DaqLCLS2(Daq):
     # TODO fix type hinting for default of _CONFIG_VAL instead of None
     def configure(
         self,
-        events: Optional[int] = _CONFIG_VAL,
-        duration: Optional[int] = _CONFIG_VAL,
-        record: Union[bool, None, _CONFIG_VAL] = _CONFIG_VAL,
-        controls: Optional[list[Union[PositionerBase, Signal]]] = _CONFIG_VAL,
-        motors: Optional[list[Union[PositionerBase, Signal]]] = _CONFIG_VAL,
-        begin_timeout: Optional[float] = _CONFIG_VAL,
-        begin_sleep: Optional[float] = _CONFIG_VAL,
-        group_mask: Optional[int] = _CONFIG_VAL,
-        detname: Optional[str] = _CONFIG_VAL,
-        scantype: Optional[str] = _CONFIG_VAL,
-        serial_number: Optional[str] = _CONFIG_VAL,
-        alg_name: Optional[str] = _CONFIG_VAL,
-        alg_version: Optional[list[int]] = _CONFIG_VAL,
+        events: Union[int, None, SENTINEL] = _CONFIG_VAL,
+        duration: Union[Real, None, SENTINEL] = _CONFIG_VAL,
+        record: Union[bool, None, SENTINEL] = _CONFIG_VAL,
+        controls: Union[ControlsArg, None, SENTINEL] = _CONFIG_VAL,
+        motors: Union[ControlsArg, None, SENTINEL] = _CONFIG_VAL,
+        begin_timeout: Union[Real, None, SENTINEL] = _CONFIG_VAL,
+        begin_sleep: Union[Real, None, SENTINEL] = _CONFIG_VAL,
+        group_mask: Union[int, None, SENTINEL] = _CONFIG_VAL,
+        detname: Union[str, None, SENTINEL] = _CONFIG_VAL,
+        scantype: Union[str, None, SENTINEL] = _CONFIG_VAL,
+        serial_number: Union[str, None, SENTINEL] = _CONFIG_VAL,
+        alg_name: Union[str, None, SENTINEL] = _CONFIG_VAL,
+        alg_version: Union[list[str], None, SENTINEL] = _CONFIG_VAL,
     ):
         old, new = super().configure(
             events=events,
@@ -2031,6 +2056,33 @@ class DaqLCLS2(Daq):
         return self.run_number_sig.get()
 
 
+def typing_check(value, hint):
+    # This works for basic types
+    try:
+        return isinstance(value, hint)
+    except TypeError:
+        ...
+    # This works for unions of basic types
+    try:
+        return isinstance(value, hint.__args__)
+    except TypeError:
+        ...
+    # This works for unions that include subscripted generics
+    cls_to_check = []
+    for arg in hint.__args__:
+        try:
+            cls_to_check.append(arg.__origin__)
+        except AttributeError:
+            cls_to_check.append(arg)
+    return isinstance(value, cls_to_check)
+
+
+ControlsObject = Union[PositionerBase, Signal]
+ControlsArg = Union[
+    list[ControlsObject],
+    dict[str, ControlsObject],
+]
+
 EnumId = Union[Type[Enum], int, str]
 
 class HelpfulIntEnum(IntEnum):
@@ -2066,7 +2118,7 @@ class StateTransitionError(Exception):
     pass
 
 
-def get_controls_value(obj):
+def get_controls_value(obj: ControlsObject) -> Any:
     try:
         return obj.position
     except:
