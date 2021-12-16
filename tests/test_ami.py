@@ -2,15 +2,13 @@ import importlib
 import logging
 
 import pytest
-
 from bluesky.callbacks import collector
 from bluesky.plans import count
 
 import pcdsdaq.ami
 import pcdsdaq.sim.pyami as sim_pyami
-from pcdsdaq.ami import (AmiDet, auto_setup_pyami,
-                         set_monitor_det, set_pyami_filter,
-                         dets_filter, concat_filter_strings)
+from pcdsdaq.ami import (AmiDet, auto_setup_pyami, concat_filter_strings,
+                         dets_filter, set_monitor_det, set_pyami_filter)
 
 logger = logging.getLogger(__name__)
 

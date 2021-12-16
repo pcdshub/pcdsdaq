@@ -4,13 +4,14 @@ from importlib import import_module
 from threading import Thread
 
 import numpy as np
-from ophyd.device import Device, Component as Cpt, Staged
+from ophyd.device import Component as Cpt
+from ophyd.device import Device, Staged
 from ophyd.signal import Signal
 from ophyd.status import Status
 from ophyd.utils.errors import ReadOnlyError
 from toolz.itertoolz import partition
 
-from .ext_scripts import get_hutch_name, get_ami_proxy
+from .ext_scripts import get_ami_proxy, get_hutch_name
 
 logger = logging.getLogger(__name__)
 L3T_DEFAULT = '/reg/neh/operator/{}opr/l3t/amifil.l3t'

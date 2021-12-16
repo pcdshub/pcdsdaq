@@ -1,7 +1,8 @@
 import logging
 
 from bluesky.callbacks.core import CallbackBase
-from ophyd.device import Device, Component as Cpt
+from ophyd.device import Component as Cpt
+from ophyd.device import Device
 from ophyd.signal import EpicsSignal
 from toolz import partition
 

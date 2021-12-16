@@ -7,17 +7,18 @@ import enum
 import functools
 import logging
 import os
-import time
 import threading
+import time
 from enum import Enum, IntEnum
 from functools import cache
 from importlib import import_module
 from numbers import Real
-from typing import Any, ClassVar, Iterator, Optional, Type, Union, NewType, get_type_hints
+from typing import (Any, ClassVar, Iterator, NewType, Optional, Type, Union,
+                    get_type_hints)
 
 from bluesky import RunEngine
-
-from ophyd.device import Component as Cpt, Device
+from ophyd.device import Component as Cpt
+from ophyd.device import Device
 from ophyd.ophydobj import Kind
 from ophyd.positioner import PositionerBase
 from ophyd.signal import AttributeSignal, Signal
@@ -26,11 +27,11 @@ from ophyd.utils import StatusTimeoutError, WaitTimeoutError
 from ophyd.utils.errors import InvalidState
 
 from . import ext_scripts
-from .ami import set_ami_hutch, set_pyami_filter, set_monitor_det
+from .ami import set_ami_hutch, set_monitor_det, set_pyami_filter
 
 try:
-    from psdaq.control.DaqControl import DaqControl
     from psdaq.control.ControlDef import ControlDef
+    from psdaq.control.DaqControl import DaqControl
 except ImportError:
     DaqControl = None
     ControlDef = None
@@ -114,14 +115,13 @@ class Daq(Device):
     _last_config: dict[str, Any]
     _queue_configure_transition: bool
 
-
     def __init__(
         self,
         RE: Optional[RunEngine] = None,
         hutch_name: Optional[str] = None,
         platform: Optional[int] = None,
         *,
-        name: str ='daq',
+        name: str = 'daq',
     ):
         self._RE = RE
         self.hutch_name = hutch_name
@@ -189,7 +189,7 @@ class Daq(Device):
     def begin(self, wait: bool = False, end_run: bool = False, **kwargs):
         """
         Start the daq.
-        
+
         This is the equivalent of "kickoff" but for interactive sessions.
         All kwargs except for "wait" and "end_run" are passed through to
         kickoff.
@@ -341,7 +341,7 @@ class Daq(Device):
         Write to the configuration signals without executing any transitions.
 
         Will store the boolean _queue_configure_transition if any
-        configurations were changed that require a configure transition. 
+        configurations were changed that require a configure transition.
         """
         for key, value in kwargs.items():
             if isinstance(value, SENTINEL):
@@ -527,7 +527,7 @@ class DaqLCLS1(Daq):
 
     Parameters
     ----------
-    RE: ``RunEngine``, optional 
+    RE: ``RunEngine``, optional
         Set ``RE`` to the session's main ``RunEngine``
 
     hutch_name: str, optional
@@ -1472,7 +1472,11 @@ class DaqLCLS2(Daq):
         self.state_sig.put(self.state_enum['reset'])
         self.transition_sig.put(self.transition_enum['reset'])
         self.group_mask_cfg.put(1 << platform)
-        self._control = DaqControl(host=host, platform=platform, timeout=timeout)
+        self._control = DaqControl(
+            host=host,
+            platform=platform,
+            timeout=timeout,
+        )
         self._start_monitor_thread()
 
     @property
@@ -1775,7 +1779,7 @@ class DaqLCLS2(Daq):
         try:
             data['transitionid'] = ControlDef.transitionId[transition]
         except KeyError as exc:
-            raise RuntimeError(f'Invalid transition {transition}')
+            raise RuntimeError(f'Invalid transition {transition}') from exc
 
         if transition == "Configure":
             data["add_names"] = True
@@ -1830,13 +1834,12 @@ class DaqLCLS2(Daq):
                     data[ctrl.name] = get_controls_value(ctrl)
 
         return data
-    
 
     def _get_block(self, transition, data):
         raise NotImplementedError(
             'Have not done this one yet'
         )
-    
+
     def begin(self, wait: bool = False, end_run: bool = False, **kwargs):
         original_config = self.config
         self.preconfig(show_queued_cfg=False, **kwargs)
@@ -2089,6 +2092,7 @@ ControlsArg = Union[
 
 EnumId = Union[Type[Enum], int, str]
 
+
 class HelpfulIntEnum(IntEnum):
     def from_any(self, identifier: EnumId) -> Type[HelpfulIntEnum]:
         """
@@ -2125,7 +2129,7 @@ class StateTransitionError(Exception):
 def get_controls_value(obj: ControlsObject) -> Any:
     try:
         return obj.position
-    except:
+    except Exception:
         return obj.get()
 
 

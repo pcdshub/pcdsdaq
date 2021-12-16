@@ -6,15 +6,15 @@ import time
 from threading import Thread
 
 import pytest
-from bluesky.plans import count
 from bluesky.plan_stubs import trigger_and_read
+from bluesky.plans import count
 from bluesky.preprocessors import run_wrapper, stage_wrapper
 from ophyd.status import wait as status_wait
 
-import pcdsdaq.sim.pydaq as sim_pydaq
 import pcdsdaq.ext_scripts as ext
+import pcdsdaq.sim.pydaq as sim_pydaq
 from pcdsdaq import daq as daq_module
-from pcdsdaq.daq import BEGIN_TIMEOUT, StateTransitionError, DaqTimeoutError
+from pcdsdaq.daq import BEGIN_TIMEOUT, DaqTimeoutError, StateTransitionError
 
 logger = logging.getLogger(__name__)
 

@@ -8,8 +8,8 @@ from importlib import import_module
 import pcdsdaq.ami as ami
 import pcdsdaq.daq as daq
 import pcdsdaq.ext_scripts as ext
-from . import pyami
-from . import pydaq
+
+from . import pyami, pydaq
 
 logger = logging.getLogger(__name__)
 

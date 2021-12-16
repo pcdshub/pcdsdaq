@@ -1,8 +1,8 @@
 import logging
-
-import pytest
 import socket
 import subprocess
+
+import pytest
 
 import pcdsdaq.ext_scripts as ext
 

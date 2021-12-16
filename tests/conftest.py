@@ -1,15 +1,15 @@
+import pytest
 from bluesky import RunEngine
 from ophyd.sim import SynSignal, motor1
 
 import pcdsdaq.daq as daq_module
 import pcdsdaq.sim.pyami as sim_pyami
 import pcdsdaq.sim.pydaq as sim_pydaq
-from pcdsdaq.ami import (AmiDet, _reset_globals as ami_reset_globals)
+from pcdsdaq.ami import AmiDet
+from pcdsdaq.ami import _reset_globals as ami_reset_globals
 from pcdsdaq.daq import Daq
 from pcdsdaq.sim import set_sim_mode
 from pcdsdaq.sim.pydaq import SimNoDaq
-
-import pytest
 
 
 @pytest.fixture(scope='function')
