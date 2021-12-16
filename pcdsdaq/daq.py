@@ -1,5 +1,5 @@
 """
-This module defines a control interface for the LCLS1 DAQ.
+This module defines a control interface for the LCLS1 and LCLS2 DAQs.
 """
 from __future__ import annotations
 
@@ -255,7 +255,7 @@ class Daq(Device):
         """
         raise NotImplementedError('Please implement end_run in subclass.')
 
-    def trigger(self) -> Status:
+    def trigger(self) -> DeviceStatus:
         """
         Begin acquisition.
 
@@ -272,7 +272,7 @@ class Daq(Device):
         """
         raise NotImplementedError('Please implement trigger in subclass.')
 
-    def read(self):
+    def read(self) -> dict[str, dict[str, Any]]:
         """
         Return data about the status of the daq.
 
@@ -284,7 +284,7 @@ class Daq(Device):
             self.stop()
         return super().read()
 
-    def kickoff(self) -> Status:
+    def kickoff(self) -> DeviceStatus:
         """
         Begin acquisition. This method is non-blocking.
         See `begin` for a description of the parameters.
@@ -302,7 +302,7 @@ class Daq(Device):
         """
         raise NotImplementedError('Please implement kickoff in subclass.')
 
-    def complete(self) -> Status:
+    def complete(self) -> DeviceStatus:
         """
         If the daq is freely running, this will `stop` the daq.
         Otherwise, we'll simply collect the end_status object.
@@ -327,7 +327,7 @@ class Daq(Device):
         logger.debug('Daq.collect()')
         yield from ()
 
-    def describe_collect(self):
+    def describe_collect(self) -> dict:
         """
         As per the ``bluesky`` interface, this is how you interpret the null
         data from `collect`. There isn't anything here, as nothing will be
@@ -336,7 +336,7 @@ class Daq(Device):
         logger.debug('Daq.describe_collect()')
         return {}
 
-    def preconfig(self, show_queued_cfg=True, **kwargs):
+    def preconfig(self, show_queued_cfg: bool = True, **kwargs):
         """
         Write to the configuration signals without executing any transitions.
 
@@ -384,7 +384,11 @@ class Daq(Device):
         self.preconfig(show_queued_cfg=False, **kwargs)
         return old, self.read_configuration()
 
-    def config_info(self, config=None, header='Config:'):
+    def config_info(
+        self,
+        config: Optional[dict[str, Any]] = None,
+        header: str = 'Config:',
+    ) -> None:
         """
         Show the config information as a logger.info message.
 
@@ -423,10 +427,10 @@ class Daq(Device):
         return self.record_cfg.get()
 
     @record.setter
-    def record(self, record):
+    def record(self, record: bool):
         self.preconfig(record=record, show_queued_cfg=False)
 
-    def stage(self):
+    def stage(self) -> list[Daq]:
         """
         ``bluesky`` interface for preparing a device for action.
 
@@ -448,14 +452,14 @@ class Daq(Device):
         self.end_run()
         return [self]
 
-    def _re_manage_runs(self, name, doc):
+    def _re_manage_runs(self, name: str, doc: dict[str, Any]):
         """
         Callback for the RunEngine to manage run stop.
         """
         if name == 'stop':
             self.end_run()
 
-    def unstage(self):
+    def unstage(self) -> list[Daq]:
         """
         ``bluesky`` interface for undoing the `stage` routine.
 
