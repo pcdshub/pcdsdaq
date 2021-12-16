@@ -32,6 +32,7 @@ from ..ami import set_ami_hutch
 
 logger = logging.getLogger(__name__)
 
+# Constants and Globals
 # Wait up to this many seconds for daq to be ready for a begin call
 BEGIN_TIMEOUT = 15
 # Do not allow begins within this many seconds of a stop
@@ -42,11 +43,117 @@ BEGIN_THROTTLE = 1
 SENTINEL = NewType('SENTINEL')
 CONFIG_VAL = SENTINEL()
 
+# The DAQ singleton
+_daq_instance = None
+
+# Types
+ControlsObject = Union[PositionerBase, Signal]
+ControlsArg = Union[
+    list[ControlsObject],
+    dict[str, ControlsObject],
+]
+EnumId = Union[Type[Enum], int, str]
+
+
+class HelpfulIntEnum(IntEnum):
+    def from_any(self, identifier: EnumId) -> Type[HelpfulIntEnum]:
+        """
+        Try all the ways to interpret identifier as the enum
+        """
+        try:
+            return self[identifier]
+        except KeyError:
+            return self(identifier)
+
+    def include(
+        self,
+        identifiers: Iterator[EnumId],
+    ) -> set[Type[HelpfulIntEnum]]:
+        """
+        Return all enum values matching the ones given.
+        """
+        return {self.from_any(ident) for ident in identifiers}
+
+    def exclude(
+        self,
+        identifiers: Iterator[EnumId],
+    ) -> set[Type[HelpfulIntEnum]]:
+        """
+        Return all enum values other than the ones given.
+        """
+        return set(self.__members__.values()) - self.include(identifiers)
+
 
 class DaqTimeoutError(Exception):
-    pass
+    """
+    Exception raised when the DAQ times out.
+    """
+    ...
 
 
+class StateTransitionError(Exception):
+    """
+    Exception raised when a state transition fails.
+    """
+    ...
+
+
+# Helper functions
+def get_daq():
+    """
+    Called by other modules to get the registered `Daq` instance.
+
+    Returns
+    -------
+    daq: `Daq`
+    """
+    return _daq_instance
+
+
+def register_daq(daq):
+    """
+    Called by `Daq` at the end of ``__init__`` to save our one daq instance as
+    the real `Daq`. There will always only be one `Daq`.
+
+    Parameters
+    ----------
+    daq: `Daq`
+    """
+    global _daq_instance
+    _daq_instance = daq
+    if daq.hutch_name is not None:
+        set_ami_hutch(daq.hutch_name.lower())
+
+
+def get_controls_value(obj: ControlsObject) -> Any:
+    try:
+        return obj.position
+    except Exception:
+        return obj.get()
+
+
+def typing_check(value, hint):
+    # This works for basic types
+    try:
+        return isinstance(value, hint)
+    except TypeError:
+        ...
+    # This works for unions of basic types
+    try:
+        return isinstance(value, hint.__args__)
+    except TypeError:
+        ...
+    # This works for unions that include subscripted generics
+    cls_to_check = []
+    for arg in hint.__args__:
+        try:
+            cls_to_check.append(arg.__origin__)
+        except AttributeError:
+            cls_to_check.append(arg)
+    return isinstance(value, cls_to_check)
+
+
+# Base classes
 class DaqBase(Device):
     """
     Base class to define shared DAQ API
@@ -478,103 +585,3 @@ class DaqBase(Device):
         Return the number of the current run, or the previous run otherwise.
         """
         raise NotImplementedError('Please implement run_number in subclass.')
-
-
-def typing_check(value, hint):
-    # This works for basic types
-    try:
-        return isinstance(value, hint)
-    except TypeError:
-        ...
-    # This works for unions of basic types
-    try:
-        return isinstance(value, hint.__args__)
-    except TypeError:
-        ...
-    # This works for unions that include subscripted generics
-    cls_to_check = []
-    for arg in hint.__args__:
-        try:
-            cls_to_check.append(arg.__origin__)
-        except AttributeError:
-            cls_to_check.append(arg)
-    return isinstance(value, cls_to_check)
-
-
-ControlsObject = Union[PositionerBase, Signal]
-ControlsArg = Union[
-    list[ControlsObject],
-    dict[str, ControlsObject],
-]
-
-EnumId = Union[Type[Enum], int, str]
-
-
-class HelpfulIntEnum(IntEnum):
-    def from_any(self, identifier: EnumId) -> Type[HelpfulIntEnum]:
-        """
-        Try all the ways to interpret identifier as the enum
-        """
-        try:
-            return self[identifier]
-        except KeyError:
-            return self(identifier)
-
-    def include(
-        self,
-        identifiers: Iterator[EnumId],
-    ) -> set[Type[HelpfulIntEnum]]:
-        """
-        Return all enum values matching the ones given.
-        """
-        return {self.from_any(ident) for ident in identifiers}
-
-    def exclude(
-        self,
-        identifiers: Iterator[EnumId],
-    ) -> set[Type[HelpfulIntEnum]]:
-        """
-        Return all enum values other than the ones given.
-        """
-        return set(self.__members__.values()) - self.include(identifiers)
-
-
-class StateTransitionError(Exception):
-    pass
-
-
-def get_controls_value(obj: ControlsObject) -> Any:
-    try:
-        return obj.position
-    except Exception:
-        return obj.get()
-
-
-_daq_instance = None
-
-
-# TODO this breaks lcls2 daq, need to fix
-def register_daq(daq):
-    """
-    Called by `Daq` at the end of ``__init__`` to save our one daq instance as
-    the real `Daq`. There will always only be one `Daq`.
-
-    Parameters
-    ----------
-    daq: `Daq`
-    """
-    global _daq_instance
-    _daq_instance = daq
-    if daq.hutch_name is not None:
-        set_ami_hutch(daq.hutch_name.lower())
-
-
-def get_daq():
-    """
-    Called by other modules to get the registered `Daq` instance.
-
-    Returns
-    -------
-    daq: `Daq`
-    """
-    return _daq_instance
