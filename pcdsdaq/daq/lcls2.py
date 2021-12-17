@@ -1,5 +1,13 @@
 """
-Module that defines the controls python interface for the LCLS2 DAQ
+Module that defines the controls python interface for the LCLS2 DAQ.
+
+This is the second such interface. The original interface by Chris Ford
+is still distributed by the DAQ code at psdaq.control.BlueskyScan.
+
+This updated interface was created to meet expectations about specifics
+of what the interface should be as established in lcls1, largely for
+convenience of the end user. This should also make things more uniform
+between the lcls1 and the lcls2 usages of the DAQ.
 """
 from __future__ import annotations
 
@@ -7,11 +15,12 @@ import logging
 import threading
 from functools import cache
 from numbers import Real
-from typing import Iterator, Optional, Type, Union, get_type_hints
+from typing import Any, Iterator, Optional, Union, get_type_hints
 
+from bluesky import RunEngine
 from ophyd.device import Component as Cpt
 from ophyd.signal import Signal
-from ophyd.status import DeviceStatus, Status
+from ophyd.status import DeviceStatus
 from ophyd.utils import StatusTimeoutError, WaitTimeoutError
 from ophyd.utils.errors import InvalidState
 
@@ -22,6 +31,7 @@ try:
     from psdaq.control.ControlDef import ControlDef
     from psdaq.control.DaqControl import DaqControl
 except ImportError:
+    # TODO reimplement this more like lcls1 to simplify sim injection
     DaqControl = None
     ControlDef = None
 
@@ -30,144 +40,65 @@ pydaq = None
 
 
 class DaqLCLS2(DaqBase):
-    step_value_sig = Cpt(
-        Signal,
-        value=1,
-        kind='normal',
-        name='step_value',
-    )
-    state_sig = Cpt(
-        Signal,
-        value=None,
-        kind='normal',
-        name='state',
-    )
-    transition_sig = Cpt(
-        Signal,
-        value=None,
-        kind='normal',
-        name='transition',
-    )
-    transition_elapsed_sig = Cpt(
-        Signal,
-        value=None,
-        kind='normal',
-        name='transition_elapsed',
-    )
-    transition_total_sig = Cpt(
-        Signal,
-        value=None,
-        kind='normal',
-        name='transition_total',
-    )
-    config_alias_sig = Cpt(
-        Signal,
-        value=None,
-        kind='normal',
-        name='config_alias',
-    )
-    recording_sig = Cpt(
-        Signal,
-        value=None,
-        kind='normal',
-        name='recording',
-    )
-    bypass_activedet_sig = Cpt(
-        Signal,
-        value=None,
-        kind='normal',
-        name='bypass_activedet',
-    )
-    experiment_name_sig = Cpt(
-        Signal,
-        value=None,
-        kind='normal',
-        name='experiment_name',
-    )
-    run_number_sig = Cpt(
-        Signal,
-        value=None,
-        kind='normal',
-        name='run_number',
-    )
-    last_run_number_sig = Cpt(
-        Signal,
-        value=None,
-        kind='normal',
-        name='last_run_number',
-    )
+    """
+    The LCLS2 DAQ as a bluesky-compatible object.
 
-    group_mask_cfg = Cpt(
-        Signal,
-        value=None,
-        kind='config',
-        name='group_mask',
-    )
-    detname_cfg = Cpt(
-        Signal,
-        value='scan',
-        kind='config',
-        name='detname',
-    )
-    scantype_cfg = Cpt(
-        Signal,
-        value='scan',
-        kind='config',
-        name='scantype',
-    )
-    serial_number_cfg = Cpt(
-        Signal,
-        value='1234',
-        kind='config',
-        name='serial_number',
-    )
-    alg_name_cfg = Cpt(
-        Signal,
-        value='raw',
-        kind='config',
-        name='alg_name',
-    )
-    alg_version_cfg = Cpt(
-        Signal,
-        value=[1, 0, 0],
-        kind='config',
-        name='alg_version_cfg',
-    )
+    This uses the ``psdaq.control.DaqControl`` module to send ZMQ commands
+    to the DAQ instance.
 
-    last_err_sig = Cpt(
-        Signal,
-        value=None,
-        kind='omitted',
-        name='last_err',
-    )
-    last_warning_sig = Cpt(
-        Signal,
-        value=None,
-        kind='omitted',
-        name='last_warning',
-    )
-    last_file_report_sig = Cpt(
-        Signal,
-        value=None,
-        kind='omitted',
-        name='last_file_report',
-    )
-    step_done_sig = Cpt(
-        Signal,
-        value=None,
-        kind='omitted',
-        name='step_done',
-    )
-    last_transition_err_sig = Cpt(
-        Signal,
-        value=None,
-        kind='omitted',
-        name='last_transition_err',
-    )
+    It can be used as a ``Reader`` or as a ``Flyer`` in a ``bluesky`` plan.
+
+    Parameters
+    ----------
+    platform : int
+        Required argument to specify which daq platform we're connecting to.
+    host : str
+        The hostname of the DAQ host we are connecting to.
+    timeout : int
+        How many milliseconds to wait for various DAQ communications before
+        reporting an error.
+    RE: ``RunEngine``, optional
+        Set ``RE`` to the session's main ``RunEngine``
+    hutch_name: str, optional
+        Define a hutch name to use instead of shelling out to get_hutch_name.
+    """
+    # TODO double-check if timeout is int or float, what the units are,
+    # and what the precise behavior is.
+    step_value_sig = Cpt(Signal, value=1, kind='normal')
+    state_sig = Cpt(Signal, value=None, kind='normal')
+    transition_sig = Cpt(Signal, value=None, kind='normal')
+    transition_elapsed_sig = Cpt(Signal, value=None, kind='normal')
+    transition_total_sig = Cpt(Signal, value=None, kind='normal')
+    config_alias_sig = Cpt(Signal, value=None, kind='normal')
+    recording_sig = Cpt(Signal, value=None, kind='normal')
+    bypass_activedet_sig = Cpt(Signal, value=None, kind='normal')
+    experiment_name_sig = Cpt(Signal, value=None, kind='normal')
+    run_number_sig = Cpt(Signal, value=None, kind='normal')
+    last_run_number_sig = Cpt(Signal, value=None, kind='normal')
+
+    group_mask_cfg = Cpt(Signal, value=None, kind='config')
+    detname_cfg = Cpt(Signal, value='scan', kind='config')
+    scantype_cfg = Cpt(Signal, value='scan', kind='config')
+    serial_number_cfg = Cpt(Signal, value='1234', kind='config')
+    alg_name_cfg = Cpt(Signal, value='raw', kind='config')
+    alg_version_cfg = Cpt(Signal, value=[1, 0, 0], kind='config')
+
+    last_err_sig = Cpt(Signal, value=None, kind='omitted')
+    last_warning_sig = Cpt(Signal, value=None, kind='omitted')
+    last_file_report_sig = Cpt(Signal, value=None, kind='omitted')
+    step_done_sig = Cpt(Signal, value=None, kind='omitted')
+    last_transition_err_sig = Cpt(Signal, value=None, kind='omitted')
 
     requires_configure_transition = {'record'}
 
-    def __init__(self, platform, host, timeout, RE=None, hutch_name=None):
+    def __init__(
+        self,
+        platform: int,
+        host: str,
+        timeout: int,
+        RE: Optional[RunEngine] = None,
+        hutch_name: Optional[str] = None,
+    ):
         if DaqControl is None:
             raise RuntimeError('psdaq is not installed, cannot use LCLS2 daq')
         super().__init__(RE=RE, hutch_name=hutch_name, platform=platform)
@@ -183,23 +114,64 @@ class DaqLCLS2(DaqBase):
 
     @property
     @cache
-    def state_enum(self) -> Type[HelpfulIntEnum]:
+    def state_enum(self) -> type[HelpfulIntEnum]:
+        """
+        An enum of LCLS2 DAQ states.
+
+        This includes every node in the DAQ state machine ordered from
+        completely off to actively collecting data. That is to say,
+        higher numbered states are consistently more active than
+        lower-numbered states, and transitions tend to take us to the
+        next state up or down.
+
+        Returns
+        -------
+        Enum : type[HelpfulIntEnum]
+            The enum class that can be queried for individual DAQ states.
+        """
         return HelpfulIntEnum('PsdaqState', ControlDef.states)
 
+    # TODO double-check if these need the type qualifier in the hint
+    # It depends on if they have access to the helpful methods or not
+    # If they have the methods, the hint should just be HelpfulIntEnum
     @property
     @cache
-    def transition_enum(self) -> Type[HelpfulIntEnum]:
+    def transition_enum(self) -> type[HelpfulIntEnum]:
+        """
+        An enum of LCLS DAQ transitions.
+
+        This includes every edge in the DAQ state machine.
+        This is roughly ordered in a similar increasing way as state_enum,
+        but this is by convention and not by design and should not be
+        relied upon.
+
+        This does not include information about how the nodes are connected.
+
+        Returns
+        -------
+        Enum : type[HelpfulIntEnum]
+            The enum class that can be queried for individual DAQ transitions.
+        """
         return HelpfulIntEnum('PsdaqTransition', ControlDef.transitions)
 
-    def _start_monitor_thread(self):
+    def _start_monitor_thread(self) -> None:
         """
         Monitor the DAQ state in a background thread.
         """
         threading.Thread(target=self._monitor_thread, args=()).start()
 
-    def _monitor_thread(self):
+    def _monitor_thread(self) -> None:
         """
-        Pick up our ZMQ subscription messages, put into our signals.
+        Monitors the DAQ's ZMQ subscription messages, puts into our signals.
+
+        The LCLS2 DAQ has ZMQ PUB nodes that we can SUB to to get updates
+        about the status of the DAQ.
+
+        This thread takes the contents of those messages and uses them to
+        update our signal components, so that the rest of this class can
+        be written like a normal ophyd device: e.g. we'll be able to
+        call subscribe and write event-driven callbacks for various
+        useful quantities.
         """
         while not self._destroyed:
             try:
@@ -239,20 +211,37 @@ class DaqLCLS2(DaqBase):
                 ...
 
     @state_sig.sub_value
-    def _configured_cb(self, value, **kwargs):
+    def _configured_cb(
+        self,
+        value: Optional[HelpfulIntEnum],
+        **kwargs,
+    ) -> None:
         """
         Callback on the state signal to update the configured signal.
 
         The LCLS2 DAQ is considered configured based on the state machine.
+
+        Parameters
+        ----------
+        value : Optional[HelpfulIntEnum]
+            The last updated value from state_sig
         """
-        self.configured_sig.put(
-            value >= self.state_enum['configured']
-        )
+        if value is None:
+            self.configured_sig.put(False)
+        else:
+            self.configured_sig.put(
+                value >= self.state_enum['configured']
+            )
 
     @property
     def state(self) -> str:
         """
         API to show the state as reported by the DAQ.
+
+        Returns
+        -------
+        state : str
+            The string state name of the DAQ's current state.
         """
         return self.state_sig.get().name
 
@@ -282,7 +271,7 @@ class DaqLCLS2(DaqBase):
         transition: Optional[Iterator[EnumId]] = None,
         timeout: Optional[float] = None,
         check_now: bool = True,
-    ):
+    ) -> DeviceStatus:
         """
         Return a status object for DAQ state transitions.
 
@@ -290,12 +279,38 @@ class DaqLCLS2(DaqBase):
         or when we're doing the given transition, if either state or
         transition was given.
 
-        If both state and transition are given, then we need to arrive at
-        the given state using the given transition to mark the status as
-        done.
+        If both state and transition are given, then we need to be at both
+        the given state and the given transition to mark the status as done.
 
-        State and transition are both lists so we can check for multiple
-        states.
+        State and transition are both iterators so we can check for multiple
+        states. This works in an "any" sort of fashion: we need to be at
+        any one of the requested states, not at all of them.
+
+        If neither state nor transition are provided, the status will be
+        marked done at the next state or transition change, or immediately
+        if check_now is True.
+
+        Parameters
+        ----------
+        state : Optional[Iterator[EnumId]], optional
+            The states that we'd like a status for.
+            This can be e.g. a list of integers, strings, or enums.
+        transition : Optional[Iterator[EnumId]], optional
+            The transitions that we'd like a status for.
+            This can be e.g. a list of integers, strings, or enums.
+        timeout : Optional[float], optional
+            The duration to wait before marking the status as failed.
+            If omitted, the status will not time out.
+        check_now : bool, optional
+            If True, we'll check the states and transitions immediately.
+            If False, we'll require the system to change into the states
+            and transitions we're looking for.
+
+        Returns
+        -------
+        status : DeviceStatus
+            A status that will be marked successful after the corresponding
+            states or transitions are reached.
         """
         if state is None:
             state = {None}
@@ -359,8 +374,26 @@ class DaqLCLS2(DaqBase):
         check_now: bool = True,
     ):
         """
+        Return a status that is marked successful when the DAQ is done.
+
         The DAQ is done acquiring if the most recent transition was not
-        "beginrun", "beginstep", or "enable".
+        "beginrun", "beginstep", or "enable", which indicate that we're
+        transitioning toward a running state.
+
+        Parameters
+        ----------
+        timeout : Optional[float], optional
+            The duration to wait before marking the status as failed.
+            If omitted, the status will not time out.
+        check_now : bool, optional
+            If True, we'll check for the daq to be done right now.
+            If False, we'll wait for a transition to a done state.
+
+        Returns
+        -------
+        done_status : DeviceStatus
+            A status that is marked successful once the DAQ is done
+            acquiring.
         """
         return self.get_status_for(
             transition=self.transition_enum.exclude(
@@ -377,10 +410,29 @@ class DaqLCLS2(DaqBase):
         wait: bool = True,
     ) -> DeviceStatus:
         """
-        Undergo a daq state transition appropriately.
+        Cause a daq state transition appropriately.
 
         This passes extra data if we need to do the 'configure' or 'beginstep'
         transitions.
+
+        Parameters
+        ----------
+        state : EnumId
+            A valid enum identifier for the target state. This should be a
+            str, int, or Enum that corresponds with an element of
+            self.state_enum.
+        timeout : Optional[float], optional
+            The duration to wait before marking the transition as failed.
+            If omitted, the transition will not time out.
+        wait : bool, optional
+            If True, the default, block the thread until the transition
+            completes or times out.
+
+        Returns
+        -------
+        transition_status : DeviceStatus
+            A status object that is marked done when the transition has
+            completed.
         """
         # Normalize state
         state = self.state_enum.from_any(state)
@@ -436,11 +488,47 @@ class DaqLCLS2(DaqBase):
             status.wait()
         return status
 
-    def _transition_thread(self, state, phase1_info):
+    def _transition_thread(
+        self,
+        state: str,
+        phase1_info: dict[str, Any],
+    ) -> None:
+        """
+        Do the raw setState command.
+
+        This is intended for use in a background thread because setState
+        can block. A method is added here because we'd like to keep
+        track of the return value of setState, which is an error message.
+
+        Parameters
+        ----------
+        state : str
+            A state name that psdaq is expecting.
+        phase1_info : dict[str, Any]
+            A dictionary that maps transition names to extra data that the
+            DAQ can use.
+        """
         error_msg = self._control.setState(state, phase1_info)
         self.last_transition_err_sig.put(error_msg)
 
-    def _handle_duration_thread(self, duration):
+    # TODO could this be implemented better?
+    def _handle_duration_thread(self, duration: float) -> None:
+        """
+        Wait a fixed amount of time, then stop the daq.
+
+        The LCLS1 DAQ supported a duration argument that allowed us to
+        request fixed-length runs instead of fixed-events runs.
+        This is used to emulate that behavior.
+
+        This avoids desynchronous behavior like starting the DAQ again
+        at an inappropriate time after a cancelled run by ending early
+        if the DAQ stops by any other means.
+
+        Parameters
+        ----------
+        duration : float
+            The amount of time to wait in seconds.
+        """
         end_status = self.get_status_for(
             state=['starting'],
             transition=['endstep'],
@@ -460,7 +548,25 @@ class DaqLCLS2(DaqBase):
                 timeout=self.begin_timeout_cfg.get(),
             )
 
-    def _get_phase1(self, transition):
+    def _get_phase1(self, transition: str) -> dict[str, any]:
+        """
+        For a given transition, get the extra data we need to send to the DAQ.
+
+        This currently adds a hex data blcok for Configure and BeginStep
+        transitions, and is built using a number of our configuration
+        values.
+
+        Parameters
+        ----------
+        transition : str
+            The name of the transition from
+            psdaq.controls.ControlDef.transitionId
+
+        Returns
+        -------
+        phase1_info : dict[str, Any]
+            The data to send to the DAQ.
+        """
         if transition == 'Configure':
             phase1_key = 'NamesBlockHex'
         elif transition == 'BeginStep':
@@ -494,7 +600,19 @@ class DaqLCLS2(DaqBase):
         block = self._control.getBlock(transition=transition, data=data)
         return {phase1_key: block}
 
-    def _get_motors_for_transition(self):
+    def _get_motors_for_transition(self) -> dict[str, Any]:
+        """
+        Return the appropriate values for the DAQ's "motors" data.
+
+        This is similar to the controls from the LCLS1 DAQ.
+        It includes supplementary positional data from configured beamline
+        devices, as well as the DAQ step.
+
+        Returns
+        -------
+        motors : dict[str, Any]
+            Raw key-value pairs that the DAQ is expecting.
+        """
         controls = self.controls_cfg.get()
 
         # Always includes a step value, and let the user override it
@@ -537,25 +655,52 @@ class DaqLCLS2(DaqBase):
 
         return data
 
-    def _get_block(self, transition, data):
-        raise NotImplementedError(
-            'Have not done this one yet'
-        )
+    # TODO refactor to show all the available arguments from configure
+    def begin(
+        self,
+        wait: bool = False,
+        end_run: bool = False,
+        **kwargs,
+    ) -> None:
+        """
+        Interactive starting of the DAQ.
 
-    def begin(self, wait: bool = False, end_run: bool = False, **kwargs):
+        All kwargs are passed through to configure as appropriate and are
+        reverted afterwards.
+
+        Parameters
+        ----------
+        wait: bool, optional
+            If True, wait for the daq to stop.
+        end_run: bool, optional
+            If True, end the run when the daq stops.
+        """
         original_config = self.config
         self.preconfig(show_queued_cfg=False, **kwargs)
         super().begin(wait=wait, end_run=end_run)
         self.preconfig(show_queued_cfg=False, **original_config)
 
-    def _end_run_callback(self, status):
+    def _end_run_callback(self, status: DeviceStatus) -> None:
+        """
+        Callback for a status to end the run once the status completes.
+        """
         self.end_run()
 
+    # TODO decide if this needs more kwargs
     def begin_infinite(self):
+        """
+        Start the DAQ in such a way that it runs until asked to stop.
+
+        This is a shortcut included so that the user does not have to remember
+        the specifics of how to get the daq to run indefinitely.
+        """
         self.begin(events=0)
 
     @property
-    def _infinite_run(self):
+    def _infinite_run(self) -> bool:
+        """
+        True if the DAQ is configured to run forever.
+        """
         return self.events_cfg.get() == 0
 
     def stop(self, success: bool = False) -> None:
@@ -573,12 +718,12 @@ class DaqLCLS2(DaqBase):
 
     def end_run(self) -> None:
         """
-        Call `stop`, then mark the run as finished.
+        End the current run. This includes a stop if needed.
         """
         if self.state_sig.get() > self.state_enum['configured']:
             self.state_transition('configured', wait=False)
 
-    def trigger(self) -> Status:
+    def trigger(self) -> DeviceStatus:
         """
         Begin acquisition.
 
@@ -590,8 +735,8 @@ class DaqLCLS2(DaqBase):
 
         Returns
         -------
-        done_status: ``Status``
-            ``Status`` that will be marked as done when the daq is done.
+        done_status: ``DeviceStatus``
+            ``DeviceStatus`` that will be marked as done when the daq is done.
         """
         status = self.get_status_for(
             state=['starting'],

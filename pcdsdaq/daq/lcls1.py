@@ -77,8 +77,8 @@ class DaqLCLS1(DaqBase):
     hutch_name: str, optional
         Define a hutch name to use instead of shelling out to get_hutch_name.
     """
-    use_l3t_cfg = Cpt(Signal, value=False, kind='config', name='use_l3t')
-    begin_sleep_cfg = Cpt(Signal, value=0, kind='config', name='begin_sleep')
+    use_l3t_cfg = Cpt(Signal, value=False, kind='config')
+    begin_sleep_cfg = Cpt(Signal, value=0, kind='config')
 
     state_enum = enum.Enum(
         'PydaqState',
