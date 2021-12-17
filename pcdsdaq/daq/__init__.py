@@ -22,6 +22,4 @@ versions of the library, e.g. the following should still work:
 from .interface import DaqError, DaqTimeoutError, StateTransitionError, get_daq
 from .lcls1 import DaqLCLS1
 from .lcls2 import DaqLCLS2
-
-# TODO bring back the old code exactly as it was as an original.py module
-Daq = DaqLCLS1  # Backcompat
+from .original import Daq  # Backcompat, will be deprecated
