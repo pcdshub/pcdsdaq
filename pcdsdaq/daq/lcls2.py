@@ -323,7 +323,8 @@ class DaqLCLS2(DaqBase):
                 self.transition_enum.from_any(t) for t in transition
             }
 
-        def check_state(value, old_value, **kwargs):
+        def check_state(value: Any, old_value: Any, **kwargs) -> None:
+            """Call success if this value and last transition are correct."""
             nonlocal last_state
             if value == old_value and not check_now:
                 return
@@ -333,7 +334,8 @@ class DaqLCLS2(DaqBase):
                 else:
                     last_state = value
 
-        def check_transition(value, old_value, **kwargs):
+        def check_transition(value: Any, old_value: Any, **kwargs) -> None:
+            """Call success if this value and last state are correct."""
             nonlocal last_transition
             if value == old_value and not check_now:
                 return
@@ -343,13 +345,19 @@ class DaqLCLS2(DaqBase):
                 else:
                     last_transition = value
 
-        def success():
+        def success() -> None:
+            """Set the status as successfully finished if needed."""
             try:
                 status.set_finished()
             except InvalidState:
                 ...
 
-        def clean_up(status):
+        def clean_up(status: DeviceStatus) -> None:
+            """
+            Undo the subscriptions once the status is done.
+
+            Runs on successes, failures, and timeouts.
+            """
             self.state_sig.unsubscribe(state_cbid)
             self.transition_sig.unsubscribe(transition_cbid)
 
@@ -372,7 +380,7 @@ class DaqLCLS2(DaqBase):
         self,
         timeout: Optional[float] = None,
         check_now: bool = True,
-    ):
+    ) -> DeviceStatus:
         """
         Return a status that is marked successful when the DAQ is done.
 
@@ -552,7 +560,7 @@ class DaqLCLS2(DaqBase):
         """
         For a given transition, get the extra data we need to send to the DAQ.
 
-        This currently adds a hex data blcok for Configure and BeginStep
+        This currently adds a hex data block for Configure and BeginStep
         transitions, and is built using a number of our configuration
         values.
 
@@ -612,6 +620,8 @@ class DaqLCLS2(DaqBase):
         -------
         motors : dict[str, Any]
             Raw key-value pairs that the DAQ is expecting.
+            These represent the name of a value as will be recorded along with
+            the data stream as well as the corresponding value itself.
         """
         controls = self.controls_cfg.get()
 
@@ -683,11 +693,16 @@ class DaqLCLS2(DaqBase):
     def _end_run_callback(self, status: DeviceStatus) -> None:
         """
         Callback for a status to end the run once the status completes.
+
+        The status parameter is unused, but is passed in as self by
+        the DeviceStatus when this method is called.
+
+        Regardless of the input, this will end the run.
         """
         self.end_run()
 
     # TODO decide if this needs more kwargs
-    def begin_infinite(self):
+    def begin_infinite(self) -> None:
         """
         Start the DAQ in such a way that it runs until asked to stop.
 
@@ -747,14 +762,19 @@ class DaqLCLS2(DaqBase):
         self.kickoff()
         return status
 
+    # TODO make sure this configures appropriately, it might not.
+    # For example, if a reconfig is needed but we're in the "configured"
+    # state or higher and not the "connected" state.
     def kickoff(self) -> DeviceStatus:
         """
         Begin acquisition. This method is non-blocking.
-        See `begin` for a description of the parameters.
 
-        This method does not supply arguments for configuration parameters, it
-        supplies arguments directly to ``pydaq.Control.begin``. It will
-        configure before running if there are queued configuration changes.
+        This will transition us into the "running" state, as long as we
+        are connected or configured and not already running. In these
+        cases we will raise a RuntimeError.
+
+        This will cause the "configure", "beginrun", "beginstep", and "enable"
+        transitions as needed, depending on which state we are starting from.
 
         This is part of the ``bluesky`` ``Flyer`` interface.
 
@@ -791,6 +811,21 @@ class DaqLCLS2(DaqBase):
         return done_status
 
     def _enforce_config(self, name, value):
+        """
+        Raises a TypeError if the config argument has the wrong type.
+
+        This is implemented by inspecting the type hint associated with
+        the name parameter and comparing it with the type of the input
+        value.
+
+        Parameters
+        ----------
+        name : str
+            The keyword-argument that must be passed in to "configure"
+            or "preconfig" associated with value.
+        value : Any
+            The actual value that was passed into "configure" or "preconfig".
+        """
         hint = get_type_hints(self.preconfig)[name]
         if not typing_check(value, hint):
             raise TypeError(
@@ -811,9 +846,90 @@ class DaqLCLS2(DaqBase):
         scantype: Union[str, None, SENTINEL] = CONFIG_VAL,
         serial_number: Union[str, None, SENTINEL] = CONFIG_VAL,
         alg_name: Union[str, None, SENTINEL] = CONFIG_VAL,
-        alg_version: Union[list[str], None, SENTINEL] = CONFIG_VAL,
+        alg_version: Union[list[int], None, SENTINEL] = CONFIG_VAL,
         show_queued_config: bool = True,
-    ):
+    ) -> None:
+        # TODO investigate dynamically populating docstrings with
+        # values again for the BEGIN_TIMEOUT, etc.
+        # TODO better docstring for group_mask
+        """
+        Adjust the configuration without causing a configure transition.
+
+        This may be preferable over "configure" for interactive use for
+        two reasons:
+        1. A nice message is displayed instead of a return tuple of
+           two dictionaries
+        2. No real change happens to the DAQ when this method is called,
+           at most this may schedule a configure transition for later.
+
+        The behavior here is similar to putting to the cfg PVs, except
+        here we add type checking and config printouts.
+
+        This is called internally during "configure".
+
+        Arguments that are not provided are not changed.
+        Arguments that are passed as "None" will return to their
+        default values.
+
+        Parameters
+        ----------
+        events : int or None, optional
+            The number of events to take per step. Incompatible with the
+            "duration" argument. Defaults to "None", and running without
+            configuring events or duration gives us an endless run (that
+            can be terminated manually). Supplying an argument to "events"
+            will reset "duration" to "None".
+        duration : float or None, optional
+            How long to acquire data at each step in seconds.
+            Incompatible with the "events" argument. Defaults to "None",
+            and running without configuring events or duration dives us
+            an endless run (that can be terminated manually). Supplying
+            an argument to "duration" will reset "events" to "None".
+        record : bool or None, optional
+            Whether or not to save data during the DAQ run. Defaults to
+            "None", which means that we'll keep the DAQ's recording
+            state at whatever it is at the start of the run.
+            Changing the DAQ recording state cannot be done during a run,
+            as it will require a configure transition.
+        controls : list or dict of signals or positioners, or None, optional
+            The objects to include per-step in the DAQ data stream.
+            These must implement either the "position" attribute or the
+            "get" method to retrieve their current value.
+            If a list, we'll use the object's "name" attribute to seed the
+            data key. If a dict, we'll use the dictionary's keys instead.
+            If None, we'll only include the default DAQ step counter,
+            which will always be included.
+        motors : list or dict of signals or positioners, or None, optional
+            Alias of "controls" for backwards compatibility.
+        begin_timeout : float or None, optional
+            How long to wait before marking a begin run as a failure and
+            raising an exception. The default is {BEGIN_TIMEOUT} seconds.
+        begin_sleep : float or None, optional
+            How long to wait before starting a run. The default is
+            {BEGIN_SLEEP} seconds.
+        group_mask : int or None, optional
+            Bitmask that is used by the DAQ. This docstring writer is not
+            sure exactly what it does. The default is all zeroes with a
+            "1" bitshifted left by the platform number.
+        detname : str or None, optional
+            The name associated with the controls data in the DAQ.
+            Defaults to "scan".
+        scantype : str or None, optional
+            Another string associated with the runs produced by this
+            object in the DAQ. Defaults to "scan".
+        serial_number : str or None, optional
+            Another string associated with the runs produced by this
+            object in the DAQ. Defaults to "1234".
+        alg_name : str or None, optional
+            Another string associated with the runs produced by this
+            object in the DAQ. Defaults to "raw".
+        alg_version : list of int, or None, optional
+            The version numbers [major, minor, bugfix] associated with
+            alg_name. Defaults to [1, 0, 0].
+        show_queued_config: bool, optional
+            If True, we'll show what the next configuration will be
+            as a nice log message.
+        """
         self._enforce_config('events', events)
         self._enforce_config('duration', duration)
         self._enforce_config('record', record)
@@ -854,7 +970,7 @@ class DaqLCLS2(DaqBase):
             show_queued_cfg=show_queued_config,
         )
 
-    # TODO fix type hinting for default of _CONFIG_VAL instead of None
+    # TODO make sure the configure timing is correct as described in docstring
     def configure(
         self,
         events: Union[int, None, SENTINEL] = CONFIG_VAL,
@@ -869,8 +985,87 @@ class DaqLCLS2(DaqBase):
         scantype: Union[str, None, SENTINEL] = CONFIG_VAL,
         serial_number: Union[str, None, SENTINEL] = CONFIG_VAL,
         alg_name: Union[str, None, SENTINEL] = CONFIG_VAL,
-        alg_version: Union[list[str], None, SENTINEL] = CONFIG_VAL,
+        alg_version: Union[list[int], None, SENTINEL] = CONFIG_VAL,
     ):
+        """
+        Adjusts the configuration, causing a "configure" transition if needed.
+
+        A "configure" transition wil be caused in the following cases:
+        1. We are in the "connected" state
+        2. We are in the "configured" state but an important configuration
+           parameter has been changed. In this case, we will revert to the
+           "connected" state and then return to the "configured" state.
+
+        In all other states, this will raise a "RuntimeError" if it decides
+        that a "configure" transition is needed.
+
+        Arguments that are not provided are not changed.
+        Arguments that are passed as "None" will return to their
+        default values.
+
+        Parameters
+        ----------
+        events : int or None, optional
+            The number of events to take per step. Incompatible with the
+            "duration" argument. Defaults to "None", and running without
+            configuring events or duration gives us an endless run (that
+            can be terminated manually). Supplying an argument to "events"
+            will reset "duration" to "None".
+        duration : float or None, optional
+            How long to acquire data at each step in seconds.
+            Incompatible with the "events" argument. Defaults to "None",
+            and running without configuring events or duration dives us
+            an endless run (that can be terminated manually). Supplying
+            an argument to "duration" will reset "events" to "None".
+        record : bool or None, optional
+            Whether or not to save data during the DAQ run. Defaults to
+            "None", which means that we'll keep the DAQ's recording
+            state at whatever it is at the start of the run.
+            Changing the DAQ recording state cannot be done during a run,
+            as it will require a configure transition.
+        controls : list or dict of signals or positioners, or None, optional
+            The objects to include per-step in the DAQ data stream.
+            These must implement either the "position" attribute or the
+            "get" method to retrieve their current value.
+            If a list, we'll use the object's "name" attribute to seed the
+            data key. If a dict, we'll use the dictionary's keys instead.
+            If None, we'll only include the default DAQ step counter,
+            which will always be included.
+        motors : list or dict of signals or positioners, or None, optional
+            Alias of "controls" for backwards compatibility.
+        begin_timeout : float or None, optional
+            How long to wait before marking a begin run as a failure and
+            raising an exception. The default is {BEGIN_TIMEOUT} seconds.
+        begin_sleep : float or None, optional
+            How long to wait before starting a run. The default is
+            {BEGIN_SLEEP} seconds.
+        group_mask : int or None, optional
+            Bitmask that is used by the DAQ. This docstring writer is not
+            sure exactly what it does. The default is all zeroes with a
+            "1" bitshifted left by the platform number.
+        detname : str or None, optional
+            The name associated with the controls data in the DAQ.
+            Defaults to "scan".
+        scantype : str or None, optional
+            Another string associated with the runs produced by this
+            object in the DAQ. Defaults to "scan".
+        serial_number : str or None, optional
+            Another string associated with the runs produced by this
+            object in the DAQ. Defaults to "1234".
+        alg_name : str or None, optional
+            Another string associated with the runs produced by this
+            object in the DAQ. Defaults to "raw".
+        alg_version : list of int, or None, optional
+            The version numbers [major, minor, bugfix] associated with
+            alg_name. Defaults to [1, 0, 0].
+
+        Returns
+        -------
+        (old, new): tuple[dict, dict]
+            The configurations before and after the function was called.
+            This is used internally by bluesky when we include
+            "configure" in a plan.
+        """
         old, new = super().configure(
             events=events,
             duration=duration,
@@ -903,8 +1098,16 @@ class DaqLCLS2(DaqBase):
             self._queue_configure_transition = False
         return old, new
 
-    def run_number(self):
+    def run_number(self) -> int:
         """
         Determine the run number of the last run, or current run if running.
+
+        This is a method and not a property for consistency with the other
+        DAQ interfaces, which need to do some extra processing to come up
+        with this number.
+
+        Returns
+        -------
+        run_number : int
         """
         return self.run_number_sig.get()
