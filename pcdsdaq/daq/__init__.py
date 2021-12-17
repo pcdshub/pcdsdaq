@@ -19,8 +19,9 @@ versions of the library, e.g. the following should still work:
    from pcdsdaq.daq import Daq
 """
 # flake8: noqa
-from .interface import get_daq
+from .interface import DaqError, DaqTimeoutError, StateTransitionError, get_daq
 from .lcls1 import DaqLCLS1
 from .lcls2 import DaqLCLS2
 
+# TODO bring back the old code exactly as it was as a deprecated module
 Daq = DaqLCLS1  # Backcompat

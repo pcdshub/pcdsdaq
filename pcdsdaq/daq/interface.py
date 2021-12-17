@@ -8,7 +8,7 @@ The interfaces defined here have three primary sources:
 1. Items that are required to use the Daq device in a Bluesky scan
 2. Items that are maintained from an older version of python daq control
 3. Items that shape the Daq in the image of an Ophyd device for ease of
-   management and consistently with other beamline devices.
+   management and consistency with other beamline devices.
 """
 from __future__ import annotations
 
@@ -17,12 +17,12 @@ import threading
 import time
 from enum import Enum, IntEnum
 from functools import cache
-from typing import Any, ClassVar, Iterator, NewType, Optional, Type, Union
+from typing import Any, ClassVar, Generator, Iterator, NewType, Optional, Union
 
 from bluesky import RunEngine
 from ophyd.device import Component as Cpt
 from ophyd.device import Device
-from ophyd.ophydobj import Kind
+from ophyd.ophydobj import Kind, OphydObject
 from ophyd.positioner import PositionerBase
 from ophyd.signal import AttributeSignal, Signal
 from ophyd.status import DeviceStatus
@@ -30,9 +30,11 @@ from ophyd.utils import StatusTimeoutError, WaitTimeoutError
 
 from ..ami import set_ami_hutch
 
+# TODO evaluate and expand the logger calls everywhere
 logger = logging.getLogger(__name__)
 
 # Constants and Globals
+# TODO eliminate these global constants in favor of config defaults
 # Wait up to this many seconds for daq to be ready for a begin call
 BEGIN_TIMEOUT = 15
 # Do not allow begins within this many seconds of a stop
@@ -40,25 +42,45 @@ BEGIN_THROTTLE = 1
 
 # Not-None sentinal for default value when None has a special meaning
 # Indicates that the last configured value should be used
-SENTINEL = NewType('SENTINEL')
-CONFIG_VAL = SENTINEL()
+SENTINEL = NewType('SENTINEL', object)
+CONFIG_VAL = SENTINEL(object())
 
 # The DAQ singleton
 _daq_instance = None
 
 # Types
+# Type hint for objects that have .position or .get
 ControlsObject = Union[PositionerBase, Signal]
+# Type hint for valid arguments to configure(controls=)
 ControlsArg = Union[
     list[ControlsObject],
     dict[str, ControlsObject],
 ]
-EnumId = Union[Type[Enum], int, str]
+# Type hint for valid identifiers for an enum
+EnumId = Union[Enum, int, str]
 
 
 class HelpfulIntEnum(IntEnum):
-    def from_any(self, identifier: EnumId) -> Type[HelpfulIntEnum]:
+    """
+    IntEnum subclass with some utility extensions.
+    """
+    def from_any(self, identifier: EnumId) -> HelpfulIntEnum:
         """
-        Try all the ways to interpret identifier as the enum
+        Try all the ways to interpret identifier as the enum.
+
+        This is intended to consolidate the try/except tree typically used
+        to interpret external input as an enum.
+
+        Parameters
+        ----------
+        identifier : EnumId
+            Any str, int, or Enum value that corresponds with a valid value
+            on this HelpfulIntEnum instance.
+
+        Returns
+        -------
+        enum : HelpfulIntEnum
+            The corresponding enum object associated with the identifier.
         """
         try:
             return self[identifier]
@@ -68,40 +90,92 @@ class HelpfulIntEnum(IntEnum):
     def include(
         self,
         identifiers: Iterator[EnumId],
-    ) -> set[Type[HelpfulIntEnum]]:
+    ) -> set[HelpfulIntEnum]:
         """
-        Return all enum values matching the ones given.
+        Returns all enum values matching the identifiers given.
+
+        This is a shortcut for calling self.from_any many times and
+        assembling a set of the results.
+
+        Parameters
+        ----------
+        identifiers : Iterator[EnumId]
+            Any iterable that contains strings, ints, and Enum values that
+            correspond with valid values on this HelpfulIntEnum instance.
+
+        Returns
+        -------
+        enums : set[HelpfulIntEnum]
+            A set whose elements are the enum objects associated with the
+            input identifiers.
         """
         return {self.from_any(ident) for ident in identifiers}
 
+    # TODO evaluate if this method was necessary
+    # or if using not include was always sufficient
     def exclude(
         self,
         identifiers: Iterator[EnumId],
-    ) -> set[Type[HelpfulIntEnum]]:
+    ) -> set[HelpfulIntEnum]:
         """
         Return all enum values other than the ones given.
+
+        Parameters
+        ----------
+        identifiers : Iterator[EnumId]
+            Any iterable that contains strings, ints, and Enum values that
+            correspond with valid values on this HelpfulIntEnum instance.
+
+        Returns
+        -------
+        enums : set[HelpfulIntEnum]
+            A set whose elements are the valid enum objects not associated
+            with the input identifiers.
         """
         return set(self.__members__.values()) - self.include(identifiers)
 
 
-class DaqTimeoutError(Exception):
+class DaqError(Exception):
     """
-    Exception raised when the DAQ times out.
+    Base class for DAQ exceptions.
+
+    External users can try/except on this exception class as a catch-all for
+    DAQ-specific exceptions.
     """
     ...
 
 
-class StateTransitionError(Exception):
+# TODO apply this to lcls2 classes
+class DaqTimeoutError(DaqError):
     """
-    Exception raised when a state transition fails.
+    Exception raised when the DAQ times out.
+
+    This encompasses cases where we ask for a specific action, but we observe
+    that nothing has happened for too long a duration, so we don't know
+    if the operation will ever complete.
+    """
+    ...
+
+
+# TODO consider renaming to DaqStateTransitionError
+# TODO apply this to lcls2 classes
+class StateTransitionError(DaqError):
+    """
+    Exception raised when a DAQ state transition fails.
+
+    This is distinct from a timeout where we aren't sure what's happened.
+    This is the case where we know that something definitely has gone wrong.
     """
     ...
 
 
 # Helper functions
-def get_daq():
+# TODO find instances of `Daq` in docstrings and re-route to correct class
+def get_daq() -> Optional[DaqBase]:
     """
     Called by other modules to get the registered `Daq` instance.
+
+    This will return None if there is no such registered instance.
 
     Returns
     -------
@@ -110,7 +184,7 @@ def get_daq():
     return _daq_instance
 
 
-def register_daq(daq):
+def register_daq(daq: DaqBase) -> None:
     """
     Called by `Daq` at the end of ``__init__`` to save our one daq instance as
     the real `Daq`. There will always only be one `Daq`.
@@ -125,14 +199,53 @@ def register_daq(daq):
         set_ami_hutch(daq.hutch_name.lower())
 
 
+# TODO use this in lcls1 classes
 def get_controls_value(obj: ControlsObject) -> Any:
+    """
+    Return the primary value associated with a controls object.
+
+    In the case of positioners, this will be the .position attribute.
+    In the case of signals, this will be the return value from .get.
+
+    Parameters
+    ----------
+    obj : ControlsObject
+        The positioner or signal to extract a value from.
+
+    Returns
+    -------
+    val: Any
+        The value associated with that signal. Most commonly this will
+        be a float, but it could be any Python type.
+    """
     try:
         return obj.position
     except Exception:
         return obj.get()
 
 
-def typing_check(value, hint):
+def typing_check(value: Any, hint: Any) -> bool:
+    """
+    A best-effort check if value matches the given type hint.
+
+    This is not expected to work outside of the context of this module
+    and its behavior is subject to change without notice.
+
+    The intended use case is for parsing through the type annotations on
+    the configure methods.
+
+    Parameters
+    ----------
+    value : Any
+        Any value to check.
+    hint : Any
+        Any type hint to check against.
+
+    Returns
+    -------
+    ok : bool
+        True if the value matches the hint, False otherwise.
+    """
     # This works for basic types
     try:
         return isinstance(value, hint)
@@ -153,6 +266,16 @@ def typing_check(value, hint):
     return isinstance(value, cls_to_check)
 
 
+def clip_name(obj: OphydObject):
+    """
+    Remove everything after and including the last underscore in a name.
+
+    This lets me have nice looking read keys without needing to override
+    legacy api from before these classes were ophyd-ized.
+    """
+    obj.name = '_'.join(obj.name.split('_')[:-1])
+
+
 # Base classes
 class DaqBase(Device):
     """
@@ -163,28 +286,17 @@ class DaqBase(Device):
     Also defines some shared features so that different DAQ versions
     do not have to reinvent the wheel for basic API choices.
     """
-    state_sig = Cpt(AttributeSignal, 'state', kind='normal', name='state')
-    configured_sig = Cpt(
-        Signal,
-        value=False,
-        kind='normal',
-        name='configured',
-    )
+    state_sig = Cpt(AttributeSignal, 'state', kind='normal')
+    configured_sig = Cpt(Signal, value=False, kind='normal')
 
-    events_cfg = Cpt(Signal, value=None, kind='config', name='events')
-    duration_cfg = Cpt(Signal, value=None, kind='config', name='duration')
-    record_cfg = Cpt(Signal, value=None, kind='config', name='record')
-    controls_cfg = Cpt(Signal, value=None, kind='config', name='controls')
-    begin_timeout_cfg = Cpt(
-        Signal,
-        value=BEGIN_TIMEOUT,
-        kind='config',
-        name='begin_timeout',
-    )
-    begin_sleep_cfg = Cpt(Signal, value=0, kind='config', name='begin_sleep')
+    events_cfg = Cpt(Signal, value=None, kind='config')
+    duration_cfg = Cpt(Signal, value=None, kind='config')
+    record_cfg = Cpt(Signal, value=None, kind='config')
+    controls_cfg = Cpt(Signal, value=None, kind='config')
+    begin_timeout_cfg = Cpt(Signal, value=BEGIN_TIMEOUT, kind='config')
+    begin_sleep_cfg = Cpt(Signal, value=0, kind='config')
 
     # Define these in subclass
-    state_enum: ClassVar[Enum]
     requires_configure_transition: ClassVar[set[str]]
 
     # Variables from init
@@ -208,6 +320,8 @@ class DaqBase(Device):
         self._last_config = {}
         self._queue_configure_transition = True
         super().__init__(name=name)
+        for cpt_name in self.component_names:
+            clip_name(getattr(self, cpt_name))
         register_daq(self)
 
     # Convenience properties
@@ -237,7 +351,7 @@ class DaqBase(Device):
         """
         if self.configured:
             cfg = self.read_configuration()
-            return {key: value['value'] for key, value in cfg.items()}
+            return {key: info['value'] for key, info in cfg.items()}
         else:
             return self.default_config.copy()
 
@@ -271,7 +385,15 @@ class DaqBase(Device):
 
         This is the equivalent of "kickoff" but for interactive sessions.
         All kwargs except for "wait" and "end_run" are passed through to
-        kickoff.
+        kickoff, in case the DAQ API requires parameters to be started.
+
+        In this base class, we handle:
+        - calling kickoff
+        - waiting for the kickoff to complete
+        - waiting for begin_sleep
+        - waiting for the acquisition to run if requested
+        - ending the run if requested
+        - stopping or ending the run on ctrl+c as appropriate
 
         Parameters
         ----------
@@ -312,6 +434,12 @@ class DaqBase(Device):
                 self.stop()
 
     def begin_infinite(self):
+        """
+        Start the DAQ in such a way that it runs until asked to stop.
+
+        This is a shortcut included so that the user does not have to remember
+        the specifics of how to get the daq to run indefinitely.
+        """
         raise NotImplementedError(
             'Please implement begin_infinite in subclass.'
         )
@@ -330,7 +458,7 @@ class DaqBase(Device):
 
     def end_run(self) -> None:
         """
-        Call `stop`, then mark the run as finished.
+        End the current run. This includes a stop if needed.
         """
         raise NotImplementedError('Please implement end_run in subclass.')
 
@@ -357,20 +485,20 @@ class DaqBase(Device):
 
         This also stops if running so you can use this device in a bluesky scan
         and wait for "everything else" to be done, then stop the daq
-        afterwards.
+        afterwards. This is occasionally used in sequencer-guided scans.
         """
-        if self.state == 'Running':
+        if self.state.lower() == 'running':
             self.stop()
         return super().read()
 
-    def kickoff(self) -> DeviceStatus:
+    def kickoff(self, **kwargs) -> DeviceStatus:
         """
         Begin acquisition. This method is non-blocking.
-        See `begin` for a description of the parameters.
 
-        This method does not supply arguments for configuration parameters, it
-        supplies arguments directly to ``pydaq.Control.begin``. It will
-        configure before running if there are queued configuration changes.
+        Bluesky will not pass in any parameters, but kwargs can be forwarded
+        to the DAQ API if needed. All kwargs should have a cooresponding
+        configuration signal so we know what values to use during a bluesky
+        scan.
 
         This is part of the ``bluesky`` ``Flyer`` interface.
 
@@ -383,8 +511,13 @@ class DaqBase(Device):
 
     def complete(self) -> DeviceStatus:
         """
+        Return a status that will be marked as done after acquisition stops.
+
         If the daq is freely running, this will `stop` the daq.
-        Otherwise, we'll simply collect the end_status object.
+        Otherwise, we'll simply collect the end_status object and wait for
+        the acquisition to end as scheduled.
+
+        This is part of the ``bluesky`` ``Flyer`` interface.
 
         Returns
         -------
@@ -394,7 +527,7 @@ class DaqBase(Device):
         """
         raise NotImplementedError('Please implement complete in subclass.')
 
-    def collect(self):
+    def collect(self) -> Generator[None, None, None]:
         """
         Collect data as part of the ``bluesky`` ``Flyer`` interface.
 
@@ -408,19 +541,32 @@ class DaqBase(Device):
 
     def describe_collect(self) -> dict:
         """
-        As per the ``bluesky`` interface, this is how you interpret the null
-        data from `collect`. There isn't anything here, as nothing will be
-        collected.
+        Interpret the data from `collect`.
+
+        There isn't anything here, as nothing will be collected.
+
+        Returns
+        -------
+        desc : dict
+            An empty dictionary.
         """
         logger.debug('Daq.describe_collect()')
         return {}
 
-    def preconfig(self, show_queued_cfg: bool = True, **kwargs):
+    def preconfig(self, show_queued_cfg: bool = True, **kwargs) -> None:
         """
         Write to the configuration signals without executing any transitions.
 
+        None values are interpreted as "return to the default config"
+        CONFIG_VAL sentinels are interpreted as "do not change anything"
+
         Will store the boolean _queue_configure_transition if any
         configurations were changed that require a configure transition.
+
+        Parameters
+        ----------
+        show_queued_cfg : bool, optional
+            If True, gives a nice printout of the new configuration.
         """
         for key, value in kwargs.items():
             if isinstance(value, SENTINEL):
@@ -458,6 +604,14 @@ class DaqBase(Device):
 
         Must be extended in subclass to cause the configure transition when
         needed and to reset the _queue_configure_transition attribute.
+
+        kwargs are passed straight through to preconfig.
+
+        Returns
+        -------
+        (old, new) : tuple
+            The previous configuration and the new configuration after calling
+            this method. This is a requirement of the bluesky interface.
         """
         old = self.read_configuration()
         self.preconfig(show_queued_cfg=False, **kwargs)
@@ -493,11 +647,17 @@ class DaqBase(Device):
             header += ' '
         logger.info(header + ', '.join(txt))
 
+    # TODO double-check edge case
+    # where record is true and user clicks gui to false
+    # python doesn't yet know that this is a config change!
     @property
-    def record(self) -> bool:
+    def record(self) -> Optional[bool]:
         """
-        If ``True``, we'll configure the daq to record data. If ``False``, we
-        will configure the daq to not record data.
+        Whether or not to record data.
+
+        If ``True``, we'll configure the daq to record data.
+        If ``False``, we'll configure the daq to not record data.
+        If ``None``, we'll keep the current record/norecord state.
 
         Setting this is the equivalent of scheduling a `configure` call to be
         executed later, e.g. ``configure(record=True)``, or putting to the
@@ -506,9 +666,13 @@ class DaqBase(Device):
         return self.record_cfg.get()
 
     @record.setter
-    def record(self, record: bool):
+    def record(self, record: Optional[bool]):
         self.preconfig(record=record, show_queued_cfg=False)
 
+    # TODO evaluate if lcls2 daq needs to set self to connected state
+    # on stage/unstage as in Chris Ford's implementation
+    # should there be a way from the Python to get to connected state
+    # in lcls2?
     def stage(self) -> list[DaqBase]:
         """
         ``bluesky`` interface for preparing a device for action.
@@ -552,29 +716,35 @@ class DaqBase(Device):
             self._RE.unsubscribe(self._re_cbid)
             self._re_cbid = None
         # If we're still running, end now
-        if self.state in ('Open', 'Running', 'running'):
+        if self.state.lower() in ('open', 'running', 'starting', 'paused'):
             self.end_run()
         # Return to running if we already were (to keep AMI running)
-        if self._pre_run_state in ('Running', 'running'):
+        if self._pre_run_state.lower() == 'running':
             self.begin_infinite()
         # For other states, end_run was sufficient.
         # E.g. do not disconnect, or this would close the open plots!
         return [self]
 
-    # TODO see if pause/resume need to be bifurcated between lcls1 and lcls2
-    def pause(self):
+    def pause(self) -> None:
         """
-        ``bluesky`` interface for determining what to do when a plan is
-        interrupted. This will call `stop`, but it will not call `end_run`.
+        Called when a bluesky plan is interrupted.
+
+        This will call `stop`, but it will not call `end_run`.
+
+        This is not to be confused with the "paused" state in the lcls2 DAQ,
+        which is semantically different. For LCLS2, this ends the step
+        drops us to the 'starting' state.
         """
         logger.debug('Daq.pause()')
-        if self.state == 'Running':
+        if self.state.lower() in ('running', 'paused'):
             self.stop()
 
-    def resume(self):
+    # TODO this might need to call kickoff for lcls2 instead of begin
+    def resume(self) -> None:
         """
-        ``bluesky`` interface for determining what to do when an interrupted
-        plan is resumed. This will call `begin`.
+        Called when an interrupted bluesky plan is resumed.
+
+        This will call `begin`.
         """
         logger.debug('Daq.resume()')
         if self.state == 'Open':
