@@ -1,5 +1,8 @@
 """
-Module that defines the controls python interface for the LCLS1 DAQ
+Module that defines the controls python interface for the LCLS1 DAQ.
+
+This is an experimental refactoring of the code found in original.py,
+but is intended to replace that code once fully tested.
 """
 from __future__ import annotations
 
@@ -10,16 +13,19 @@ import os
 import threading
 import time
 from importlib import import_module
+from typing import Any, Optional, Union
 
+from bluesky import RunEngine
 from ophyd.device import Component as Cpt
 from ophyd.signal import Signal
-from ophyd.status import Status
+from ophyd.status import DeviceStatus
 from ophyd.utils import StatusTimeoutError, WaitTimeoutError
 
 from .. import ext_scripts
-from ..ami import set_monitor_det, set_pyami_filter
-from .interface import (BEGIN_THROTTLE, BEGIN_TIMEOUT, CONFIG_VAL, DaqBase,
-                        DaqTimeoutError, StateTransitionError)
+from ..ami import AmiDet, set_monitor_det, set_pyami_filter
+from .interface import (BEGIN_THROTTLE, BEGIN_TIMEOUT, CONFIG_VAL, SENTINEL,
+                        ControlsArg, DaqBase, DaqTimeoutError,
+                        StateTransitionError)
 
 logger = logging.getLogger(__name__)
 pydaq = None
@@ -81,7 +87,11 @@ class DaqLCLS1(DaqBase):
     )
     requires_configure_transition = {'record', 'use_l3t'}
 
-    def __init__(self, RE=None, hutch_name=None):
+    def __init__(
+        self,
+        RE: Optional[RunEngine] = None,
+        hutch_name: Optional[str] = None,
+    ):
         if pydaq is None:
             globals()['pydaq'] = import_module('pydaq')
         super().__init__(RE=RE, hutch_name=hutch_name)
@@ -95,14 +105,14 @@ class DaqLCLS1(DaqBase):
 
     # Convenience properties
     @property
-    def connected(self):
+    def connected(self) -> bool:
         """
         ``True`` if the daq is connected, ``False`` otherwise.
         """
         return self._control is not None
 
     @property
-    def state(self):
+    def state(self) -> str:
         """
         State as reported by the daq. Can be any of the following:
         - ``Disconnected``: No active session in python
@@ -119,7 +129,7 @@ class DaqLCLS1(DaqBase):
             return 'Disconnected'
 
     # Interactive methods
-    def connect(self):
+    def connect(self) -> None:
         """
         Connect to the live DAQ, giving full control to the Python process.
 
@@ -156,7 +166,7 @@ class DaqLCLS1(DaqBase):
         else:
             logger.info('Connect requested, but already connected to DAQ')
 
-    def disconnect(self):
+    def disconnect(self) -> None:
         """
         Disconnect from the live DAQ, giving control back to the GUI.
 
@@ -173,7 +183,11 @@ class DaqLCLS1(DaqBase):
         logger.info('DAQ is disconnected.')
 
     @check_connect
-    def wait(self, timeout=None, end_run=False):
+    def wait(
+        self,
+        timeout: Optional[float] = None,
+        end_run: bool = False,
+    ) -> None:
         """
         Pause the thread until the DAQ is done aquiring.
 
@@ -200,9 +214,16 @@ class DaqLCLS1(DaqBase):
         if end_run:
             self.end_run()
 
-    def begin(self, events=CONFIG_VAL, duration=CONFIG_VAL,
-              record=CONFIG_VAL, use_l3t=CONFIG_VAL, controls=CONFIG_VAL,
-              wait=False, end_run=False):
+    def begin(
+        self,
+        events: Union[int, None, SENTINEL] = CONFIG_VAL,
+        duration: Union[int, None, SENTINEL] = CONFIG_VAL,
+        record: Union[bool, None, SENTINEL] = CONFIG_VAL,
+        use_l3t: Union[bool, None, SENTINEL] = CONFIG_VAL,
+        controls: Union[ControlsArg, None, SENTINEL] = CONFIG_VAL,
+        wait: bool = False,
+        end_run: bool = False,
+    ):
         """
         Start the daq and block until the daq has begun acquiring data.
 
@@ -260,6 +281,7 @@ class DaqLCLS1(DaqBase):
                 use_l3t=use_l3t,
                 controls=controls,
                 wait=wait,
+                end_run=end_run,
             )
         finally:
             try:
@@ -268,18 +290,22 @@ class DaqLCLS1(DaqBase):
                 pass
 
     @property
-    def _begin_timeout(self):
+    def _begin_timeout(self) -> int:
         return BEGIN_TIMEOUT + BEGIN_THROTTLE
 
-    def begin_infinite(self, record=CONFIG_VAL, use_l3t=CONFIG_VAL,
-                       controls=CONFIG_VAL):
+    def begin_infinite(
+        self,
+        record: Union[bool, None, SENTINEL] = CONFIG_VAL,
+        use_l3t: Union[bool, None, SENTINEL] = CONFIG_VAL,
+        controls: Union[ControlsArg, None, SENTINEL] = CONFIG_VAL,
+    ) -> None:
         """
         Start the daq to run forever in the background.
         """
         self.begin(events=0, record=record, use_l3t=use_l3t,
                    controls=controls, wait=False, end_run=False)
 
-    def _ender_thread(self):
+    def _ender_thread(self) -> None:
         """
         End the run when the daq stops aquiring
         """
@@ -287,7 +313,7 @@ class DaqLCLS1(DaqBase):
         self.end_run()
 
     @check_connect
-    def stop(self, success: bool = False):
+    def stop(self, success: bool = False) -> None:
         """
         Stop the current acquisition, ending it early.
 
@@ -303,7 +329,7 @@ class DaqLCLS1(DaqBase):
         self._last_stop = time.time()
 
     @check_connect
-    def end_run(self):
+    def end_run(self) -> None:
         """
         Call `stop`, then mark the run as finished.
         """
@@ -313,7 +339,7 @@ class DaqLCLS1(DaqBase):
 
     # Reader interface
     @check_connect
-    def trigger(self):
+    def trigger(self) -> DeviceStatus:
         """
         Begin acquisition. This method blocks until the run begins.
 
@@ -337,8 +363,13 @@ class DaqLCLS1(DaqBase):
 
     # Flyer interface
     @check_connect
-    def kickoff(self, events=CONFIG_VAL, duration=CONFIG_VAL,
-                use_l3t=CONFIG_VAL, controls=CONFIG_VAL):
+    def kickoff(
+        self,
+        events: Union[int, None, SENTINEL] = CONFIG_VAL,
+        duration: Union[int, None, SENTINEL] = CONFIG_VAL,
+        use_l3t: Union[bool, None, SENTINEL] = CONFIG_VAL,
+        controls: Union[ControlsArg, None, SENTINEL] = CONFIG_VAL,
+    ) -> DeviceStatus:
         """
         Begin acquisition. This method is non-blocking.
         See `begin` for a description of the parameters.
@@ -418,7 +449,7 @@ class DaqLCLS1(DaqBase):
                 logger.debug('Marking kickoff as failed')
                 status.set_exception(RuntimeError('Daq begin failed!'))
 
-        begin_status = Status(obj=self)
+        begin_status = DeviceStatus(self)
         watcher = threading.Thread(target=start_thread,
                                    args=(self._control, begin_status, events,
                                          duration, use_l3t, controls,
@@ -426,7 +457,7 @@ class DaqLCLS1(DaqBase):
         watcher.start()
         return begin_status
 
-    def complete(self):
+    def complete(self) -> DeviceStatus:
         """
         If the daq is freely running, this will `stop` the daq.
         Otherwise, we'll simply return the end_status object.
@@ -444,7 +475,7 @@ class DaqLCLS1(DaqBase):
             self.stop()
         return end_status
 
-    def _get_end_status(self):
+    def _get_end_status(self) -> DeviceStatus:
         """
         Return a `Status` object that will be marked done when the DAQ has
         finished acquiring.
@@ -475,7 +506,7 @@ class DaqLCLS1(DaqBase):
                 self._reset_begin()
                 status.set_finished()
                 logger.debug('Marked acquisition as complete')
-            end_status = Status(obj=self)
+            end_status = DeviceStatus(self)
             watcher = threading.Thread(target=finish_thread,
                                        args=(self._control, end_status))
             watcher.start()
@@ -485,14 +516,20 @@ class DaqLCLS1(DaqBase):
             # the other things in the scan
             logger.debug('Returning finished status for infinite run with '
                          'events=%s, duration=%s', events, duration)
-            status = Status(obj=self)
+            status = DeviceStatus(self)
             status.set_finished()
             return status
 
-    def preconfig(self, events=CONFIG_VAL, duration=CONFIG_VAL,
-                  record=CONFIG_VAL, use_l3t=CONFIG_VAL,
-                  controls=CONFIG_VAL, begin_sleep=CONFIG_VAL,
-                  show_queued_cfg=True):
+    def preconfig(
+        self,
+        events: Union[int, None, SENTINEL] = CONFIG_VAL,
+        duration: Union[int, None, SENTINEL] = CONFIG_VAL,
+        record: Union[bool, None, SENTINEL] = CONFIG_VAL,
+        use_l3t: Union[bool, None, SENTINEL] = CONFIG_VAL,
+        controls: Union[ControlsArg, None, SENTINEL] = CONFIG_VAL,
+        begin_sleep: Union[int, None, SENTINEL] = CONFIG_VAL,
+        show_queued_cfg: bool = True,
+    ) -> None:
         """
         Queue configuration parameters for next call to `configure`.
 
@@ -519,9 +556,15 @@ class DaqLCLS1(DaqBase):
         )
 
     @check_connect
-    def configure(self, events=CONFIG_VAL, duration=CONFIG_VAL,
-                  record=CONFIG_VAL, use_l3t=CONFIG_VAL,
-                  controls=CONFIG_VAL, begin_sleep=CONFIG_VAL):
+    def configure(
+        self,
+        events: Union[int, None, SENTINEL] = CONFIG_VAL,
+        duration: Union[int, None, SENTINEL] = CONFIG_VAL,
+        record: Union[bool, None, SENTINEL] = CONFIG_VAL,
+        use_l3t: Union[bool, None, SENTINEL] = CONFIG_VAL,
+        controls: Union[ControlsArg, None, SENTINEL] = CONFIG_VAL,
+        begin_sleep: Union[int, None, SENTINEL] = CONFIG_VAL,
+    ) -> tuple[dict, dict]:
         """
         Changes the daq's configuration for the next run.
 
@@ -629,7 +672,12 @@ class DaqLCLS1(DaqBase):
             raise RuntimeError(msg) from exc
         return old, new
 
-    def _config_args(self, record, use_l3t, controls):
+    def _config_args(
+        self,
+        record: bool,
+        use_l3t: bool,
+        controls: ControlsArg,
+    ):
         """
         For a given set of arguments to `configure`, return the arguments that
         should be sent to ``pydaq.Control.configure``.
@@ -651,7 +699,7 @@ class DaqLCLS1(DaqBase):
             config_args['controls'] = self._ctrl_arg(controls)
         return config_args
 
-    def _ctrl_arg(self, controls):
+    def _ctrl_arg(self, controls: ControlsArg) -> list[tuple[str, Any]]:
         """
         Assemble the list of ``(str, val)`` pairs from a ``{str: device}``
         dictionary or a device ``list``
@@ -679,7 +727,13 @@ class DaqLCLS1(DaqBase):
             ctrl_arg.append((name, val))
         return ctrl_arg
 
-    def _begin_args(self, events, duration, use_l3t, controls):
+    def _begin_args(
+        self,
+        events: Union[int, None, SENTINEL] = CONFIG_VAL,
+        duration: Union[int, None, SENTINEL] = CONFIG_VAL,
+        use_l3t: Union[bool, None, SENTINEL] = CONFIG_VAL,
+        controls: Union[ControlsArg, None, SENTINEL] = CONFIG_VAL,
+    ) -> dict[str, Any]:
         """
         For a given set of arguments to `begin`, return the arguments that
         should be sent to ``pydaq.Control.begin``
@@ -718,7 +772,7 @@ class DaqLCLS1(DaqBase):
             begin_args['controls'] = self._ctrl_arg(controls)
         return begin_args
 
-    def _check_duration(self, duration):
+    def _check_duration(self, duration: Union[int, None, SENTINEL]):
         if duration not in (None, CONFIG_VAL) and duration < 1:
             msg = ('Duration argument less than 1 is unreliable. Please '
                    'use the events argument to specify the length of '
@@ -726,7 +780,7 @@ class DaqLCLS1(DaqBase):
             raise RuntimeError(msg)
 
     @property
-    def _events(self):
+    def _events(self) -> Optional[int]:
         """
         For the current `begin` cycle, how many ``events`` we told the daq to
         run for.
@@ -737,7 +791,7 @@ class DaqLCLS1(DaqBase):
         return events
 
     @property
-    def _duration(self):
+    def _duration(self) -> Optional[int]:
         """
         For the current `begin` cycle, how long we told the daq to run for in
         seconds.
@@ -748,19 +802,22 @@ class DaqLCLS1(DaqBase):
         return duration
 
     @property
-    def _infinite_run(self):
+    def _infinite_run(self) -> bool:
+        """
+        True if configured for an infinite run.
+        """
         if self._events is None and self._duration is None:
             return True
         return self._events in (-1, 0)
 
-    def _reset_begin(self):
+    def _reset_begin(self) -> None:
         """
         Reset ``_begin`` to starting values for when we aren't running.
         """
         self._begin = dict(events=None, duration=None, use_l3t=None,
                            controls=None)
 
-    def run_number(self, hutch_name=None):
+    def run_number(self, hutch_name: Optional[str] = None):
         """
         Determine the run number of the last run, or current run if running.
 
@@ -815,8 +872,13 @@ class DaqLCLS1(DaqBase):
         except Exception:
             pass
 
-    def set_filter(self, *args, event_codes=None, operator='&',
-                   or_bykik=False):
+    def set_filter(
+        self,
+        *args,
+        event_codes: Optional[list[int]] = None,
+        operator: str = '&',
+        or_bykik: bool = False,
+    ) -> None:
         """
         Set up the l3t filters.
 
@@ -860,6 +922,10 @@ class DaqLCLS1(DaqBase):
         return set_pyami_filter(*args, event_codes=event_codes,
                                 operator=operator, or_bykik=or_bykik)
 
-    def set_monitor(self, det):
+    def set_monitor(self, det: AmiDet) -> None:
+        """
+        Pick the ami monitor det.
+        """
         return set_monitor_det(det)
+
     set_monitor.__doc__ = set_monitor_det.__doc__
