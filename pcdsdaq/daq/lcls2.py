@@ -99,6 +99,14 @@ class DaqLCLS2(DaqBase):
         RE: Optional[RunEngine] = None,
         hutch_name: Optional[str] = None,
     ):
+        logger.debug(
+            "DaqLCLS2.__init__"
+            "(platform=%s, host=%s, timeout=%s, RE=%s, hutch_name=%s)",
+            platform,
+            host,
+            timeout,
+            RE,
+        )
         if DaqControl is None:
             raise RuntimeError('psdaq is not installed, cannot use LCLS2 daq')
         super().__init__(RE=RE, hutch_name=hutch_name, platform=platform)
@@ -173,9 +181,11 @@ class DaqLCLS2(DaqBase):
         call subscribe and write event-driven callbacks for various
         useful quantities.
         """
+        logger.debug("DaqLCLS2._monitor_thread()")
         while not self._destroyed:
             try:
                 info = self._control.monitorStatus()
+                logger.debug("Received %s from monitor.", info)
                 if info[0] == 'error':
                     self.last_err_sig.put(info[1])
                 elif info[0] == 'warning':
@@ -207,8 +217,8 @@ class DaqLCLS2(DaqBase):
                     self.experiment_name_sig.put(info[5])
                     self.run_number_sig.put(info[6])
                     self.last_run_number_sig.put(info[7])
-            except Exception:
-                ...
+            except Exception as exc:
+                logger.debug("Exception in monitor thread: %s", exc)
 
     @state_sig.sub_value
     def _configured_cb(
@@ -260,6 +270,11 @@ class DaqLCLS2(DaqBase):
         end_run: ``bool``, optional
             If ``True``, end the run after we're done waiting.
         """
+        logger.debug(
+            "DaqLCLS2.wait(timeout=%s, end_run=%s)",
+            timeout,
+            end_run,
+        )
         done_status = self.get_done_status(timeout=timeout, check_now=True)
         done_status.wait()
         if end_run:
@@ -312,6 +327,14 @@ class DaqLCLS2(DaqBase):
             A status that will be marked successful after the corresponding
             states or transitions are reached.
         """
+        logger.debug(
+            "DaqLCLS2.get_status_for"
+            "(state=%s, transition=%s, timeout=%s, check_now=%s)",
+            state,
+            transition,
+            timeout,
+            check_now,
+        )
         if state is None:
             state = {None}
         else:
@@ -403,6 +426,11 @@ class DaqLCLS2(DaqBase):
             A status that is marked successful once the DAQ is done
             acquiring.
         """
+        logger.debug(
+            "DaqLCLS2.get_done_status(timeout=%s, check_now=%s)",
+            timeout,
+            check_now,
+        )
         return self.get_status_for(
             transition=self.transition_enum.exclude(
                 ['beginrun', 'beginstep', 'enable']
@@ -442,6 +470,12 @@ class DaqLCLS2(DaqBase):
             A status object that is marked done when the transition has
             completed.
         """
+        logger.debug(
+            "DaqLCLS2.state_transition(state=%s, timeout=%s, wait=%s)",
+            state,
+            timeout,
+            wait,
+        )
         # Normalize state
         state = self.state_enum.from_any(state)
         # Determine what extra info to send to the DAQ
@@ -516,6 +550,11 @@ class DaqLCLS2(DaqBase):
             A dictionary that maps transition names to extra data that the
             DAQ can use.
         """
+        logger.debug(
+            "DaqLCLS2._transition_thread(state=%s, phase1_info=%s)",
+            state,
+            phase1_info,
+        )
         error_msg = self._control.setState(state, phase1_info)
         self.last_transition_err_sig.put(error_msg)
 
@@ -537,6 +576,10 @@ class DaqLCLS2(DaqBase):
         duration : float
             The amount of time to wait in seconds.
         """
+        logger.debug(
+            "DaqLCLS2._handle_duration_thread(duration=%s)",
+            duration,
+        )
         end_status = self.get_status_for(
             state=['starting'],
             transition=['endstep'],
@@ -547,7 +590,9 @@ class DaqLCLS2(DaqBase):
             # If this succeeds, someone else stopped the DAQ
             # So in success, nothing to do
             end_status.wait()
+            logger.debug("Duration thread ending, DAQ already stopped.")
         except (StatusTimeoutError, WaitTimeoutError):
+            logger.debug("Duration thread expired, stopping the DAQ.")
             # The error means our wait expired
             # Time to stop the DAQ
             self.state_transition(
@@ -575,6 +620,7 @@ class DaqLCLS2(DaqBase):
         phase1_info : dict[str, Any]
             The data to send to the DAQ.
         """
+        logger.debug("DaqLCLS2._get_phase1(transition=%s)", transition)
         if transition == 'Configure':
             phase1_key = 'NamesBlockHex'
         elif transition == 'BeginStep':
@@ -685,6 +731,12 @@ class DaqLCLS2(DaqBase):
         end_run: bool, optional
             If True, end the run when the daq stops.
         """
+        logger.debug(
+            "DaqLCLS2.begin(wait=%s, end_run=%s, kwargs=%s)",
+            wait,
+            end_run,
+            kwargs,
+        )
         original_config = self.config
         self.preconfig(show_queued_cfg=False, **kwargs)
         super().begin(wait=wait, end_run=end_run)
@@ -699,6 +751,7 @@ class DaqLCLS2(DaqBase):
 
         Regardless of the input, this will end the run.
         """
+        logger.debug("DaqLCLS2._end_run_callback(status=%s)", status)
         self.end_run()
 
     # TODO decide if this needs more kwargs
@@ -709,6 +762,7 @@ class DaqLCLS2(DaqBase):
         This is a shortcut included so that the user does not have to remember
         the specifics of how to get the daq to run indefinitely.
         """
+        logger.debug("DaqLCLS2.begin_infinite()")
         self.begin(events=0)
 
     @property
@@ -728,6 +782,7 @@ class DaqLCLS2(DaqBase):
             Flag set by bluesky to signify whether this was a good stop or a
             bad stop. Currently unused.
         """
+        logger.debug("DaqLCLS2.stop(success=%s)", success)
         if self.state_sig.get() > self.state_enum['starting']:
             self.state_transition('starting', wait=False)
 
@@ -735,6 +790,7 @@ class DaqLCLS2(DaqBase):
         """
         End the current run. This includes a stop if needed.
         """
+        logger.debug("DaqLCLS2.end_run()")
         if self.state_sig.get() > self.state_enum['configured']:
             self.state_transition('configured', wait=False)
 
@@ -753,6 +809,7 @@ class DaqLCLS2(DaqBase):
         done_status: ``DeviceStatus``
             ``DeviceStatus`` that will be marked as done when the daq is done.
         """
+        logger.debug("DaqLCLS2.trigger()")
         status = self.get_status_for(
             state=['starting'],
             transition=['endstep'],
@@ -783,6 +840,7 @@ class DaqLCLS2(DaqBase):
         ready_status: ``Status``
             ``Status`` that will be marked as done when the daq has begun.
         """
+        logger.debug("DaqLCLS2.kickoff()")
         if self.state_sig.get() < self.state_enum['connected']:
             raise RuntimeError('DAQ is not ready to run!')
         if self.state_sig.get() == self.state_enum['running']:
@@ -804,6 +862,7 @@ class DaqLCLS2(DaqBase):
             ``Status`` that will be marked as done when the DAQ has finished
             acquiring
         """
+        logger.debug("DaqLCLS2.complete()")
         done_status = self.get_done_status(check_now=True)
         if self._infinite_run:
             # Configured to run forever
@@ -930,6 +989,28 @@ class DaqLCLS2(DaqBase):
             If True, we'll show what the next configuration will be
             as a nice log message.
         """
+        logger.debug(
+            "DaqLCLS2.preconfig("
+            "events=%s, duration=%s, record=%s, controls=%s, motors=%s, "
+            "begin_timeout=%s, begin_sleep=%s, group_mask=%s, detname=%s, "
+            "scantype=%s, serial_number=%s, alg_name=%s, alg_version=%s, "
+            "show_queued_config=%s"
+            ")",
+            events,
+            duration,
+            record,
+            controls,
+            motors,
+            begin_timeout,
+            begin_sleep,
+            group_mask,
+            detname,
+            scantype,
+            serial_number,
+            alg_name,
+            alg_version,
+            show_queued_config,
+        )
         self._enforce_config('events', events)
         self._enforce_config('duration', duration)
         self._enforce_config('record', record)
@@ -1066,6 +1147,7 @@ class DaqLCLS2(DaqBase):
             This is used internally by bluesky when we include
             "configure" in a plan.
         """
+        logger.debug("DaqLCLS2.configure, passing to super")
         old, new = super().configure(
             events=events,
             duration=duration,

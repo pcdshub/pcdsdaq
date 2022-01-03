@@ -30,7 +30,6 @@ from ophyd.utils import StatusTimeoutError, WaitTimeoutError
 
 from ..ami import set_ami_hutch
 
-# TODO evaluate and expand the logger calls everywhere
 logger = logging.getLogger(__name__)
 
 # Constants and Globals
@@ -314,6 +313,13 @@ class DaqBase(Device):
         *,
         name: str = 'daq',
     ):
+        logger.debug(
+            'DaqBase.__init__(%s, %s, %s, %s)',
+            RE,
+            hutch_name,
+            platform,
+            name,
+        )
         self._RE = RE
         self.hutch_name = hutch_name
         self.platform = platform
@@ -402,7 +408,12 @@ class DaqBase(Device):
         end_run : ``bool``, optional
             If True, end the daq after we're done running.
         """
-        logger.debug(f'Daq.begin(kwargs={kwargs})')
+        logger.debug(
+            'DaqBase.begin(wait=%s, end_run=%s, kwargs=%s)',
+            wait,
+            end_run,
+            kwargs,
+        )
         try:
             kickoff_status = self.kickoff(**kwargs)
             try:
@@ -487,7 +498,9 @@ class DaqBase(Device):
         and wait for "everything else" to be done, then stop the daq
         afterwards. This is occasionally used in sequencer-guided scans.
         """
+        logger.debug("DaqBase.read()")
         if self.state.lower() == 'running':
+            logger.debug("Stopping DAQ in DaqBase.read()")
             self.stop()
         return super().read()
 
@@ -536,7 +549,7 @@ class DaqBase(Device):
         events to report to python, this will be a generator that immediately
         ends.
         """
-        logger.debug('Daq.collect()')
+        logger.debug('DaqBase.collect()')
         yield from ()
 
     def describe_collect(self) -> dict:
@@ -550,7 +563,7 @@ class DaqBase(Device):
         desc : dict
             An empty dictionary.
         """
-        logger.debug('Daq.describe_collect()')
+        logger.debug('DaqBase.describe_collect()')
         return {}
 
     def preconfig(self, show_queued_cfg: bool = True, **kwargs) -> None:
@@ -568,6 +581,11 @@ class DaqBase(Device):
         show_queued_cfg : bool, optional
             If True, gives a nice printout of the new configuration.
         """
+        logger.debug(
+            "DaqBase.preconfig(show_queued_cfg=%s, kwargs=%s)",
+            show_queued_cfg,
+            kwargs,
+        )
         for key, value in kwargs.items():
             if isinstance(value, SENTINEL):
                 continue
@@ -613,6 +631,7 @@ class DaqBase(Device):
             The previous configuration and the new configuration after calling
             this method. This is a requirement of the bluesky interface.
         """
+        logger.debug("DaqBase.configure(kwargs=%s)", kwargs)
         old = self.read_configuration()
         self.preconfig(show_queued_cfg=False, **kwargs)
         return old, self.read_configuration()
@@ -636,6 +655,11 @@ class DaqBase(Device):
         header: ``str``, optional
             A prefix for the config line.
         """
+        logger.debug(
+            "DaqBase.config_info(config=%s, header=%s)",
+            config,
+            header,
+        )
         if config is None:
             config = self.config
 
@@ -688,7 +712,7 @@ class DaqBase(Device):
         staged: ``list``
             list of devices staged
         """
-        logger.debug('Daq.stage()')
+        logger.debug('DaqBase.stage()')
         self._pre_run_state = self.state
         if self._re_cbid is None:
             self._re_cbid = self._RE.subscribe(self._re_manage_runs)
@@ -711,15 +735,17 @@ class DaqBase(Device):
         unstaged: ``list``
             list of devices unstaged
         """
-        logger.debug('Daq.unstage()')
+        logger.debug('DaqBase.unstage()')
         if self._re_cbid is not None:
             self._RE.unsubscribe(self._re_cbid)
             self._re_cbid = None
         # If we're still running, end now
         if self.state.lower() in ('open', 'running', 'starting', 'paused'):
+            logger.debug("Ending run in DaqBase.unstage()")
             self.end_run()
         # Return to running if we already were (to keep AMI running)
         if self._pre_run_state.lower() == 'running':
+            logger.debug("Starting infinite run in DaqBase.unstage()")
             self.begin_infinite()
         # For other states, end_run was sufficient.
         # E.g. do not disconnect, or this would close the open plots!
@@ -735,7 +761,7 @@ class DaqBase(Device):
         which is semantically different. For LCLS2, this ends the step
         drops us to the 'starting' state.
         """
-        logger.debug('Daq.pause()')
+        logger.debug('DaqBase.pause()')
         if self.state.lower() in ('running', 'paused'):
             self.stop()
 
@@ -746,7 +772,7 @@ class DaqBase(Device):
 
         This will call `begin`.
         """
-        logger.debug('Daq.resume()')
+        logger.debug('DaqBase.resume()')
         if self.state == 'Open':
             self.begin()
 
