@@ -185,7 +185,6 @@ def register_daq(daq: DaqBase) -> None:
         set_ami_hutch(daq.hutch_name.lower())
 
 
-# TODO use this in lcls1 classes
 def get_controls_value(obj: ControlsObject) -> Any:
     """
     Return the primary value associated with a controls object.

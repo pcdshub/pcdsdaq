@@ -24,7 +24,8 @@ from ophyd.utils import StatusTimeoutError, WaitTimeoutError
 from .. import ext_scripts
 from ..ami import AmiDet, set_monitor_det, set_pyami_filter
 from .interface import (CONFIG_VAL, SENTINEL, ControlsArg, DaqBase,
-                        DaqStateTransitionError, DaqTimeoutError)
+                        DaqStateTransitionError, DaqTimeoutError,
+                        get_controls_value)
 
 logger = logging.getLogger(__name__)
 pydaq = None
@@ -716,10 +717,7 @@ class DaqLCLS1(DaqBase):
             names = controls.keys()
             devices = controls.values()
         for name, device in zip(names, devices):
-            try:
-                val = device.position
-            except AttributeError:
-                val = device.get()
+            val = get_controls_value(device)
             try:
                 val = val[0]
             except Exception:
