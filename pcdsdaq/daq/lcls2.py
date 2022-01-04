@@ -59,8 +59,6 @@ class DaqLCLS2(DaqBase):
     sim: bool, optional
         If True, simulate the daq. Defaults to False.
     """
-    # TODO double-check if timeout is int or float, what the units are,
-    # and what the precise behavior is.
     step_value_sig = Cpt(Signal, value=1, kind='normal')
     state_sig = Cpt(Signal, value=None, kind='normal')
     transition_sig = Cpt(Signal, value=None, kind='normal')
