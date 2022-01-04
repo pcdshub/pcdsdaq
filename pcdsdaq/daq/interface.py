@@ -745,7 +745,6 @@ class DaqBase(Device):
         if self.state.lower() in ('running', 'paused'):
             self.stop()
 
-    # TODO this might need to call kickoff for lcls2 instead of begin
     def resume(self) -> None:
         """
         Called when an interrupted bluesky plan is resumed.
