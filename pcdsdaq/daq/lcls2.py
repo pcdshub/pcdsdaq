@@ -105,6 +105,7 @@ class DaqLCLS2(DaqBase):
             host,
             timeout,
             RE,
+            hutch_name,
             sim,
         )
         super().__init__(RE=RE, hutch_name=hutch_name, platform=platform)
