@@ -105,6 +105,7 @@ class DaqLCLS2(DaqBase):
             host,
             timeout,
             RE,
+            sim,
         )
         super().__init__(RE=RE, hutch_name=hutch_name, platform=platform)
         self.state_sig.put(self.state_enum['reset'])
