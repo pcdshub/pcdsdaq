@@ -677,10 +677,6 @@ class DaqBase(Device):
     def record(self, record: Optional[bool]):
         self.preconfig(record=record, show_queued_cfg=False)
 
-    # TODO evaluate if lcls2 daq needs to set self to connected state
-    # on stage/unstage as in Chris Ford's implementation
-    # should there be a way from the Python to get to connected state
-    # in lcls2?
     def stage(self) -> list[DaqBase]:
         """
         ``bluesky`` interface for preparing a device for action.
