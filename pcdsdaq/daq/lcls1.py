@@ -24,7 +24,7 @@ from ophyd.utils import StatusTimeoutError, WaitTimeoutError
 from .. import ext_scripts
 from ..ami import AmiDet, set_monitor_det, set_pyami_filter
 from .interface import (CONFIG_VAL, SENTINEL, ControlsArg, DaqBase,
-                        DaqTimeoutError, StateTransitionError)
+                        DaqStateTransitionError, DaqTimeoutError)
 
 logger = logging.getLogger(__name__)
 pydaq = None
@@ -390,12 +390,12 @@ class DaqLCLS1(DaqBase):
         if self._queue_configure_transition or not self.configured:
             try:
                 self.configure()
-            except StateTransitionError:
+            except DaqStateTransitionError:
                 err = ('Illegal reconfigure with {} during an open run. End '
                        'the current run with daq.end_run() before running '
                        'with a new configuration'.format(self.config))
                 logger.debug(err, exc_info=True)
-                raise StateTransitionError(err)
+                raise DaqStateTransitionError(err)
 
         check_run_number = all((self.state == 'Configured',
                                 self.config['record'],
@@ -629,7 +629,7 @@ class DaqLCLS1(DaqBase):
         state = self.state
         if state not in ('Connected', 'Configured'):
             err = 'Cannot configure from state {}!'.format(state)
-            raise StateTransitionError(err)
+            raise DaqStateTransitionError(err)
 
         self._check_duration(duration)
 

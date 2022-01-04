@@ -146,8 +146,7 @@ class DaqTimeoutError(DaqError):
     ...
 
 
-# TODO consider renaming to DaqStateTransitionError
-class StateTransitionError(DaqError):
+class DaqStateTransitionError(DaqError):
     """
     Exception raised when a DAQ state transition fails.
 

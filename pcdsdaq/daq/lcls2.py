@@ -25,8 +25,8 @@ from ophyd.utils import StatusTimeoutError, WaitTimeoutError
 from ophyd.utils.errors import InvalidState
 
 from .interface import (CONFIG_VAL, SENTINEL, ControlsArg, DaqBase,
-                        DaqTimeoutError, EnumId, HelpfulIntEnum,
-                        StateTransitionError, get_controls_value, typing_check)
+                        DaqStateTransitionError, DaqTimeoutError, EnumId,
+                        HelpfulIntEnum, get_controls_value, typing_check)
 
 try:
     from psdaq.control.ControlDef import ControlDef
@@ -568,7 +568,7 @@ class DaqLCLS2(DaqBase):
         self.last_transition_err_sig.put(error_msg)
         if error_msg is not None:
             status.exception(
-                StateTransitionError(
+                DaqStateTransitionError(
                     f'Error transitioning to {state}: {error_msg}'
                 )
             )
