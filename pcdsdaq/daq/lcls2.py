@@ -32,7 +32,6 @@ from .interface import (CONFIG_VAL, SENTINEL, ControlsArg, DaqBase,
                         HelpfulIntEnum, get_controls_value, typing_check)
 
 logger = logging.getLogger(__name__)
-pydaq = None
 
 
 class DaqLCLS2(DaqBase):
