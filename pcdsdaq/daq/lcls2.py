@@ -908,9 +908,6 @@ class DaqLCLS2(DaqBase):
         alg_version: Union[list[int], None, SENTINEL] = CONFIG_VAL,
         show_queued_config: bool = True,
     ) -> None:
-        # TODO investigate dynamically populating docstrings with
-        # values again for the BEGIN_TIMEOUT, etc.
-        # TODO better docstring for group_mask
         """
         Adjust the configuration without causing a configure transition.
 
@@ -989,6 +986,10 @@ class DaqLCLS2(DaqBase):
             If True, we'll show what the next configuration will be
             as a nice log message.
         """
+        # TODO investigate dynamically populating docstrings with
+        # values again for the BEGIN_TIMEOUT, etc.
+        # TODO better docstring for group_mask
+        # TODO add begin_throttle argument, maybe? If we want it?
         logger.debug(
             "DaqLCLS2.preconfig("
             "events=%s, duration=%s, record=%s, controls=%s, motors=%s, "

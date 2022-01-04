@@ -23,9 +23,8 @@ from ophyd.utils import StatusTimeoutError, WaitTimeoutError
 
 from .. import ext_scripts
 from ..ami import AmiDet, set_monitor_det, set_pyami_filter
-from .interface import (BEGIN_THROTTLE, BEGIN_TIMEOUT, CONFIG_VAL, SENTINEL,
-                        ControlsArg, DaqBase, DaqTimeoutError,
-                        StateTransitionError)
+from .interface import (CONFIG_VAL, SENTINEL, ControlsArg, DaqBase,
+                        DaqTimeoutError, StateTransitionError)
 
 logger = logging.getLogger(__name__)
 pydaq = None
@@ -291,7 +290,7 @@ class DaqLCLS1(DaqBase):
 
     @property
     def _begin_timeout(self) -> int:
-        return BEGIN_TIMEOUT + BEGIN_THROTTLE
+        return self.begin_timeout_cfg.get() + self.begin_throttle_cfg.get()
 
     def begin_infinite(
         self,
@@ -436,7 +435,7 @@ class DaqLCLS1(DaqBase):
 
                 logger.debug('daq.control.begin(%s)', begin_args)
                 dt = time.time() - self._last_stop
-                tmo = BEGIN_THROTTLE - dt
+                tmo = self.begin_throttle_cfg.get() - dt
                 if tmo > 0:
                     time.sleep(tmo)
                 control.begin(**begin_args)

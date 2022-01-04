@@ -32,13 +32,6 @@ from ..ami import set_ami_hutch
 
 logger = logging.getLogger(__name__)
 
-# Constants and Globals
-# TODO eliminate these global constants in favor of config defaults
-# Wait up to this many seconds for daq to be ready for a begin call
-BEGIN_TIMEOUT = 15
-# Do not allow begins within this many seconds of a stop
-BEGIN_THROTTLE = 1
-
 # Not-None sentinal for default value when None has a special meaning
 # Indicates that the last configured value should be used
 SENTINEL = NewType('SENTINEL', object)
@@ -292,7 +285,8 @@ class DaqBase(Device):
     duration_cfg = Cpt(Signal, value=None, kind='config')
     record_cfg = Cpt(Signal, value=None, kind='config')
     controls_cfg = Cpt(Signal, value=None, kind='config')
-    begin_timeout_cfg = Cpt(Signal, value=BEGIN_TIMEOUT, kind='config')
+    begin_timeout_cfg = Cpt(Signal, value=15, kind='config')
+    begin_throttle_cfg = Cpt(Signal, value=1, kind='config')
     begin_sleep_cfg = Cpt(Signal, value=0, kind='config')
 
     # Define these in subclass
