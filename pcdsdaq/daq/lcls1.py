@@ -32,7 +32,7 @@ pydaq = None
 
 def check_connect(f):
     """
-    Decorator to ensure that the `Daq` is connected before running a method.
+    Decorator to ensure that the `DaqLCLS1` is connected.
     """
     @functools.wraps(f)
     def wrapper(self, *args, **kwargs):
@@ -535,7 +535,8 @@ class DaqLCLS1(DaqBase):
         These will be overridden by arguments passed directly to `configure`.
         These will be cleared after each call to `configure`.
 
-        This can be used to `configure` the `Daq` object without connecting.
+        This can be used to `configure` the `DaqLCLS1` object without
+        connecting.
 
         This will display the next queued configuration using logger.info,
         assuming the logger has been configured.

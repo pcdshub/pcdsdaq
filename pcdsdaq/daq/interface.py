@@ -157,28 +157,27 @@ class DaqStateTransitionError(DaqError):
 
 
 # Helper functions
-# TODO find instances of `Daq` in docstrings and re-route to correct class
 def get_daq() -> Optional[DaqBase]:
     """
-    Called by other modules to get the registered `Daq` instance.
+    Called by other modules to get the registered `DaqBase` instance.
 
     This will return None if there is no such registered instance.
 
     Returns
     -------
-    daq: `Daq`
+    daq: `DaqBase`
     """
     return _daq_instance
 
 
 def register_daq(daq: DaqBase) -> None:
     """
-    Called by `Daq` at the end of ``__init__`` to save our one daq instance as
-    the real `Daq`. There will always only be one `Daq`.
+    Called by `DaqBase` at the end of ``__init__`` to save our one daq
+    instance as the real `DaqBase`. There will always only be one `DaqBase`.
 
     Parameters
     ----------
-    daq: `Daq`
+    daq: `DaqBase`
     """
     global _daq_instance
     _daq_instance = daq
