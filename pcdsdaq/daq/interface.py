@@ -103,8 +103,6 @@ class HelpfulIntEnum(IntEnum):
         """
         return {self.from_any(ident) for ident in identifiers}
 
-    # TODO evaluate if this method was necessary
-    # or if using not include was always sufficient
     def exclude(
         self,
         identifiers: Iterator[EnumId],
