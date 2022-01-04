@@ -23,18 +23,13 @@ from ophyd.signal import Signal
 from ophyd.status import DeviceStatus
 from ophyd.utils import StatusTimeoutError, WaitTimeoutError
 from ophyd.utils.errors import InvalidState
+from psdaq.control.ControlDef import ControlDef
+from psdaq.control.DaqControl import DaqControl
 
+from ..sim.psdaq import DaqControl as SimDaqControl
 from .interface import (CONFIG_VAL, SENTINEL, ControlsArg, DaqBase,
                         DaqStateTransitionError, DaqTimeoutError, EnumId,
                         HelpfulIntEnum, get_controls_value, typing_check)
-
-try:
-    from psdaq.control.ControlDef import ControlDef
-    from psdaq.control.DaqControl import DaqControl
-except ImportError:
-    # TODO reimplement this more like lcls1 to simplify sim injection
-    DaqControl = None
-    ControlDef = None
 
 logger = logging.getLogger(__name__)
 pydaq = None
@@ -62,6 +57,8 @@ class DaqLCLS2(DaqBase):
         Set ``RE`` to the session's main ``RunEngine``
     hutch_name: str, optional
         Define a hutch name to use instead of shelling out to get_hutch_name.
+    sim: bool, optional
+        If True, simulate the daq. Defaults to False.
     """
     # TODO double-check if timeout is int or float, what the units are,
     # and what the precise behavior is.
@@ -99,22 +96,26 @@ class DaqLCLS2(DaqBase):
         timeout: int,
         RE: Optional[RunEngine] = None,
         hutch_name: Optional[str] = None,
+        sim: bool = False,
     ):
         logger.debug(
             "DaqLCLS2.__init__"
-            "(platform=%s, host=%s, timeout=%s, RE=%s, hutch_name=%s)",
+            "(platform=%s, host=%s, timeout=%s, "
+            "RE=%s, hutch_name=%s, sim=%s)",
             platform,
             host,
             timeout,
             RE,
         )
-        if DaqControl is None:
-            raise RuntimeError('psdaq is not installed, cannot use LCLS2 daq')
         super().__init__(RE=RE, hutch_name=hutch_name, platform=platform)
         self.state_sig.put(self.state_enum['reset'])
         self.transition_sig.put(self.transition_enum['reset'])
         self.group_mask_cfg.put(1 << platform)
-        self._control = DaqControl(
+        if sim:
+            CtrlCls = SimDaqControl
+        else:
+            CtrlCls = DaqControl
+        self._control = CtrlCls(
             host=host,
             platform=platform,
             timeout=timeout,
