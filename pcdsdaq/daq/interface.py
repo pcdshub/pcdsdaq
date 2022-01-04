@@ -658,9 +658,6 @@ class DaqBase(Device):
             header += ' '
         logger.info(header + ', '.join(txt))
 
-    # TODO double-check edge case
-    # where record is true and user clicks gui to false
-    # python doesn't yet know that this is a config change!
     @property
     def record(self) -> Optional[bool]:
         """

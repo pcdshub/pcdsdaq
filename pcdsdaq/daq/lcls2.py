@@ -752,10 +752,7 @@ class DaqLCLS2(DaqBase):
             end_run,
             kwargs,
         )
-        original_config = self.config
-        self.preconfig(show_queued_cfg=False, **kwargs)
-        super().begin(wait=wait, end_run=end_run)
-        self.preconfig(show_queued_cfg=False, **original_config)
+        super().begin(wait=wait, end_run=end_run, **kwargs)
 
     def _end_run_callback(self, status: DeviceStatus) -> None:
         """
@@ -834,10 +831,7 @@ class DaqLCLS2(DaqBase):
         self.kickoff()
         return status
 
-    # TODO make sure this configures appropriately, it might not.
-    # For example, if a reconfig is needed but we're in the "configured"
-    # state or higher and not the "connected" state.
-    def kickoff(self) -> DeviceStatus:
+    def kickoff(self, **kwargs) -> DeviceStatus:
         """
         Begin acquisition. This method is non-blocking.
 
@@ -848,11 +842,21 @@ class DaqLCLS2(DaqBase):
         This will cause the "configure", "beginrun", "beginstep", and "enable"
         transitions as needed, depending on which state we are starting from.
 
+        This will also apply any defered configures if needed via calling
+        "configure", even if no kwargs were passed.
+
         This is part of the ``bluesky`` ``Flyer`` interface.
+
+        Parameters
+        ----------
+        kwargs : configure-compatible arguments
+            These arguments are the last chance to configure the DAQ prior
+            to starting the run. These will be reverted after the run
+            completes.
 
         Returns
         -------
-        ready_status: ``Status``
+        ready_status : ``Status``
             ``Status`` that will be marked as done when the daq has begun.
         """
         logger.debug("DaqLCLS2.kickoff()")
@@ -860,11 +864,24 @@ class DaqLCLS2(DaqBase):
             raise RuntimeError('DAQ is not ready to run!')
         if self.state_sig.get() == self.state_enum['running']:
             raise RuntimeError('DAQ is already running!')
-        return self.state_transition(
+
+        original_config = self.config
+
+        def revert_cfg_after_run(status):
+            self.preconfig(show_queued_cfg=False, **original_config)
+
+        self.configure(**kwargs)
+        kickoff_status = self.state_transition(
             'running',
             timeout=self.begin_timeout_cfg.get(),
             wait=False,
         )
+        end_run_status = self.get_status_for(
+            transition=['endrun'],
+            check_now=False,
+        )
+        end_run_status.add_callback(revert_cfg_after_run)
+        return kickoff_status
 
     def complete(self) -> DeviceStatus:
         """
@@ -1179,7 +1196,12 @@ class DaqLCLS2(DaqBase):
             alg_name=alg_name,
             alg_version=alg_version,
         )
-        if self._queue_configure_transition:
+        # Last check, in case user has changed record state in gui
+        rec_cfg = self.record_cfg.get()
+        if (
+            self._queue_configure_transition
+            or rec_cfg is not None and rec_cfg != self.recording_sig.get()
+        ):
             if self.state_sig.get() < self.state_enum['connected']:
                 raise RuntimeError('Not ready to configure.')
             if self.state_sig.get() > self.state_enum['configured']:
@@ -1195,6 +1217,26 @@ class DaqLCLS2(DaqBase):
             self._last_config = self.config
             self._queue_configure_transition = False
         return old, new
+
+    @property
+    def record(self) -> bool:
+        """
+        ``True`` if the run will be recorded, ``False`` otherwise.
+
+        If record is configured to be ``None``, we'll use the value selected
+        in the GUI in lieu of any values from the Python, and that boolean
+        will be returned here.
+
+        You can check what has been configured in the python by checking
+        daq.config['record'] or daq.record_cfg.get().
+
+        You can set record via daq.record = True, for example, or by
+        using daq.preconfig or daq.configure.
+        """
+        cfg_record = super().record
+        if cfg_record is None:
+            return self.recording_sig.get()
+        return cfg_record
 
     def run_number(self) -> int:
         """
