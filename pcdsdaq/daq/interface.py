@@ -135,7 +135,6 @@ class DaqError(Exception):
     ...
 
 
-# TODO apply this to lcls2 classes
 class DaqTimeoutError(DaqError):
     """
     Exception raised when the DAQ times out.
@@ -148,7 +147,6 @@ class DaqTimeoutError(DaqError):
 
 
 # TODO consider renaming to DaqStateTransitionError
-# TODO apply this to lcls2 classes
 class StateTransitionError(DaqError):
     """
     Exception raised when a DAQ state transition fails.

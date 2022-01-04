@@ -24,8 +24,9 @@ from ophyd.status import DeviceStatus
 from ophyd.utils import StatusTimeoutError, WaitTimeoutError
 from ophyd.utils.errors import InvalidState
 
-from .interface import (CONFIG_VAL, SENTINEL, ControlsArg, DaqBase, EnumId,
-                        HelpfulIntEnum, get_controls_value, typing_check)
+from .interface import (CONFIG_VAL, SENTINEL, ControlsArg, DaqBase,
+                        DaqTimeoutError, EnumId, HelpfulIntEnum,
+                        StateTransitionError, get_controls_value, typing_check)
 
 try:
     from psdaq.control.ControlDef import ControlDef
@@ -276,7 +277,14 @@ class DaqLCLS2(DaqBase):
             end_run,
         )
         done_status = self.get_done_status(timeout=timeout, check_now=True)
-        done_status.wait()
+        try:
+            done_status.wait()
+        except (StatusTimeoutError, WaitTimeoutError):
+            msg = (
+                f'Timeout after {timeout} seconds waiting for daq to '
+                'finish acquiring.'
+            )
+            raise DaqTimeoutError(msg) from None
         if end_run:
             self.end_run()
 
@@ -513,7 +521,7 @@ class DaqLCLS2(DaqBase):
         # Set the transition in background thread, can be blocking
         threading.Thread(
             self._transition_thread,
-            args=(state.name, phase1_info),
+            args=(state.name, phase1_info, status),
         ).start()
         # Handle duration ourselves in another thread for LCLS1 compat
         if (
@@ -534,6 +542,7 @@ class DaqLCLS2(DaqBase):
         self,
         state: str,
         phase1_info: dict[str, Any],
+        status: DeviceStatus,
     ) -> None:
         """
         Do the raw setState command.
@@ -557,6 +566,12 @@ class DaqLCLS2(DaqBase):
         )
         error_msg = self._control.setState(state, phase1_info)
         self.last_transition_err_sig.put(error_msg)
+        if error_msg is not None:
+            status.exception(
+                StateTransitionError(
+                    f'Error transitioning to {state}: {error_msg}'
+                )
+            )
 
     # TODO could this be implemented better?
     def _handle_duration_thread(self, duration: float) -> None:
