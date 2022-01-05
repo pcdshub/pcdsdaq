@@ -6,7 +6,7 @@ import logging
 from importlib import import_module
 
 import pcdsdaq.ami as ami
-import pcdsdaq.daq as daq
+import pcdsdaq.daq.original as daq
 import pcdsdaq.ext_scripts as ext
 
 from . import pyami, pydaq

@@ -13,8 +13,11 @@ from ophyd.status import wait as status_wait
 
 import pcdsdaq.ext_scripts as ext
 import pcdsdaq.sim.pydaq as sim_pydaq
-from pcdsdaq import daq as daq_module
-from pcdsdaq.daq import BEGIN_TIMEOUT, DaqTimeoutError, StateTransitionError
+from pcdsdaq.daq import original as daq_module
+from pcdsdaq.daq.original import (BEGIN_TIMEOUT, DaqTimeoutError,
+                                  StateTransitionError)
+
+from .conftest import skip_windows
 
 logger = logging.getLogger(__name__)
 
@@ -269,7 +272,7 @@ def test_wait_run(daq):
     daq.begin(duration=1)
     daq.wait()
     just_over_1 = time.time() - t1
-    assert 1 < just_over_1 < 1.2
+    assert 1 < just_over_1 < 2
     t3 = time.time()
     daq.wait()
     short_time = time.time() - t3
@@ -288,7 +291,7 @@ def test_configured_run(daq, sig):
     daq.begin()
     daq.wait()
     just_over_1 = time.time() - t0
-    assert 1 < just_over_1 < 1.2
+    assert 1 < just_over_1 < 2
 
 
 @pytest.mark.timeout(3)
@@ -442,6 +445,7 @@ def test_misc(daq, sig):
     daq.wait()
 
 
+@skip_windows(reason='os.kill tears down the whole suite on windows')
 def test_begin_sigint(daq):
     logger.debug('test_begin_sigint')
     pid = os.getpid()
