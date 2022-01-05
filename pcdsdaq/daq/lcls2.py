@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import logging
 import threading
+import time
 from functools import cache
 from numbers import Real
 from typing import Any, Iterator, Optional, Union, get_type_hints
@@ -1343,19 +1344,181 @@ class DaqLCLS2(DaqBase):
         return self.run_number_sig.get()
 
 
-# WIP need to implement this simulation
 class SimDaqControl:
-    def monitorStatus(self):
-        raise NotImplementedError()
+    """
+    Emulation of DaqControl for basic offline tests.
+    """
+    _tmap = {
+        'reset': {
+            'unallocated': 'rollcall',
+        },
+        'unallocated': {
+            'allocated': 'alloc',
+        },
+        'allocated': {
+            'unallocated': 'dealloc',
+            'connected': 'connect',
+        },
+        'connected': {
+            'allocated': 'disconnect',
+            'configured': 'configure',
+        },
+        'configured': {
+            'connected': 'unconfigure',
+            'starting': 'beginrun',
+        },
+        'starting': {
+            'configured': 'endrun',
+            'paused': 'beginstep',
+        },
+        'paused': {
+            'starting': 'endstep',
+            'running': 'enable',
+        },
+        'running': {
+            'paused': 'disable',
+        },
+    }
+
+    def __init__(self, *args, **kwargs):
+        self._lock = threading.RLock()
+        self._new_status = threading.Event()
+        self._headers = HelpfulIntEnum(
+            ['status', 'error', 'warning', 'filereport', 'progress', 'step']
+        )
+        self._states = HelpfulIntEnum(ControlDef.states)
+        self._transitions = HelpfulIntEnum(ControlDef.transitions)
+        self._experiment_name = 'tst0000'
+        self._run_number = 0
+        self._last_run_number = 0
+        self._config_alias = 'TST'
+        self._bypass_activedet = False
+        self._elapsed = 0
+        self._total = 0
+        self._step_done = False
+        self._error = ''
+        self._warning = ''
+        self._path = 'tst'
+        self.sim_set_states('reset', 'reset')
+
+    def monitorStatus(self) -> tuple[str, str, str, str, str, str, str, str]:
+        """Wait, then return the next updated status."""
+        self._new_status.wait()
+        with self._lock:
+            if self._header == self._headers['status']:
+                status = (
+                    self._transition,
+                    self._state,
+                    self._config_alias,
+                    self._recording,
+                    self._bypass_activedet,
+                    self._experiment_name,
+                    self._run_number,
+                    self._last_run_number,
+                )
+            elif self._header == self._headers['error']:
+                status = ('error', self._error)
+            elif self._header == self._headers['warning']:
+                status = ('warning', self._warning)
+            elif self._header == self._headers['filereport']:
+                status = ('fileReport', self._path)
+            elif self._header == self._headers['progress']:
+                status = (
+                    'progress',
+                    self._transition,
+                    self._elapsed,
+                    self._total,
+                )
+            elif self._header == self._headers['step']:
+                status = ('step', self._step_done)
+            else:
+                raise RuntimeError('Error in sim, bad header')
+        status = [str(elem) for elem in status]
+        while len(status) < 8:
+            status.append('error')
+        return tuple(status)
 
     def setState(self, state, phase1_info):
-        raise NotImplementedError()
+        """
+        Request the needed transitions to get to state.
+
+        This may also cause additional state transitions e.g. if we're
+        doing a fixed-length run.
+        """
+        with self._lock:
+            state = self._states.from_any(state)
+            if state == self._states['reset']:
+                return self.sim_transition('reset')
+
+            now = self._states.from_any(self._state)
+            if state == now:
+                return
+            if state.value > now.value:
+                goal_indices = range(now.value + 1, state.value + 1)
+            else:
+                goal_indices = range(now.value - 1, state.value - 1, -1)
+            for goal in goal_indices:
+                self.sim_transition(goal)
+
+            if state == self._states['enabled']:
+                # We need to schedule end_step
+                try:
+                    events = phase1_info['enable']['readout_count']
+                except KeyError:
+                    events = 0
+                if events > 0:
+                    threading.Thread(
+                        self._end_step_thread,
+                        args=(events,)
+                    ).start()
+
+    def _end_step_thread(self, events):
+        """The DAQ should stop after the step's events elapse"""
+        time.sleep(events/120)
+        if self._state == 'running':
+            self.setState('starting', {})
 
     def getBlock(self, transition, data):
-        raise NotImplementedError()
+        """
+        Get relevant phase1_info for setState.
+
+        This won't emulate the real daq's behavior, it's just for feeding back
+        into the sim setState.
+        """
+        return (transition, data)
 
     def setRecord(self, record):
-        raise NotImplementedError()
+        """Match API for changing the recording state and emit update."""
+        with self._lock:
+            self._recording = record
+            self.sim_new_status(self._headers['status'])
 
-    def sim_transition(self, transition, state):
-        raise NotImplementedError()
+    def sim_set_states(self, transition, state):
+        """Change the currently set state and emit update."""
+        with self._lock:
+            self._transition = self._transitions.from_any(transition).name
+            self._state = self._states.from_any(state).name
+            if self._transition == self._transitions['beginrun']:
+                self._run_number += 1
+            elif self._transition == self._transitions['endrun']:
+                self._last_run_number += 1
+            self.sim_new_status(self._headers['status'])
+
+    def sim_transition(self, state):
+        """Internal transition, checks if valid."""
+        with self._lock:
+            goal = self._states.from_any(state)
+            if goal == self._states['reset']:
+                return self.sim_set_states('reset', 'reset')
+            now = self._states.from_any(self._state)
+            try:
+                transition = self._tmap[now.name][goal.name]
+            except KeyError:
+                raise RuntimeError(f'Invalid transition from {now} to {goal}')
+            self.sim_set_states(transition, goal.name)
+
+    def sim_new_status(self, header):
+        """Emit a status update."""
+        with self._lock:
+            self._header = header
+            self._new_status.set()
