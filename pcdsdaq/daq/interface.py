@@ -56,7 +56,8 @@ class HelpfulIntEnum(IntEnum):
     """
     IntEnum subclass with some utility extensions.
     """
-    def from_any(self, identifier: EnumId) -> HelpfulIntEnum:
+    @classmethod
+    def from_any(cls, identifier: EnumId) -> HelpfulIntEnum:
         """
         Try all the ways to interpret identifier as the enum.
 
@@ -75,18 +76,19 @@ class HelpfulIntEnum(IntEnum):
             The corresponding enum object associated with the identifier.
         """
         try:
-            return self[identifier]
+            return cls[identifier]
         except KeyError:
-            return self(identifier)
+            return cls(identifier)
 
+    @classmethod
     def include(
-        self,
+        cls,
         identifiers: Iterator[EnumId],
     ) -> set[HelpfulIntEnum]:
         """
         Returns all enum values matching the identifiers given.
 
-        This is a shortcut for calling self.from_any many times and
+        This is a shortcut for calling cls.from_any many times and
         assembling a set of the results.
 
         Parameters
@@ -101,10 +103,11 @@ class HelpfulIntEnum(IntEnum):
             A set whose elements are the enum objects associated with the
             input identifiers.
         """
-        return {self.from_any(ident) for ident in identifiers}
+        return {cls.from_any(ident) for ident in identifiers}
 
+    @classmethod
     def exclude(
-        self,
+        cls,
         identifiers: Iterator[EnumId],
     ) -> set[HelpfulIntEnum]:
         """
@@ -122,7 +125,7 @@ class HelpfulIntEnum(IntEnum):
             A set whose elements are the valid enum objects not associated
             with the input identifiers.
         """
-        return set(self.__members__.values()) - self.include(identifiers)
+        return set(cls.__members__.values()) - cls.include(identifiers)
 
 
 class DaqError(Exception):

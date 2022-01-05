@@ -139,9 +139,6 @@ class DaqLCLS2(DaqBase):
         """
         return HelpfulIntEnum('PsdaqState', ControlDef.states)
 
-    # TODO double-check if these need the type qualifier in the hint
-    # It depends on if they have access to the helpful methods or not
-    # If they have the methods, the hint should just be HelpfulIntEnum
     @property
     @cache
     def transition_enum(self) -> type[HelpfulIntEnum]:
