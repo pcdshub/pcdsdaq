@@ -569,7 +569,6 @@ class DaqLCLS2(DaqBase):
                 )
             )
 
-    # TODO could this be implemented better?
     def _handle_duration_thread(self, duration: float) -> None:
         """
         Wait a fixed amount of time, then stop the daq.
@@ -1080,7 +1079,6 @@ class DaqLCLS2(DaqBase):
             show_queued_cfg=show_queued_config,
         )
 
-    # TODO make sure the configure timing is correct as described in docstring
     def configure(
         self,
         events: Union[int, None, SENTINEL] = CONFIG_VAL,
