@@ -15,11 +15,6 @@ def daq_lcls2(RE):
     )
 
 
-def test_default_config():
-    # Should work at any point
-    1/0
-
-
 def test_state():
     # Should work at any point
     1/0
@@ -52,6 +47,11 @@ def test_configure():
 
 def test_config_info():
     # Test this after preconfig
+    1/0
+
+
+def test_default_config():
+    # Test this after configure
     1/0
 
 
