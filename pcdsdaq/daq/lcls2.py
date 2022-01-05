@@ -1381,6 +1381,7 @@ class SimDaqControl:
     }
 
     def __init__(self, *args, **kwargs):
+        logger.debug("SimDaqControl.__init__(%s, %s)", args, kwargs)
         self._lock = threading.RLock()
         self._new_status = threading.Event()
         self._headers = HelpfulIntEnum(
@@ -1389,6 +1390,7 @@ class SimDaqControl:
         )
         self._states = HelpfulIntEnum('States', ControlDef.states)
         self._transitions = HelpfulIntEnum('Trans', ControlDef.transitions)
+        self._recording = False
         self._experiment_name = 'tst0000'
         self._run_number = 0
         self._last_run_number = 0
@@ -1404,8 +1406,11 @@ class SimDaqControl:
 
     def monitorStatus(self) -> tuple[str, str, str, str, str, str, str, str]:
         """Wait, then return the next updated status."""
+        logger.debug('SimDaqControl.monitorStatus() requested')
         self._new_status.wait()
         with self._lock:
+            logger.debug('SimDaqControl sending new status')
+            self._new_status.clear()
             if self._header == self._headers['status']:
                 status = (
                     self._transition,
@@ -1439,13 +1444,14 @@ class SimDaqControl:
             status.append('error')
         return tuple(status)
 
-    def setState(self, state, phase1_info):
+    def setState(self, state: EnumId, phase1_info: dict[str, Any]) -> None:
         """
         Request the needed transitions to get to state.
 
         This may also cause additional state transitions e.g. if we're
         doing a fixed-length run.
         """
+        logger.debug('SimDaqControl.setState(%s, %s)', state, phase1_info)
         with self._lock:
             state = self._states.from_any(state)
             if state == self._states['reset']:
@@ -1473,13 +1479,18 @@ class SimDaqControl:
                         args=(events,)
                     ).start()
 
-    def _end_step_thread(self, events):
+    def _end_step_thread(self, events: int) -> None:
         """The DAQ should stop after the step's events elapse"""
         time.sleep(events/120)
         if self._state == 'running':
+            logger.debug('SimDaqControl ending step')
             self.setState('starting', {})
 
-    def getBlock(self, transition, data):
+    def getBlock(
+        self,
+        transition: str,
+        data: dict[str, Any]
+    ) -> tuple[str, dict[str, Any]]:
         """
         Get relevant phase1_info for setState.
 
@@ -1488,14 +1499,16 @@ class SimDaqControl:
         """
         return (transition, data)
 
-    def setRecord(self, record):
+    def setRecord(self, record: bool) -> None:
         """Match API for changing the recording state and emit update."""
+        logger.debug("SimDaqControl.setRecord(%s)", record)
         with self._lock:
             self._recording = record
             self.sim_new_status(self._headers['status'])
 
-    def sim_set_states(self, transition, state):
+    def sim_set_states(self, transition: EnumId, state: EnumId) -> None:
         """Change the currently set state and emit update."""
+        logger.debug("SimDaqControl.sim_set_state(%s, %s)", transition, state)
         with self._lock:
             self._transition = self._transitions.from_any(transition).name
             self._state = self._states.from_any(state).name
@@ -1505,8 +1518,9 @@ class SimDaqControl:
                 self._last_run_number += 1
             self.sim_new_status(self._headers['status'])
 
-    def sim_transition(self, state):
+    def sim_transition(self, state: EnumId) -> None:
         """Internal transition, checks if valid."""
+        logger.debug("SimDaqControl.sim_transition(%s)", state)
         with self._lock:
             goal = self._states.from_any(state)
             if goal == self._states['reset']:
@@ -1518,8 +1532,9 @@ class SimDaqControl:
                 raise RuntimeError(f'Invalid transition from {now} to {goal}')
             self.sim_set_states(transition, goal.name)
 
-    def sim_new_status(self, header):
+    def sim_new_status(self, header: HelpfulIntEnum) -> None:
         """Emit a status update."""
+        logger.debug("SimDaqControl.sim_new_status(%s)", header)
         with self._lock:
             self._header = header
             self._new_status.set()
