@@ -721,12 +721,23 @@ class DaqLCLS2(DaqBase):
 
         return data
 
-    # TODO refactor to show all the available arguments from configure
     def begin(
         self,
         wait: bool = False,
         end_run: bool = False,
-        **kwargs,
+        events: Union[int, None, SENTINEL] = CONFIG_VAL,
+        duration: Union[Real, None, SENTINEL] = CONFIG_VAL,
+        record: Union[bool, None, SENTINEL] = CONFIG_VAL,
+        controls: Union[ControlsArg, None, SENTINEL] = CONFIG_VAL,
+        motors: Union[ControlsArg, None, SENTINEL] = CONFIG_VAL,
+        begin_timeout: Union[Real, None, SENTINEL] = CONFIG_VAL,
+        begin_sleep: Union[Real, None, SENTINEL] = CONFIG_VAL,
+        group_mask: Union[int, None, SENTINEL] = CONFIG_VAL,
+        detname: Union[str, None, SENTINEL] = CONFIG_VAL,
+        scantype: Union[str, None, SENTINEL] = CONFIG_VAL,
+        serial_number: Union[str, None, SENTINEL] = CONFIG_VAL,
+        alg_name: Union[str, None, SENTINEL] = CONFIG_VAL,
+        alg_version: Union[list[int], None, SENTINEL] = CONFIG_VAL,
     ) -> None:
         """
         Interactive starting of the DAQ.
@@ -736,18 +747,103 @@ class DaqLCLS2(DaqBase):
 
         Parameters
         ----------
-        wait: bool, optional
+        wait : bool, optional
             If True, wait for the daq to stop.
-        end_run: bool, optional
+        end_run : bool, optional
             If True, end the run when the daq stops.
+        events : int or None, optional
+            The number of events to take per step. Incompatible with the
+            "duration" argument. Defaults to "None", and running without
+            configuring events or duration gives us an endless run (that
+            can be terminated manually). Supplying an argument to "events"
+            will reset "duration" to "None".
+        duration : float or None, optional
+            How long to acquire data at each step in seconds.
+            Incompatible with the "events" argument. Defaults to "None",
+            and running without configuring events or duration dives us
+            an endless run (that can be terminated manually). Supplying
+            an argument to "duration" will reset "events" to "None".
+        record : bool or None, optional
+            Whether or not to save data during the DAQ run. Defaults to
+            "None", which means that we'll keep the DAQ's recording
+            state at whatever it is at the start of the run.
+            Changing the DAQ recording state cannot be done during a run,
+            as it will require a configure transition.
+        controls : list or dict of signals or positioners, or None, optional
+            The objects to include per-step in the DAQ data stream.
+            These must implement either the "position" attribute or the
+            "get" method to retrieve their current value.
+            If a list, we'll use the object's "name" attribute to seed the
+            data key. If a dict, we'll use the dictionary's keys instead.
+            If None, we'll only include the default DAQ step counter,
+            which will always be included.
+        motors : list or dict of signals or positioners, or None, optional
+            Alias of "controls" for backwards compatibility.
+        begin_timeout : float or None, optional
+            How long to wait before marking a begin run as a failure and
+            raising an exception. The default is {BEGIN_TIMEOUT} seconds.
+        begin_sleep : float or None, optional
+            How long to wait before starting a run. The default is
+            {BEGIN_SLEEP} seconds.
+        group_mask : int or None, optional
+            Bitmask that is used by the DAQ. This docstring writer is not
+            sure exactly what it does. The default is all zeroes with a
+            "1" bitshifted left by the platform number.
+        detname : str or None, optional
+            The name associated with the controls data in the DAQ.
+            Defaults to "scan".
+        scantype : str or None, optional
+            Another string associated with the runs produced by this
+            object in the DAQ. Defaults to "scan".
+        serial_number : str or None, optional
+            Another string associated with the runs produced by this
+            object in the DAQ. Defaults to "1234".
+        alg_name : str or None, optional
+            Another string associated with the runs produced by this
+            object in the DAQ. Defaults to "raw".
+        alg_version : list of int, or None, optional
+            The version numbers [major, minor, bugfix] associated with
+            alg_name. Defaults to [1, 0, 0].
         """
         logger.debug(
-            "DaqLCLS2.begin(wait=%s, end_run=%s, kwargs=%s)",
+            "DaqLCLS2.begin(wait=%s, end_run=%s, ",
+            "events=%s, duration=%s, record=%s, controls=%s, motors=%s, "
+            "begin_timeout=%s, begin_sleep=%s, group_mask=%s, detname=%s, "
+            "scantype=%s, serial_number=%s, alg_name=%s, alg_version=%s, "
+            ")",
             wait,
             end_run,
-            kwargs,
+            events,
+            duration,
+            record,
+            controls,
+            motors,
+            begin_timeout,
+            begin_sleep,
+            group_mask,
+            detname,
+            scantype,
+            serial_number,
+            alg_name,
+            alg_version,
         )
-        super().begin(wait=wait, end_run=end_run, **kwargs)
+        super().begin(
+            wait=wait,
+            end_run=end_run,
+            events=events,
+            duration=duration,
+            record=record,
+            controls=controls,
+            motors=motors,
+            begin_timeout=begin_timeout,
+            begin_sleep=begin_sleep,
+            group_mask=group_mask,
+            detname=detname,
+            scantype=scantype,
+            serial_number=serial_number,
+            alg_name=alg_name,
+            alg_version=alg_version,
+        )
 
     def _end_run_callback(self, status: DeviceStatus) -> None:
         """
@@ -761,16 +857,22 @@ class DaqLCLS2(DaqBase):
         logger.debug("DaqLCLS2._end_run_callback(status=%s)", status)
         self.end_run()
 
-    # TODO decide if this needs more kwargs
-    def begin_infinite(self) -> None:
+    def begin_infinite(self, **kwargs) -> None:
         """
         Start the DAQ in such a way that it runs until asked to stop.
 
         This is a shortcut included so that the user does not have to remember
         the specifics of how to get the daq to run indefinitely.
+
+        kwargs are passed directly to begin, except for events and duration
+        which cannot be specified here. These arguments will be ignored, as
+        they need to be specified in a specific way to make the DAQ run
+        infinitely.
         """
-        logger.debug("DaqLCLS2.begin_infinite()")
-        self.begin(events=0)
+        logger.debug("DaqLCLS2.begin_infinite(kwargs=%s)", kwargs)
+        kwargs['events'] = 0
+        kwargs.pop('duration', None)
+        self.begin(**kwargs)
 
     @property
     def _infinite_run(self) -> bool:
