@@ -1088,14 +1088,12 @@ class DaqLCLS2(DaqBase):
             Alias of "controls" for backwards compatibility.
         begin_timeout : float or None, optional
             How long to wait before marking a begin run as a failure and
-            raising an exception. The default is {BEGIN_TIMEOUT} seconds.
+            raising an exception.
         begin_sleep : float or None, optional
-            How long to wait before starting a run. The default is
-            {BEGIN_SLEEP} seconds.
+            How long to wait before starting a run.
         group_mask : int or None, optional
-            Bitmask that is used by the DAQ. This docstring writer is not
-            sure exactly what it does. The default is all zeroes with a
-            "1" bitshifted left by the platform number.
+            Bitmask that is used by the DAQ. The default is all zeroes with
+            a "1" bitshifted left by the platform number.
         detname : str or None, optional
             The name associated with the controls data in the DAQ.
             Defaults to "scan".
@@ -1115,10 +1113,6 @@ class DaqLCLS2(DaqBase):
             If True, we'll show what the next configuration will be
             as a nice log message.
         """
-        # TODO investigate dynamically populating docstrings with
-        # values again for the BEGIN_TIMEOUT, etc.
-        # TODO better docstring for group_mask
-        # TODO add begin_throttle argument, maybe? If we want it?
         logger.debug(
             "DaqLCLS2.preconfig("
             "events=%s, duration=%s, record=%s, controls=%s, motors=%s, "
