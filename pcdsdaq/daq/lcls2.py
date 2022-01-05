@@ -26,7 +26,6 @@ from ophyd.utils.errors import InvalidState
 from psdaq.control.ControlDef import ControlDef
 from psdaq.control.DaqControl import DaqControl
 
-from ..sim.psdaq import DaqControl as SimDaqControl
 from .interface import (CONFIG_VAL, SENTINEL, ControlsArg, DaqBase,
                         DaqStateTransitionError, DaqTimeoutError, EnumId,
                         HelpfulIntEnum, get_controls_value, typing_check)
@@ -1251,3 +1250,21 @@ class DaqLCLS2(DaqBase):
         run_number : int
         """
         return self.run_number_sig.get()
+
+
+# WIP need to implement this simulation
+class SimDaqControl:
+    def monitorStatus(self):
+        raise NotImplementedError()
+
+    def setState(self, state, phase1_info):
+        raise NotImplementedError()
+
+    def getBlock(self, transition, data):
+        raise NotImplementedError()
+
+    def setRecord(self, record):
+        raise NotImplementedError()
+
+    def sim_transition(self, transition, state):
+        raise NotImplementedError()
