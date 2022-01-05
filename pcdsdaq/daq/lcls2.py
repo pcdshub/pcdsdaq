@@ -1384,10 +1384,11 @@ class SimDaqControl:
         self._lock = threading.RLock()
         self._new_status = threading.Event()
         self._headers = HelpfulIntEnum(
+            'ValidHeaders',
             ['status', 'error', 'warning', 'filereport', 'progress', 'step']
         )
-        self._states = HelpfulIntEnum(ControlDef.states)
-        self._transitions = HelpfulIntEnum(ControlDef.transitions)
+        self._states = HelpfulIntEnum('States', ControlDef.states)
+        self._transitions = HelpfulIntEnum('Trans', ControlDef.transitions)
         self._experiment_name = 'tst0000'
         self._run_number = 0
         self._last_run_number = 0
