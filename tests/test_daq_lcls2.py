@@ -146,10 +146,26 @@ def test_record(daq_lcls2: DaqLCLS2):
             assert_expected(daq_lcls2)
 
 
-@pytest.mark.skip(reason='Test not written yet.')
-def test_run_number():
-    # Should work at any point
-    1/0
+def test_run_number(daq_lcls2: DaqLCLS2):
+    """
+    Test that the values from monitorStatus can be returned via run_number.
+    """
+    ev = Event()
+
+    def wait_for(goal, value, **kwargs):
+        if value == goal:
+            ev.set()
+
+    for run_num in range(10):
+        ev.clear()
+        daq_lcls2._control._run_number = run_num
+        daq_lcls2._control.sim_new_status(
+            daq_lcls2._control._headers['status'],
+        )
+        cbid = daq_lcls2.run_number_sig.subscribe(partial(wait_for, run_num))
+        ev.wait(1.0)
+        daq_lcls2.run_number_sig.unsubscribe(cbid)
+        assert daq_lcls2.run_number() == run_num
 
 
 @pytest.mark.skip(reason='Test not written yet.')
