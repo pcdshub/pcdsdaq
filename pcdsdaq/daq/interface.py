@@ -16,8 +16,7 @@ import logging
 import threading
 import time
 from enum import Enum, IntEnum
-from functools import cache
-from typing import Any, ClassVar, Generator, Iterator, NewType, Optional, Union
+from typing import Any, ClassVar, Generator, Iterator, Optional, Union
 
 from bluesky import RunEngine
 from ophyd.device import Component as Cpt
@@ -32,10 +31,18 @@ from ..ami import set_ami_hutch
 
 logger = logging.getLogger(__name__)
 
+
 # Not-None sentinal for default value when None has a special meaning
 # Indicates that the last configured value should be used
-SENTINEL = NewType('SENTINEL', object)
-CONFIG_VAL = SENTINEL(object())
+class Sentinel:
+    def __init__(self, id):
+        self.id = id
+
+    def __str__(self):
+        return self.id
+
+
+CONFIG_VAL = Sentinel('CONFIG_VAL')
 
 # The DAQ singleton
 _daq_instance = None
@@ -251,7 +258,7 @@ def typing_check(value: Any, hint: Any) -> bool:
             cls_to_check.append(arg.__origin__)
         except AttributeError:
             cls_to_check.append(arg)
-    return isinstance(value, cls_to_check)
+    return isinstance(value, tuple(cls_to_check))
 
 
 def clip_name(obj: OphydObject):
@@ -294,6 +301,7 @@ class DaqBase(Device):
     platform: Optional[int]
     _last_config: dict[str, Any]
     _queue_configure_transition: bool
+    _default_cfg_overrides: dict[str, Any]
 
     def __init__(
         self,
@@ -314,6 +322,8 @@ class DaqBase(Device):
         self.hutch_name = hutch_name
         self.platform = platform
         self._last_config = {}
+        self._default_config = {}
+        self._default_config_overrides = {}
         self._queue_configure_transition = True
         super().__init__(name=name)
         for cpt_name in self.component_names:
@@ -329,16 +339,33 @@ class DaqBase(Device):
         return self.configured_sig.get()
 
     @property
-    @cache
     def default_config(self) -> dict[str, Any]:
         """
         The default configuration defined in the class definition.
         """
+        if self._default_config:
+            return self._default_config.copy()
         default = {}
         for walk in self.walk_components():
             if walk.item.kind == Kind.config:
-                default[walk.item.name] = walk.item.kwargs['value']
-        return default
+                cfg_name = '_'.join(walk.item.attr.split('_')[:-1])
+                default[cfg_name] = walk.item.kwargs['value']
+        default.update(self._default_config_overrides)
+        self._default_config = default
+        return default.copy()
+
+    def _update_default_config(self, sig: Signal) -> None:
+        """
+        Updates a default config value at runtime.
+
+        Some config defaults cannot be determined without using the user's
+        input arguments. This updates the config default for a signal
+        that has already had its correct value put to.
+        """
+        cfg_key = "_".join(sig.attr_name.split("_")[:-1])
+        self._default_config_overrides[cfg_key] = sig.get()
+        if self._default_config:
+            self._default_config[cfg_key] = sig.get()
 
     @property
     def config(self) -> dict[str, Any]:
@@ -347,7 +374,10 @@ class DaqBase(Device):
         """
         if self.configured:
             cfg = self.read_configuration()
-            return {key: info['value'] for key, info in cfg.items()}
+            return {
+                key[len(self.name) + 1:]: info['value']
+                for key, info in cfg.items()
+            }
         else:
             return self.default_config.copy()
 
@@ -577,7 +607,7 @@ class DaqBase(Device):
             kwargs,
         )
         for key, value in kwargs.items():
-            if isinstance(value, SENTINEL):
+            if isinstance(value, Sentinel):
                 continue
             try:
                 sig = getattr(self, key + '_cfg')
@@ -585,9 +615,9 @@ class DaqBase(Device):
                 raise ValueError(
                     f'Did not find config parameter {key}'
                 ) from exc
-            if isinstance(value, None):
+            if value is None:
                 value = self.default_config[key]
-            if isinstance(sig, Signal) and sig.kind == 'config':
+            if isinstance(sig, Signal) and sig.kind == Kind.config:
                 sig.put(value)
             else:
                 raise ValueError(

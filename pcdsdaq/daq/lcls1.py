@@ -23,8 +23,8 @@ from ophyd.utils import StatusTimeoutError, WaitTimeoutError
 
 from .. import ext_scripts
 from ..ami import AmiDet, set_monitor_det, set_pyami_filter
-from .interface import (CONFIG_VAL, SENTINEL, ControlsArg, DaqBase,
-                        DaqStateTransitionError, DaqTimeoutError,
+from .interface import (CONFIG_VAL, ControlsArg, DaqBase,
+                        DaqStateTransitionError, DaqTimeoutError, Sentinel,
                         get_controls_value)
 
 logger = logging.getLogger(__name__)
@@ -216,11 +216,11 @@ class DaqLCLS1(DaqBase):
 
     def begin(
         self,
-        events: Union[int, None, SENTINEL] = CONFIG_VAL,
-        duration: Union[int, None, SENTINEL] = CONFIG_VAL,
-        record: Union[bool, None, SENTINEL] = CONFIG_VAL,
-        use_l3t: Union[bool, None, SENTINEL] = CONFIG_VAL,
-        controls: Union[ControlsArg, None, SENTINEL] = CONFIG_VAL,
+        events: Union[int, None, Sentinel] = CONFIG_VAL,
+        duration: Union[int, None, Sentinel] = CONFIG_VAL,
+        record: Union[bool, None, Sentinel] = CONFIG_VAL,
+        use_l3t: Union[bool, None, Sentinel] = CONFIG_VAL,
+        controls: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
         wait: bool = False,
         end_run: bool = False,
     ):
@@ -295,9 +295,9 @@ class DaqLCLS1(DaqBase):
 
     def begin_infinite(
         self,
-        record: Union[bool, None, SENTINEL] = CONFIG_VAL,
-        use_l3t: Union[bool, None, SENTINEL] = CONFIG_VAL,
-        controls: Union[ControlsArg, None, SENTINEL] = CONFIG_VAL,
+        record: Union[bool, None, Sentinel] = CONFIG_VAL,
+        use_l3t: Union[bool, None, Sentinel] = CONFIG_VAL,
+        controls: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
     ) -> None:
         """
         Start the daq to run forever in the background.
@@ -365,10 +365,10 @@ class DaqLCLS1(DaqBase):
     @check_connect
     def kickoff(
         self,
-        events: Union[int, None, SENTINEL] = CONFIG_VAL,
-        duration: Union[int, None, SENTINEL] = CONFIG_VAL,
-        use_l3t: Union[bool, None, SENTINEL] = CONFIG_VAL,
-        controls: Union[ControlsArg, None, SENTINEL] = CONFIG_VAL,
+        events: Union[int, None, Sentinel] = CONFIG_VAL,
+        duration: Union[int, None, Sentinel] = CONFIG_VAL,
+        use_l3t: Union[bool, None, Sentinel] = CONFIG_VAL,
+        controls: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
     ) -> DeviceStatus:
         """
         Begin acquisition. This method is non-blocking.
@@ -522,12 +522,12 @@ class DaqLCLS1(DaqBase):
 
     def preconfig(
         self,
-        events: Union[int, None, SENTINEL] = CONFIG_VAL,
-        duration: Union[int, None, SENTINEL] = CONFIG_VAL,
-        record: Union[bool, None, SENTINEL] = CONFIG_VAL,
-        use_l3t: Union[bool, None, SENTINEL] = CONFIG_VAL,
-        controls: Union[ControlsArg, None, SENTINEL] = CONFIG_VAL,
-        begin_sleep: Union[int, None, SENTINEL] = CONFIG_VAL,
+        events: Union[int, None, Sentinel] = CONFIG_VAL,
+        duration: Union[int, None, Sentinel] = CONFIG_VAL,
+        record: Union[bool, None, Sentinel] = CONFIG_VAL,
+        use_l3t: Union[bool, None, Sentinel] = CONFIG_VAL,
+        controls: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
+        begin_sleep: Union[int, None, Sentinel] = CONFIG_VAL,
         show_queued_cfg: bool = True,
     ) -> None:
         """
@@ -559,12 +559,12 @@ class DaqLCLS1(DaqBase):
     @check_connect
     def configure(
         self,
-        events: Union[int, None, SENTINEL] = CONFIG_VAL,
-        duration: Union[int, None, SENTINEL] = CONFIG_VAL,
-        record: Union[bool, None, SENTINEL] = CONFIG_VAL,
-        use_l3t: Union[bool, None, SENTINEL] = CONFIG_VAL,
-        controls: Union[ControlsArg, None, SENTINEL] = CONFIG_VAL,
-        begin_sleep: Union[int, None, SENTINEL] = CONFIG_VAL,
+        events: Union[int, None, Sentinel] = CONFIG_VAL,
+        duration: Union[int, None, Sentinel] = CONFIG_VAL,
+        record: Union[bool, None, Sentinel] = CONFIG_VAL,
+        use_l3t: Union[bool, None, Sentinel] = CONFIG_VAL,
+        controls: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
+        begin_sleep: Union[int, None, Sentinel] = CONFIG_VAL,
     ) -> tuple[dict, dict]:
         """
         Changes the daq's configuration for the next run.
@@ -727,10 +727,10 @@ class DaqLCLS1(DaqBase):
 
     def _begin_args(
         self,
-        events: Union[int, None, SENTINEL] = CONFIG_VAL,
-        duration: Union[int, None, SENTINEL] = CONFIG_VAL,
-        use_l3t: Union[bool, None, SENTINEL] = CONFIG_VAL,
-        controls: Union[ControlsArg, None, SENTINEL] = CONFIG_VAL,
+        events: Union[int, None, Sentinel] = CONFIG_VAL,
+        duration: Union[int, None, Sentinel] = CONFIG_VAL,
+        use_l3t: Union[bool, None, Sentinel] = CONFIG_VAL,
+        controls: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
     ) -> dict[str, Any]:
         """
         For a given set of arguments to `begin`, return the arguments that
@@ -770,7 +770,7 @@ class DaqLCLS1(DaqBase):
             begin_args['controls'] = self._ctrl_arg(controls)
         return begin_args
 
-    def _check_duration(self, duration: Union[int, None, SENTINEL]):
+    def _check_duration(self, duration: Union[int, None, Sentinel]):
         if duration not in (None, CONFIG_VAL) and duration < 1:
             msg = ('Duration argument less than 1 is unreliable. Please '
                    'use the events argument to specify the length of '

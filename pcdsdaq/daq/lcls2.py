@@ -27,9 +27,10 @@ from ophyd.utils.errors import InvalidState
 from psdaq.control.ControlDef import ControlDef
 from psdaq.control.DaqControl import DaqControl
 
-from .interface import (CONFIG_VAL, SENTINEL, ControlsArg, DaqBase,
+from .interface import (CONFIG_VAL, ControlsArg, DaqBase,
                         DaqStateTransitionError, DaqTimeoutError, EnumId,
-                        HelpfulIntEnum, get_controls_value, typing_check)
+                        HelpfulIntEnum, Sentinel, get_controls_value,
+                        typing_check)
 
 logger = logging.getLogger(__name__)
 
@@ -110,6 +111,7 @@ class DaqLCLS2(DaqBase):
         self.state_sig.put(self.state_enum['reset'])
         self.transition_sig.put(self.transition_enum['reset'])
         self.group_mask_cfg.put(1 << platform)
+        self._update_default_config(self.group_mask_cfg)
         if sim:
             CtrlCls = SimDaqControl
         else:
@@ -164,7 +166,9 @@ class DaqLCLS2(DaqBase):
         """
         Monitor the DAQ state in a background thread.
         """
-        threading.Thread(target=self._monitor_thread, args=()).start()
+        thread = threading.Thread(target=self._monitor_thread, args=())
+        thread.daemon = True
+        thread.start()
 
     def _monitor_thread(self) -> None:
         """
@@ -726,19 +730,19 @@ class DaqLCLS2(DaqBase):
         self,
         wait: bool = False,
         end_run: bool = False,
-        events: Union[int, None, SENTINEL] = CONFIG_VAL,
-        duration: Union[Real, None, SENTINEL] = CONFIG_VAL,
-        record: Union[bool, None, SENTINEL] = CONFIG_VAL,
-        controls: Union[ControlsArg, None, SENTINEL] = CONFIG_VAL,
-        motors: Union[ControlsArg, None, SENTINEL] = CONFIG_VAL,
-        begin_timeout: Union[Real, None, SENTINEL] = CONFIG_VAL,
-        begin_sleep: Union[Real, None, SENTINEL] = CONFIG_VAL,
-        group_mask: Union[int, None, SENTINEL] = CONFIG_VAL,
-        detname: Union[str, None, SENTINEL] = CONFIG_VAL,
-        scantype: Union[str, None, SENTINEL] = CONFIG_VAL,
-        serial_number: Union[str, None, SENTINEL] = CONFIG_VAL,
-        alg_name: Union[str, None, SENTINEL] = CONFIG_VAL,
-        alg_version: Union[list[int], None, SENTINEL] = CONFIG_VAL,
+        events: Union[int, None, Sentinel] = CONFIG_VAL,
+        duration: Union[Real, None, Sentinel] = CONFIG_VAL,
+        record: Union[bool, None, Sentinel] = CONFIG_VAL,
+        controls: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
+        motors: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
+        begin_timeout: Union[Real, None, Sentinel] = CONFIG_VAL,
+        begin_sleep: Union[Real, None, Sentinel] = CONFIG_VAL,
+        group_mask: Union[int, None, Sentinel] = CONFIG_VAL,
+        detname: Union[str, None, Sentinel] = CONFIG_VAL,
+        scantype: Union[str, None, Sentinel] = CONFIG_VAL,
+        serial_number: Union[str, None, Sentinel] = CONFIG_VAL,
+        alg_name: Union[str, None, Sentinel] = CONFIG_VAL,
+        alg_version: Union[list[int], None, Sentinel] = CONFIG_VAL,
     ) -> None:
         """
         Interactive starting of the DAQ.
@@ -1018,24 +1022,25 @@ class DaqLCLS2(DaqBase):
         hint = get_type_hints(self.preconfig)[name]
         if not typing_check(value, hint):
             raise TypeError(
-                f'Incorrect type for {name}={value}, expected {hint}'
+                f'Incorrect type for {name}={value}, expected {hint} '
+                f'but got {type(value)}'
             )
 
     def preconfig(
         self,
-        events: Union[int, None, SENTINEL] = CONFIG_VAL,
-        duration: Union[Real, None, SENTINEL] = CONFIG_VAL,
-        record: Union[bool, None, SENTINEL] = CONFIG_VAL,
-        controls: Union[ControlsArg, None, SENTINEL] = CONFIG_VAL,
-        motors: Union[ControlsArg, None, SENTINEL] = CONFIG_VAL,
-        begin_timeout: Union[Real, None, SENTINEL] = CONFIG_VAL,
-        begin_sleep: Union[Real, None, SENTINEL] = CONFIG_VAL,
-        group_mask: Union[int, None, SENTINEL] = CONFIG_VAL,
-        detname: Union[str, None, SENTINEL] = CONFIG_VAL,
-        scantype: Union[str, None, SENTINEL] = CONFIG_VAL,
-        serial_number: Union[str, None, SENTINEL] = CONFIG_VAL,
-        alg_name: Union[str, None, SENTINEL] = CONFIG_VAL,
-        alg_version: Union[list[int], None, SENTINEL] = CONFIG_VAL,
+        events: Union[int, None, Sentinel] = CONFIG_VAL,
+        duration: Union[Real, None, Sentinel] = CONFIG_VAL,
+        record: Union[bool, None, Sentinel] = CONFIG_VAL,
+        controls: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
+        motors: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
+        begin_timeout: Union[Real, None, Sentinel] = CONFIG_VAL,
+        begin_sleep: Union[Real, None, Sentinel] = CONFIG_VAL,
+        group_mask: Union[int, None, Sentinel] = CONFIG_VAL,
+        detname: Union[str, None, Sentinel] = CONFIG_VAL,
+        scantype: Union[str, None, Sentinel] = CONFIG_VAL,
+        serial_number: Union[str, None, Sentinel] = CONFIG_VAL,
+        alg_name: Union[str, None, Sentinel] = CONFIG_VAL,
+        alg_version: Union[list[int], None, Sentinel] = CONFIG_VAL,
         show_queued_config: bool = True,
     ) -> None:
         """
@@ -1157,7 +1162,7 @@ class DaqLCLS2(DaqBase):
             duration = float(duration)
             events = None
         # Handle motors as an alias for controls
-        if not isinstance(motors, SENTINEL):
+        if not isinstance(motors, Sentinel):
             controls = motors
         # Call super
         super().preconfig(
@@ -1178,19 +1183,19 @@ class DaqLCLS2(DaqBase):
 
     def configure(
         self,
-        events: Union[int, None, SENTINEL] = CONFIG_VAL,
-        duration: Union[Real, None, SENTINEL] = CONFIG_VAL,
-        record: Union[bool, None, SENTINEL] = CONFIG_VAL,
-        controls: Union[ControlsArg, None, SENTINEL] = CONFIG_VAL,
-        motors: Union[ControlsArg, None, SENTINEL] = CONFIG_VAL,
-        begin_timeout: Union[Real, None, SENTINEL] = CONFIG_VAL,
-        begin_sleep: Union[Real, None, SENTINEL] = CONFIG_VAL,
-        group_mask: Union[int, None, SENTINEL] = CONFIG_VAL,
-        detname: Union[str, None, SENTINEL] = CONFIG_VAL,
-        scantype: Union[str, None, SENTINEL] = CONFIG_VAL,
-        serial_number: Union[str, None, SENTINEL] = CONFIG_VAL,
-        alg_name: Union[str, None, SENTINEL] = CONFIG_VAL,
-        alg_version: Union[list[int], None, SENTINEL] = CONFIG_VAL,
+        events: Union[int, None, Sentinel] = CONFIG_VAL,
+        duration: Union[Real, None, Sentinel] = CONFIG_VAL,
+        record: Union[bool, None, Sentinel] = CONFIG_VAL,
+        controls: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
+        motors: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
+        begin_timeout: Union[Real, None, Sentinel] = CONFIG_VAL,
+        begin_sleep: Union[Real, None, Sentinel] = CONFIG_VAL,
+        group_mask: Union[int, None, Sentinel] = CONFIG_VAL,
+        detname: Union[str, None, Sentinel] = CONFIG_VAL,
+        scantype: Union[str, None, Sentinel] = CONFIG_VAL,
+        serial_number: Union[str, None, Sentinel] = CONFIG_VAL,
+        alg_name: Union[str, None, Sentinel] = CONFIG_VAL,
+        alg_version: Union[list[int], None, Sentinel] = CONFIG_VAL,
     ):
         """
         Adjusts the configuration, causing a "configure" transition if needed.
