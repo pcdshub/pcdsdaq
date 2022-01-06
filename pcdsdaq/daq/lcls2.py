@@ -344,16 +344,22 @@ class DaqLCLS2(DaqBase):
             timeout,
             check_now,
         )
+        if state is None and transition is None:
+            any_change = True
+        else:
+            any_change = False
         if state is None:
             state = {None}
+            state_arg = False
         else:
-            state = {self.state_enum.from_any(s) for s in state}
+            state = self.state_enum.include(state)
+            state_arg = True
         if transition is None:
             transition = {None}
+            trans_arg = False
         else:
-            transition = {
-                self.transition_enum.from_any(t) for t in transition
-            }
+            transition = self.transition_enum.include(transition)
+            trans_arg = True
 
         def check_state(value: Any, old_value: Any, **kwargs) -> None:
             """Call success if this value and last transition are correct."""
@@ -361,7 +367,10 @@ class DaqLCLS2(DaqBase):
             if value == old_value and not check_now:
                 return
             with lock:
-                if value in state and last_transition in transition:
+                if (
+                    any_change
+                    or (value in state and last_transition in transition)
+                ):
                     success()
                 else:
                     last_state = value
@@ -372,7 +381,10 @@ class DaqLCLS2(DaqBase):
             if value == old_value and not check_now:
                 return
             with lock:
-                if value in transition and last_state in state:
+                if (
+                    any_change
+                    or (value in transition and last_state in state)
+                ):
                     success()
                 else:
                     last_transition = value
@@ -390,21 +402,25 @@ class DaqLCLS2(DaqBase):
 
             Runs on successes, failures, and timeouts.
             """
-            self.state_sig.unsubscribe(state_cbid)
-            self.transition_sig.unsubscribe(transition_cbid)
+            if any_change or state_arg:
+                self.state_sig.unsubscribe(state_cbid)
+            if any_change or trans_arg:
+                self.transition_sig.unsubscribe(transition_cbid)
 
         last_state = None
         last_transition = None
         lock = threading.Lock()
         status = DeviceStatus(self, timeout=timeout)
-        state_cbid = self.state_sig.subscribe(
-            check_state,
-            run=check_now,
-        )
-        transition_cbid = self.transition_sig.subscribe(
-            check_transition,
-            run=check_now,
-        )
+        if any_change or state_arg:
+            state_cbid = self.state_sig.subscribe(
+                check_state,
+                run=check_now,
+            )
+        if any_change or trans_arg:
+            transition_cbid = self.transition_sig.subscribe(
+                check_transition,
+                run=check_now,
+            )
         status.add_callback(clean_up)
         return status
 
@@ -491,7 +507,7 @@ class DaqLCLS2(DaqBase):
         phase1_info = {}
         if (
             self.state_sig.get()
-            < self.state_enum['configure']
+            < self.state_enum['configured']
             <= state
         ):
             # configure transition
@@ -521,7 +537,7 @@ class DaqLCLS2(DaqBase):
         )
         # Set the transition in background thread, can be blocking
         threading.Thread(
-            self._transition_thread,
+            target=self._transition_thread,
             args=(state.name, phase1_info, status),
         ).start()
         # Handle duration ourselves in another thread for LCLS1 compat
@@ -531,7 +547,7 @@ class DaqLCLS2(DaqBase):
             and self.duration_cfg.get() is not None
         ):
             threading.Thread(
-                self._handle_duration_thread,
+                target=self._handle_duration_thread,
                 args=(self.duration_cfg.get(), status)
             ).start()
 
@@ -786,10 +802,9 @@ class DaqLCLS2(DaqBase):
             Alias of "controls" for backwards compatibility.
         begin_timeout : float or None, optional
             How long to wait before marking a begin run as a failure and
-            raising an exception. The default is {BEGIN_TIMEOUT} seconds.
+            raising an exception.
         begin_sleep : float or None, optional
-            How long to wait before starting a run. The default is
-            {BEGIN_SLEEP} seconds.
+            How long to wait before starting a run.
         group_mask : int or None, optional
             Bitmask that is used by the DAQ. This docstring writer is not
             sure exactly what it does. The default is all zeroes with a
@@ -811,7 +826,7 @@ class DaqLCLS2(DaqBase):
             alg_name. Defaults to [1, 0, 0].
         """
         logger.debug(
-            "DaqLCLS2.begin(wait=%s, end_run=%s, ",
+            "DaqLCLS2.begin(wait=%s, end_run=%s, "
             "events=%s, duration=%s, record=%s, controls=%s, motors=%s, "
             "begin_timeout=%s, begin_sleep=%s, group_mask=%s, detname=%s, "
             "scantype=%s, serial_number=%s, alg_name=%s, alg_version=%s, "
@@ -1041,7 +1056,7 @@ class DaqLCLS2(DaqBase):
         serial_number: Union[str, None, Sentinel] = CONFIG_VAL,
         alg_name: Union[str, None, Sentinel] = CONFIG_VAL,
         alg_version: Union[list[int], None, Sentinel] = CONFIG_VAL,
-        show_queued_config: bool = True,
+        show_queued_cfg: bool = True,
     ) -> None:
         """
         Adjust the configuration without causing a configure transition.
@@ -1115,7 +1130,7 @@ class DaqLCLS2(DaqBase):
         alg_version : list of int, or None, optional
             The version numbers [major, minor, bugfix] associated with
             alg_name. Defaults to [1, 0, 0].
-        show_queued_config: bool, optional
+        show_queued_cfg: bool, optional
             If True, we'll show what the next configuration will be
             as a nice log message.
         """
@@ -1124,7 +1139,7 @@ class DaqLCLS2(DaqBase):
             "events=%s, duration=%s, record=%s, controls=%s, motors=%s, "
             "begin_timeout=%s, begin_sleep=%s, group_mask=%s, detname=%s, "
             "scantype=%s, serial_number=%s, alg_name=%s, alg_version=%s, "
-            "show_queued_config=%s"
+            "show_queued_cfg=%s"
             ")",
             events,
             duration,
@@ -1139,7 +1154,7 @@ class DaqLCLS2(DaqBase):
             serial_number,
             alg_name,
             alg_version,
-            show_queued_config,
+            show_queued_cfg,
         )
         self._enforce_config('events', events)
         self._enforce_config('duration', duration)
@@ -1178,7 +1193,7 @@ class DaqLCLS2(DaqBase):
             serial_number=serial_number,
             alg_name=alg_name,
             alg_version=alg_version,
-            show_queued_cfg=show_queued_config,
+            show_queued_cfg=show_queued_cfg,
         )
 
     def configure(
@@ -1306,10 +1321,18 @@ class DaqLCLS2(DaqBase):
                 )
             if self.state_sig.get() == self.state_enum['configured']:
                 # Already configured, so we should unconfigure first
-                self.state_transition('connected', wait=True)
+                self.state_transition(
+                    'connected',
+                    timeout=self.begin_timeout_cfg.get(),
+                    wait=True,
+                )
             if self.record_cfg.get() is not None:
                 self._control.setRecord(self.record_cfg.get())
-            self.state_transition('configured', wait=True)
+            self.state_transition(
+                'configured',
+                timeout=self.begin_timeout_cfg.get(),
+                wait=True,
+            )
             self._last_config = self.config
             self._queue_configure_transition = False
         return old, new
@@ -1336,7 +1359,7 @@ class DaqLCLS2(DaqBase):
 
     @record.setter
     def record(self, record: bool) -> None:
-        self.preconfig(record=record, show_queued_config=False)
+        self.preconfig(record=record, show_queued_cfg=False)
 
     def run_number(self) -> int:
         """
@@ -1483,7 +1506,7 @@ class SimDaqControl:
                     events = 0
                 if events > 0:
                     threading.Thread(
-                        self._end_step_thread,
+                        target=self._end_step_thread,
                         args=(events,)
                     ).start()
 

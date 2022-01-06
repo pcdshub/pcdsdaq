@@ -2,7 +2,9 @@ import logging
 from functools import partial
 from threading import Event
 
+import bluesky.plan_stubs as bps
 import pytest
+from bluesky import RunEngine
 from ophyd.positioner import SoftPositioner
 from ophyd.signal import Signal
 from ophyd.utils.errors import WaitTimeoutError
@@ -14,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 @pytest.fixture(scope='function')
-def daq_lcls2(RE) -> DaqLCLS2:
+def daq_lcls2(RE: RunEngine) -> DaqLCLS2:
     return DaqLCLS2(
         platform=0,
         host='tst',
@@ -60,7 +62,7 @@ def test_preconfig(daq_lcls2: DaqLCLS2):
             daq_lcls2.preconfig(**{keyword: value})
             assert sig.get() == value
         some_value = sig.get()
-        daq_lcls2.preconfig(show_queued_config=False)
+        daq_lcls2.preconfig(show_queued_cfg=False)
         assert sig.get() == some_value
         for value in bad_values:
             with pytest.raises(TypeError):
@@ -109,6 +111,7 @@ def test_record(daq_lcls2: DaqLCLS2):
       - False if the last set was False
       - Match the control's record state otherwise
     """
+    logger.debug('test_record')
     ev = Event()
 
     def wait_for(goal, value, **kwargs):
@@ -150,6 +153,7 @@ def test_run_number(daq_lcls2: DaqLCLS2):
     """
     Test that the values from monitorStatus can be returned via run_number.
     """
+    logger.debug('test_run_number')
     ev = Event()
 
     def wait_for(goal, value, **kwargs):
@@ -168,10 +172,104 @@ def test_run_number(daq_lcls2: DaqLCLS2):
         assert daq_lcls2.run_number() == run_num
 
 
-@pytest.mark.skip(reason='Test not written yet.')
-def test_stage_unstage():
-    # Should work at any point
-    1/0
+@pytest.mark.timeout(60)
+def test_stage_unstage(daq_lcls2: DaqLCLS2, RE: RunEngine):
+    """
+    Test the following behavior on stage:
+    - RE subscription to end run on stop, if not already subscribed
+    - end run if one is already going
+    Test the following behavior on unstage:
+    - RE subscription cleaned up if still active
+    - end run if the run hasn't ended yet
+    - infinite run if we were running before
+    These tests imply that daq can call stage/unstage multiple times
+    with no errors, but this isn't a requirement.
+    """
+    logger.debug('test_stage_unstage')
+
+    def empty_run():
+        yield from bps.open_run()
+        yield from bps.close_run()
+
+    def do_empty_run():
+        logger.debug('do_empty_run')
+        RE(empty_run())
+
+    def set_running():
+        logger.debug('set_running')
+        if daq_lcls2._control._state == 'running':
+            return
+        status = running_status()
+        daq_lcls2._control.sim_set_states('enable', 'running')
+        status.wait(timeout=1)
+
+    def running_status():
+        logger.debug('running_status')
+        return daq_lcls2.get_status_for(
+            state=['running'],
+            check_now=False,
+        )
+
+    def end_run_status():
+        logger.debug('end_run_status')
+        return daq_lcls2.get_status_for(
+            transition=['endrun'],
+            check_now=False,
+        )
+
+    # Nothing special happens if no stage
+    logger.debug('nothing special')
+    set_running()
+    status = end_run_status()
+    do_empty_run()
+    with pytest.raises(WaitTimeoutError):
+        status.wait(timeout=1)
+    status.set_finished()
+
+    # If we stage, the previous run should end
+    logger.debug('stage ends run')
+    set_running()
+    status = end_run_status()
+    daq_lcls2.stage()
+    status.wait(timeout=1)
+    daq_lcls2.unstage()
+
+    # If we stage, the run should end itself in the plan
+    logger.debug('plan ends staged run')
+    daq_lcls2.stage()
+    set_running()
+    status = end_run_status()
+    do_empty_run()
+    status.wait(timeout=1)
+    daq_lcls2.unstage()
+
+    # Redo first test after an unstage
+    logger.debug('nothing special, reprise')
+    set_running()
+    status = end_run_status()
+    do_empty_run()
+    with pytest.raises(WaitTimeoutError):
+        status.wait(timeout=1)
+    status.set_finished()
+
+    # Unstage should end the run if it hasn't already ended
+    logger.debug('unstage ends run')
+    daq_lcls2.stage()
+    set_running()
+    status = end_run_status()
+    daq_lcls2.unstage()
+    status.wait(timeout=1)
+
+    # Running -> Staged (not running) -> Unstaged (running)
+    logger.debug('unstage resumes run')
+    set_running()
+    status = end_run_status()
+    daq_lcls2.stage()
+    status.wait(timeout=1)
+    status = running_status()
+    daq_lcls2.unstage()
+    status.wait(timeout=1)
+    daq_lcls2.end_run()
 
 
 @pytest.mark.skip(reason='Test not written yet.')

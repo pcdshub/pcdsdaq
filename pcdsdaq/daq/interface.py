@@ -301,7 +301,8 @@ class DaqBase(Device):
     platform: Optional[int]
     _last_config: dict[str, Any]
     _queue_configure_transition: bool
-    _default_cfg_overrides: dict[str, Any]
+    _default_config_overrides: dict[str, Any]
+    _re_cbid: Optional[int]
 
     def __init__(
         self,
@@ -325,6 +326,7 @@ class DaqBase(Device):
         self._default_config = {}
         self._default_config_overrides = {}
         self._queue_configure_transition = True
+        self._re_cbid = None
         super().__init__(name=name)
         for cpt_name in self.component_names:
             clip_name(getattr(self, cpt_name))
