@@ -1329,10 +1329,14 @@ class DaqLCLS2(DaqBase):
         You can set record via daq.record = True, for example, or by
         using daq.preconfig or daq.configure.
         """
-        cfg_record = super().record
+        cfg_record = self.record_cfg.get()
         if cfg_record is None:
             return self.recording_sig.get()
         return cfg_record
+
+    @record.setter
+    def record(self, record: bool) -> None:
+        self.preconfig(record=record, show_queued_config=False)
 
     def run_number(self) -> int:
         """
@@ -1444,7 +1448,6 @@ class SimDaqControl:
                 status = ('step', self._step_done)
             else:
                 raise RuntimeError('Error in sim, bad header')
-        status = [str(elem) for elem in status]
         while len(status) < 8:
             status.append('error')
         return tuple(status)

@@ -1,4 +1,6 @@
 import logging
+from functools import partial
+from threading import Event
 
 import pytest
 from ophyd.positioner import SoftPositioner
@@ -93,10 +95,55 @@ def test_preconfig(daq_lcls2: DaqLCLS2):
     test_one('alg_version', ([1, 2, 3], [2, 3, 4]), (1, 2.6, 'n', object()))
 
 
-@pytest.mark.skip(reason='Test not written yet.')
-def test_record():
-    # Should work at any point
-    1/0
+def test_record(daq_lcls2: DaqLCLS2):
+    """
+    Tests on record, record_cfg, recording_sig:
+
+    Check that the recording_sig gets the correct value as reported by
+    the monitorStatus calls.
+
+    Then, check that the record property has the following behavior:
+    - When setattr, record_cfg is put to as appropriate (True/False/None)
+    - When getattr, we see the correct value:
+      - True if the last set was True
+      - False if the last set was False
+      - Match the control's record state otherwise
+    """
+    ev = Event()
+
+    def wait_for(goal, value, **kwargs):
+        if value == goal:
+            ev.set()
+
+    # Establish that recording_sig is a reliable proxy for _control state
+    for record in (True, False, True, False):
+        ev.clear()
+        daq_lcls2._control.setRecord(record)
+        cbid = daq_lcls2.recording_sig.subscribe(partial(wait_for, record))
+        ev.wait(1.0)
+        daq_lcls2.recording_sig.unsubscribe(cbid)
+        assert daq_lcls2.recording_sig.get() == record
+
+    # Establish that record setattr works
+    for record in (True, False, True, False):
+        daq_lcls2.record = record
+        assert daq_lcls2.record_cfg.get() == record
+
+    # Establish that the getattr logic table is correct
+    daq_cfg = (True, False, None)
+    daq_status = (True, False)
+
+    def assert_expected(daq: DaqLCLS2):
+        if daq.record_cfg.get() is None:
+            assert daq.record == daq.recording_sig.get()
+        else:
+            assert daq.record == daq.record_cfg.get()
+
+    for cfg in daq_cfg:
+        daq_lcls2.record_cfg.put(cfg)
+        for status in daq_status:
+            daq_lcls2.recording_sig.put(status)
+            assert_expected(daq_lcls2)
 
 
 @pytest.mark.skip(reason='Test not written yet.')
