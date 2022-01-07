@@ -341,28 +341,77 @@ def test_configure(daq_lcls2: DaqLCLS2):
     st_conf.wait(timeout=1)
 
 
-@pytest.mark.skip(reason='Test not written yet.')
-def test_config_info():
-    # Test this after preconfig
-    1/0
+def test_config_info(daq_lcls2: DaqLCLS2):
+    """Simply test that config_info can run without errors."""
+    daq_lcls2.config_info()
 
 
-@pytest.mark.skip(reason='Test not written yet.')
-def test_default_config():
-    # Test this after configure
-    1/0
+def test_config(daq_lcls2: DaqLCLS2):
+    """
+    Test the following:
+    - daq.config matches the values put into configure
+    - mutating daq.config doesn't change daq.config
+    """
+    assert daq_lcls2.config is not daq_lcls2.config
+    daq_lcls2._control.setState('connected', {})
+    daq_lcls2.get_status_for(state=['connected']).wait(timeout=1)
+    conf = dict(events=100, record=True)
+    daq_lcls2.configure(**conf)
+    for key, value in conf.items():
+        assert daq_lcls2.config[key] == value
+    full_conf = daq_lcls2.config
+    full_conf['events'] = 10000000
+    assert daq_lcls2.config['events'] != full_conf['events']
+    assert daq_lcls2.config is not daq_lcls2.config
 
 
-@pytest.mark.skip(reason='Test not written yet.')
-def test_configured():
-    # Test this after configure
-    1/0
+def test_default_config(daq_lcls2: DaqLCLS2):
+    """
+    Test the following:
+    - default config exists
+    - is unchanged by configure
+    - matches config at start
+    - immutable
+    """
+    daq_lcls2._control.setState('connected', {})
+    default = daq_lcls2.default_config
+    assert daq_lcls2.config == default
+    daq_lcls2.get_status_for(state=['connected']).wait(timeout=1)
+    daq_lcls2.configure(events=1000, record=False, begin_timeout=12)
+    assert daq_lcls2.default_config == default
+    default_events = daq_lcls2.default_config['events']
+    daq_lcls2.default_config['events'] = 1000000
+    assert daq_lcls2.default_config['events'] == default_events
+    assert daq_lcls2.default_config is not daq_lcls2.default_config
 
 
-@pytest.mark.skip(reason='Test not written yet.')
-def test_config():
-    # Test this after configure
-    1/0
+def test_configured(daq_lcls2: DaqLCLS2):
+    """
+    Configured means we're in the "configured" state or higher.
+    """
+    def transition_wait_assert(state, expected_configured):
+        daq_lcls2._control.setState(state, {})
+        daq_lcls2.get_status_for(state=[state]).wait(timeout=1)
+        ev = Event()
+
+        def cb(value, **kwargs):
+            if value == expected_configured:
+                ev.set()
+
+        cbid = daq_lcls2.configured_sig.subscribe(cb)
+        ev.wait(timeout=1)
+        daq_lcls2.configured_sig.unsubscribe(cbid)
+
+        assert daq_lcls2.configured == expected_configured
+
+    transition_wait_assert('reset', False)
+    transition_wait_assert('unallocated', False)
+    transition_wait_assert('allocated', False)
+    transition_wait_assert('connected', False)
+    transition_wait_assert('configured', True)
+    transition_wait_assert('starting', True)
+    transition_wait_assert('paused', True)
+    transition_wait_assert('running', True)
 
 
 @pytest.mark.skip(reason='Test not written yet.')
