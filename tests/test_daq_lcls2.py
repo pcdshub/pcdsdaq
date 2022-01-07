@@ -322,7 +322,23 @@ def test_configure(daq_lcls2: DaqLCLS2):
         with pytest.raises(RuntimeError):
             daq_lcls2.configure(record=not prev_record)
 
-    # TODO: transition for user clicking ui record
+    # If we get desynced from the recording state, we should reconfigure
+    # Get us into a normal state, regardless of previous testing
+    daq_lcls2._control.setState('connected', {})
+    daq_lcls2.get_status_for(state=['connected']).wait(timeout=1)
+    daq_lcls2.configure(record=False)
+    daq_lcls2.configure(record=True)
+    # This is simpler than waiting for it to happen in the background
+    daq_lcls2.recording_sig.put(True)
+    # Simulate someone changing the recording state
+    daq_lcls2._control.setRecord(False)
+    daq_lcls2.recording_sig.put(False)
+    # Configure something else and check for transitions
+    st_conn = daq_lcls2.get_status_for(state=['connected'], check_now=False)
+    st_conf = daq_lcls2.get_status_for(state=['configured'], check_now=False)
+    daq_lcls2.configure(events=999)
+    st_conn.wait(timeout=1)
+    st_conf.wait(timeout=1)
 
 
 @pytest.mark.skip(reason='Test not written yet.')
