@@ -272,10 +272,52 @@ def test_stage_unstage(daq_lcls2: DaqLCLS2, RE: RunEngine):
     daq_lcls2.end_run()
 
 
-@pytest.mark.skip(reason='Test not written yet.')
-def test_configure():
-    # Test this after preconfig
-    1/0
+def test_configure(daq_lcls2: DaqLCLS2):
+    """
+    Configure must have the following behavior:
+    - kwargs end up in cfg signals (spot check 1 or 2)
+    - Returns (old_cfg, new_cfg)
+    - Configure transition caused if needed from conn/conf states
+    - Conf needed if recording gui clicked, or critical kwargs changed,
+      or if never done.
+    - From the conf state, we unconf before confing
+    - Configure transition not caused if not needed
+    - Error if we're not in conn/conf states and a transition is needed
+    """
+    # The first configure should cause a transition
+    # Let's start in connected and check the basic stuff
+    daq_lcls2._control.sim_set_states(
+        transition='connect',
+        state='connected',
+    )
+    daq_lcls2.get_status_for(state=['connected']).wait(timeout=1)
+    prev_tst = daq_lcls2.read_configuration()
+    prev_cfg, post_cfg = daq_lcls2.configure(events=100, detname='dat')
+    assert daq_lcls2.events_cfg.get() == 100
+    assert daq_lcls2.detname_cfg.get() == 'dat'
+    post_tst = daq_lcls2.read_configuration()
+    assert (prev_cfg, post_cfg) == (prev_tst, post_tst)
+
+    # Changing record should make us reconfigure
+    st_conn = daq_lcls2.get_status_for(state=['connected'], check_now=False)
+    st_conf = daq_lcls2.get_status_for(state=['configured'], check_now=False)
+    daq_lcls2.configure(record=not daq_lcls2.record)
+    st_conn.wait(timeout=1)
+    st_conf.wait(timeout=1)
+
+    # Changing events should not make us reconfigure
+    st_any = daq_lcls2.get_status_for(check_now=False)
+    daq_lcls2.configure(events=1000)
+    with pytest.raises(WaitTimeoutError):
+        st_any.wait(1)
+    st_any.set_finished()
+
+    # Configure should error if transition needed from most of the states
+    bad_states = daq_lcls2.state_enum.exclude(['connected', 'configured'])
+    for state in bad_states:
+        daq_lcls2.state_sig.put(state)
+        with pytest.raises(RuntimeError):
+            daq_lcls2.configure(record=not daq_lcls2.record)
 
 
 @pytest.mark.skip(reason='Test not written yet.')
