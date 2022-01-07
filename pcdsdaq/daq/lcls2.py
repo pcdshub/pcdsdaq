@@ -1215,7 +1215,7 @@ class DaqLCLS2(DaqBase):
         """
         Adjusts the configuration, causing a "configure" transition if needed.
 
-        A "configure" transition wil be caused in the following cases:
+        A "configure" transition will be caused in the following cases:
         1. We are in the "connected" state
         2. We are in the "configured" state but an important configuration
            parameter has been changed. In this case, we will revert to the
@@ -1260,10 +1260,9 @@ class DaqLCLS2(DaqBase):
             Alias of "controls" for backwards compatibility.
         begin_timeout : float or None, optional
             How long to wait before marking a begin run as a failure and
-            raising an exception. The default is {BEGIN_TIMEOUT} seconds.
+            raising an exception.
         begin_sleep : float or None, optional
-            How long to wait before starting a run. The default is
-            {BEGIN_SLEEP} seconds.
+            How long to wait before starting a run.
         group_mask : int or None, optional
             Bitmask that is used by the DAQ. This docstring writer is not
             sure exactly what it does. The default is all zeroes with a
