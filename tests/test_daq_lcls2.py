@@ -29,6 +29,7 @@ def daq_lcls2(RE: RunEngine) -> DaqLCLS2:
 
 def test_state(daq_lcls2: DaqLCLS2):
     """Check that the state attribute reflects the DAQ state."""
+    # TODO investigate why this fails sometimes
     logger.debug('test_state')
     for state in ControlDef.states:
         if daq_lcls2.state_sig.get().name != state:
