@@ -1497,7 +1497,7 @@ class SimDaqControl:
             for goal in goal_indices:
                 self.sim_transition(goal)
 
-            if state == self._states['enabled']:
+            if state == self._states['running']:
                 # We need to schedule end_step
                 try:
                     events = phase1_info['enable']['readout_count']

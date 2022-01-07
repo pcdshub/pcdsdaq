@@ -284,6 +284,7 @@ def test_configure(daq_lcls2: DaqLCLS2):
     - Configure transition not caused if not needed
     - Error if we're not in conn/conf states and a transition is needed
     """
+    logger.debug('test_configure')
     # The first configure should cause a transition
     # Let's start in connected and check the basic stuff
     daq_lcls2._control.sim_set_states(
@@ -314,10 +315,14 @@ def test_configure(daq_lcls2: DaqLCLS2):
 
     # Configure should error if transition needed from most of the states
     bad_states = daq_lcls2.state_enum.exclude(['connected', 'configured'])
+    prev_record = daq_lcls2.record
     for state in bad_states:
+        logger.debug('testing %s', state)
         daq_lcls2.state_sig.put(state)
         with pytest.raises(RuntimeError):
-            daq_lcls2.configure(record=not daq_lcls2.record)
+            daq_lcls2.configure(record=not prev_record)
+
+    # TODO: transition for user clicking ui record
 
 
 @pytest.mark.skip(reason='Test not written yet.')
