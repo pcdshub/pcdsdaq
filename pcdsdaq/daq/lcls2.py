@@ -1050,6 +1050,7 @@ class DaqLCLS2(DaqBase):
         motors: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
         begin_timeout: Union[Real, None, Sentinel] = CONFIG_VAL,
         begin_sleep: Union[Real, None, Sentinel] = CONFIG_VAL,
+        begin_throttle: Union[Real, None, Sentinel] = CONFIG_VAL,
         group_mask: Union[int, None, Sentinel] = CONFIG_VAL,
         detname: Union[str, None, Sentinel] = CONFIG_VAL,
         scantype: Union[str, None, Sentinel] = CONFIG_VAL,
@@ -1112,6 +1113,11 @@ class DaqLCLS2(DaqBase):
             raising an exception.
         begin_sleep : float or None, optional
             How long to wait before starting a run.
+        begin_throttle : float or None, optional
+            Not implemented for LCLS2, would be a mandatory sleep between
+            runs to avoid breaking the DAQ. Since this isn't implemented,
+            it's only included here for internal API matching and isn't
+            duplicated in the signatures for begin or configure.
         group_mask : int or None, optional
             Bitmask that is used by the DAQ. The default is all zeroes with
             a "1" bitshifted left by the platform number.
