@@ -1,4 +1,6 @@
 import logging
+import time
+from contextlib import contextmanager
 from threading import Event
 
 import bluesky.plan_stubs as bps
@@ -9,7 +11,7 @@ from ophyd.signal import Signal
 from ophyd.utils.errors import WaitTimeoutError
 from psdaq.control.ControlDef import ControlDef
 
-from pcdsdaq.daq import DaqLCLS2
+from pcdsdaq.daq import DaqLCLS2, DaqTimeoutError
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +40,14 @@ def sig_wait_value(sig, goal, timeout=1, assert_success=True):
     sig.unsubscribe(cbid)
     if assert_success:
         assert sig.get() == goal
+
+
+@contextmanager
+def assert_timespan(min, max):
+    start = time.monotonic()
+    yield
+    duration = time.monotonic() - start
+    assert min < duration < max
 
 
 def test_state(daq_lcls2: DaqLCLS2):
@@ -335,6 +345,7 @@ def test_configure(daq_lcls2: DaqLCLS2):
 
 def test_config_info(daq_lcls2: DaqLCLS2):
     """Simply test that config_info can run without errors."""
+    logger.debug('test_config_info')
     daq_lcls2.config_info()
 
 
@@ -344,6 +355,8 @@ def test_config(daq_lcls2: DaqLCLS2):
     - daq.config matches the values put into configure
     - mutating daq.config doesn't change daq.config
     """
+    logger.debug('test_config')
+
     assert daq_lcls2.config is not daq_lcls2.config
     daq_lcls2._control.setState('connected', {})
     daq_lcls2.get_status_for(state=['connected']).wait(timeout=1)
@@ -365,6 +378,8 @@ def test_default_config(daq_lcls2: DaqLCLS2):
     - matches config at start
     - immutable
     """
+    logger.debug('test_default_config')
+
     daq_lcls2._control.setState('connected', {})
     default = daq_lcls2.default_config
     assert daq_lcls2.config == default
@@ -381,6 +396,8 @@ def test_configured(daq_lcls2: DaqLCLS2):
     """
     Configured means we're in the "configured" state or higher.
     """
+    logger.debug('test_configured')
+
     def transition_wait_assert(state, expected_configured):
         daq_lcls2._control.setState(state, {})
         daq_lcls2.get_status_for(state=[state]).wait(timeout=1)
@@ -406,6 +423,8 @@ def test_kickoff(daq_lcls2: DaqLCLS2):
     - errors if a configure is needed and cannot be done
     - config params can be passed, and are reverted after the run
     """
+    logger.debug('test_kickoff')
+
     # Errors if not connected or already running
     for state in ('reset', 'unallocated', 'allocated', 'running'):
         daq_lcls2.state_transition(state, timeout=1, wait=True)
@@ -457,10 +476,32 @@ def test_kickoff(daq_lcls2: DaqLCLS2):
         daq_lcls2.kickoff(record=not daq_lcls2.recording_sig.get())
 
 
-@pytest.mark.skip(reason='Test not written yet.')
-def test_wait():
-    # Test this after kickoff
-    1/0
+def test_wait(daq_lcls2: DaqLCLS2):
+    """
+    wait has the following behavior:
+    - If we have an open run, pause the thread until no more events
+    - If no open run, don't wait
+    - If we time out, raise the daq timeout error
+    - If end_run=True, end the run automatically
+    """
+    logger.debug('test_wait')
+    daq_lcls2.state_transition('configured')
+    # Normal behavior: wait for the 1 second run
+    with assert_timespan(min=1, max=2):
+        daq_lcls2.kickoff(duration=1)
+        daq_lcls2.wait(timeout=2)
+    # We should end in starting state, not configured
+    sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum['starting'])
+    # No open events means we should barely wait at all
+    # End run should end the run
+    with assert_timespan(min=0, max=1):
+        daq_lcls2.wait(timeout=2)
+    # Now we should have the end run state!
+    sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum['configured'])
+    # If timing out, a wait raises an exception
+    daq_lcls2.kickoff()
+    with pytest.raises(DaqTimeoutError):
+        daq_lcls2.wait(timeout=0.1)
 
 
 @pytest.mark.skip(reason='Test not written yet.')
