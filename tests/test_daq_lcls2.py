@@ -47,7 +47,7 @@ def assert_timespan(min, max):
     start = time.monotonic()
     yield
     duration = time.monotonic() - start
-    assert min < duration < max
+    assert min <= duration <= max
 
 
 def test_state(daq_lcls2: DaqLCLS2):
@@ -488,18 +488,18 @@ def test_wait(daq_lcls2: DaqLCLS2):
     daq_lcls2.state_transition('configured')
     # Normal behavior: wait for the 1 second run
     with assert_timespan(min=1, max=2):
-        daq_lcls2.kickoff(duration=1)
+        daq_lcls2.kickoff(events=120).wait(timeout=1)
         daq_lcls2.wait(timeout=2)
     # We should end in starting state, not configured
     sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum['starting'])
     # No open events means we should barely wait at all
     # End run should end the run
     with assert_timespan(min=0, max=1):
-        daq_lcls2.wait(timeout=2)
+        daq_lcls2.wait(timeout=2, end_run=True)
     # Now we should have the end run state!
     sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum['configured'])
     # If timing out, a wait raises an exception
-    daq_lcls2.kickoff()
+    daq_lcls2.kickoff().wait(timeout=1)
     with pytest.raises(DaqTimeoutError):
         daq_lcls2.wait(timeout=0.1)
 
@@ -513,6 +513,7 @@ def test_trigger():
 @pytest.mark.skip(reason='Test not written yet.')
 def test_begin():
     # Test this after wait
+    # TODO make sure duration arg is checked here
     1/0
 
 
