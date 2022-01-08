@@ -1,5 +1,4 @@
 import logging
-from functools import partial
 from threading import Event
 
 import bluesky.plan_stubs as bps
@@ -27,18 +26,28 @@ def daq_lcls2(RE: RunEngine) -> DaqLCLS2:
     )
 
 
+def sig_wait_value(sig, goal, timeout=1, assert_success=True):
+    ev = Event()
+
+    def cb(value, **kwargs):
+        if value == goal:
+            ev.set()
+
+    cbid = sig.subscribe(cb)
+    ev.wait(timeout)
+    sig.unsubscribe(cbid)
+    if assert_success:
+        assert sig.get() == goal
+
+
 def test_state(daq_lcls2: DaqLCLS2):
     """Check that the state attribute reflects the DAQ state."""
     # TODO investigate why this fails sometimes
     logger.debug('test_state')
     for state in ControlDef.states:
         if daq_lcls2.state_sig.get().name != state:
-            state_change = daq_lcls2.get_status_for(check_now=False)
             daq_lcls2._control.sim_set_states(1, state)
-            try:
-                state_change.wait(timeout=1)
-            except WaitTimeoutError:
-                pass
+            sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum[state])
         assert daq_lcls2.state == state
 
 
@@ -113,20 +122,11 @@ def test_record(daq_lcls2: DaqLCLS2):
       - Match the control's record state otherwise
     """
     logger.debug('test_record')
-    ev = Event()
-
-    def wait_for(goal, value, **kwargs):
-        if value == goal:
-            ev.set()
 
     # Establish that recording_sig is a reliable proxy for _control state
     for record in (True, False, True, False):
-        ev.clear()
         daq_lcls2._control.setRecord(record)
-        cbid = daq_lcls2.recording_sig.subscribe(partial(wait_for, record))
-        ev.wait(1.0)
-        daq_lcls2.recording_sig.unsubscribe(cbid)
-        assert daq_lcls2.recording_sig.get() == record
+        sig_wait_value(daq_lcls2.recording_sig, record)
 
     # Establish that record setattr works
     for record in (True, False, True, False):
@@ -155,21 +155,13 @@ def test_run_number(daq_lcls2: DaqLCLS2):
     Test that the values from monitorStatus can be returned via run_number.
     """
     logger.debug('test_run_number')
-    ev = Event()
-
-    def wait_for(goal, value, **kwargs):
-        if value == goal:
-            ev.set()
 
     for run_num in range(10):
-        ev.clear()
         daq_lcls2._control._run_number = run_num
         daq_lcls2._control.sim_new_status(
             daq_lcls2._control._headers['status'],
         )
-        cbid = daq_lcls2.run_number_sig.subscribe(partial(wait_for, run_num))
-        ev.wait(1.0)
-        daq_lcls2.run_number_sig.unsubscribe(cbid)
+        sig_wait_value(daq_lcls2.run_number_sig, run_num)
         assert daq_lcls2.run_number() == run_num
 
 
@@ -329,11 +321,10 @@ def test_configure(daq_lcls2: DaqLCLS2):
     daq_lcls2.get_status_for(state=['connected']).wait(timeout=1)
     daq_lcls2.configure(record=False)
     daq_lcls2.configure(record=True)
-    # This is simpler than waiting for it to happen in the background
-    daq_lcls2.recording_sig.put(True)
+    sig_wait_value(daq_lcls2.recording_sig, True)
     # Simulate someone changing the recording state
     daq_lcls2._control.setRecord(False)
-    daq_lcls2.recording_sig.put(False)
+    sig_wait_value(daq_lcls2.recording_sig, False)
     # Configure something else and check for transitions
     st_conn = daq_lcls2.get_status_for(state=['connected'], check_now=False)
     st_conf = daq_lcls2.get_status_for(state=['configured'], check_now=False)
@@ -393,16 +384,7 @@ def test_configured(daq_lcls2: DaqLCLS2):
     def transition_wait_assert(state, expected_configured):
         daq_lcls2._control.setState(state, {})
         daq_lcls2.get_status_for(state=[state]).wait(timeout=1)
-        ev = Event()
-
-        def cb(value, **kwargs):
-            if value == expected_configured:
-                ev.set()
-
-        cbid = daq_lcls2.configured_sig.subscribe(cb)
-        ev.wait(timeout=1)
-        daq_lcls2.configured_sig.unsubscribe(cbid)
-
+        sig_wait_value(daq_lcls2.configured_sig, expected_configured)
         assert daq_lcls2.configured == expected_configured
 
     transition_wait_assert('reset', False)
@@ -415,10 +397,64 @@ def test_configured(daq_lcls2: DaqLCLS2):
     transition_wait_assert('running', True)
 
 
-@pytest.mark.skip(reason='Test not written yet.')
-def test_kickoff():
-    # Test this after configure
-    1/0
+def test_kickoff(daq_lcls2: DaqLCLS2):
+    """
+    kickoff must have the following behavior:
+    - starts or resumes the run (goes to running)
+    - configures if needed
+    - errors if not connected, or if already running
+    - errors if a configure is needed and cannot be done
+    - config params can be passed, and are reverted after the run
+    """
+    # Errors if not connected or already running
+    for state in ('reset', 'unallocated', 'allocated', 'running'):
+        daq_lcls2.state_transition(state, timeout=1, wait=True)
+        with pytest.raises(RuntimeError):
+            daq_lcls2.kickoff()
+
+    # Starts from normal states
+    for state in ('connected', 'configured', 'starting', 'paused'):
+        daq_lcls2.state_transition(state, timeout=1, wait=True)
+        daq_lcls2.kickoff()
+        daq_lcls2.get_status_for(state=['running']).wait(timeout=1)
+
+    # Configures if needed, reverts parameters
+    # Start in configured state, wait for unconfig/config/enable/endstep
+    daq_lcls2.state_transition('configured', timeout=1, wait=True)
+    unconf_st = daq_lcls2.get_status_for(
+        transition=['unconfigure'],
+        check_now=False,
+    )
+    conf_st = daq_lcls2.get_status_for(
+        transition=['configure'],
+        check_now=False,
+    )
+    run_st = daq_lcls2.get_status_for(
+        transition=['enable'],
+        check_now=False,
+    )
+    end_st = daq_lcls2.get_status_for(
+        transition=['endstep'],
+        check_now=False,
+    )
+    daq_lcls2.kickoff(events=10, record=not daq_lcls2.recording_sig.get())
+    unconf_st.wait(timeout=1)
+    conf_st.wait(timeout=1)
+    run_st.wait(timeout=1)
+    end_st.wait(timeout=1)
+    # While the run is still open, our config is still set
+    assert daq_lcls2.events_cfg.get() == 10
+    daq_lcls2.state_transition('configured', timeout=1, wait=True)
+    # But now, after end_run, our config should have reverted
+    # Need to wait because this is largely asynchronous
+    sig_wait_value(daq_lcls2.events_cfg, None)
+
+    # Errors if a configure is needed and cannot be done
+    # This case here is start/stop recording during a run,
+    # Which must be invalid due to the DAQ architecture
+    daq_lcls2.state_transition('paused', timeout=1, wait=True)
+    with pytest.raises(RuntimeError):
+        daq_lcls2.kickoff(record=not daq_lcls2.recording_sig.get())
 
 
 @pytest.mark.skip(reason='Test not written yet.')
