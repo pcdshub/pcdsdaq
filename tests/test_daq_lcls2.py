@@ -594,11 +594,18 @@ def test_begin(daq_lcls2: DaqLCLS2):
     daq_lcls2.begin(duration=1, record=True, end_run=True)
     assert daq_lcls2._control._recording
     sig_wait_value(
-        daq_lcls2.state,
+        daq_lcls2.state_sig,
         daq_lcls2.state_enum['configured'],
         timeout=2,
     )
-    sig_wait_value(daq_lcls2.record_cfg, False)
+    sig_wait_value(daq_lcls2.record_cfg, None)
+
+    # Check multiple record=True in the same run is ok
+    for _ in range(10):
+        daq_lcls2.begin(duration=0.1, record=True, wait=True)
+    # But switching to record=False should break it
+    with pytest.raises(RuntimeError):
+        daq_lcls2.begin(duration=0.1, record=False)
 
 
 @pytest.mark.skip(reason='Test not written yet.')
