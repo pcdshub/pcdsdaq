@@ -257,6 +257,8 @@ def test_stage_unstage(daq_lcls2: DaqLCLS2, RE: RunEngine):
 
     # Unstage should end the run if it hasn't already ended
     logger.debug('unstage ends run')
+    daq_lcls2._control.sim_set_states('endrun', 'configured')
+    sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum['configured'])
     daq_lcls2.stage()
     set_running()
     status = end_run_status()
@@ -704,10 +706,26 @@ def test_read(daq_lcls2: DaqLCLS2):
     )
 
 
-@pytest.mark.skip(reason='Test not written yet.')
-def test_pause_resume():
-    # Test after begin_infinite
-    1/0
+def test_pause_resume(daq_lcls2: DaqLCLS2):
+    """
+    Pause brings us to the "paused" state if we were "running".
+    Resume brings us to the "running" state from the "paused" state.
+    The intention is for "resume" to only be called after "pause"
+    but this will be confusing for the user, so we'll make it
+    behave like a bare "kickoff" in all other cases.
+    """
+    logger.debug('test_pause_resume')
+    daq_lcls2.state_transition('connected')
+    daq_lcls2.begin_infinite()
+    sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum['running'])
+    daq_lcls2.pause()
+    sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum['paused'])
+    daq_lcls2.resume()
+    sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum['running'])
+    daq_lcls2.end_run()
+    sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum['configured'])
+    daq_lcls2.resume()
+    sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum['running'])
 
 
 @pytest.mark.skip(reason='Test not written yet.')

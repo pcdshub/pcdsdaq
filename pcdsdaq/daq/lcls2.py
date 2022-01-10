@@ -1401,6 +1401,37 @@ class DaqLCLS2(DaqBase):
     def record(self, record: bool) -> None:
         self.preconfig(record=record, show_queued_cfg=False)
 
+    def pause(self) -> None:
+        """
+        Interrupt an ongoing step, to be resumed later.
+
+        This may be called during a scan if the user uses ctrl+c.
+        This puts the DAQ into the "paused" state.
+
+        This is a no-op if we're not in the "running" state.
+        """
+        if self.state_sig.get() == self.state_enum['running']:
+            self.state_transition('paused')
+
+    def resume(self) -> None:
+        """
+        The inverse of pause: return to a previously ongoing step.
+
+        This may be called during RE.resume() after the user pauses a
+        scan with ctrl+c.
+
+        If called at any other time, when a run is not paused,
+        this will act as a call to kickoff().
+        Semantically this is the difference between restarting the
+        ongoing step and resuming it.
+
+        This always puts the DAQ into the "running" state.
+        """
+        if self.state_sig.get() == self.state_enum['paused']:
+            self.state_transition('running')
+        elif self.state_sig.get() < self.state_enum['paused']:
+            self.kickoff()
+
     def run_number(self) -> int:
         """
         Determine the run number of the last run, or current run if running.
