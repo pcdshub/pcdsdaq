@@ -990,8 +990,10 @@ class DaqLCLS2(DaqBase):
         ----------
         kwargs : configure-compatible arguments
             These arguments are the last chance to configure the DAQ prior
-            to starting the run. These will be reverted after the run
-            completes.
+            to starting the run. These will be reverted after the step,
+            so that new kwargs can be provided in the next step.
+            Note that changing the "record" state in the middle of a run
+            is not allowed.
 
         Returns
         -------
@@ -1006,21 +1008,20 @@ class DaqLCLS2(DaqBase):
 
         original_config = self.config
 
-        def revert_cfg_after_run(status):
+        def revert_cfg_after_step(status):
             self.preconfig(show_queued_cfg=False, **original_config)
 
         self.configure(**kwargs)
+        end_run_status = self.get_status_for(
+            transition=['endstep'],
+            check_now=False,
+        )
         kickoff_status = self.state_transition(
             'running',
             timeout=self.begin_timeout_cfg.get(),
             wait=False,
         )
-        # TODO design decision: revert after endrun, or after endstep?
-        end_run_status = self.get_status_for(
-            transition=['endrun'],
-            check_now=False,
-        )
-        end_run_status.add_callback(revert_cfg_after_run)
+        end_run_status.add_callback(revert_cfg_after_step)
         return kickoff_status
 
     def complete(self) -> DeviceStatus:
