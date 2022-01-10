@@ -536,20 +536,25 @@ class DaqLCLS2(DaqBase):
             timeout=timeout,
         )
         # Set the transition in background thread, can be blocking
-        threading.Thread(
+        trans_thread = threading.Thread(
             target=self._transition_thread,
             args=(state.name, phase1_info, status),
-        ).start()
+        )
+        trans_thread.daemon = True
+        trans_thread.start()
         # Handle duration ourselves in another thread for LCLS1 compat
         if (
             state == self.state_enum['running']
             and self.events_cfg.get() is None
             and self.duration_cfg.get() is not None
         ):
-            threading.Thread(
+            logger.debug("Starting duration handler")
+            duration_thread = threading.Thread(
                 target=self._handle_duration_thread,
                 args=(self.duration_cfg.get(), status)
-            ).start()
+            )
+            duration_thread.daemon = True
+            duration_thread.start()
 
         if wait:
             status.wait()
@@ -575,6 +580,9 @@ class DaqLCLS2(DaqBase):
         phase1_info : dict[str, Any]
             A dictionary that maps transition names to extra data that the
             DAQ can use.
+        status : DeviceStatus
+            The status returned by state_transition, so that we can
+            mark it as failed if there is a problem here.
         """
         logger.debug(
             "DaqLCLS2._transition_thread(state=%s, phase1_info=%s)",
@@ -590,7 +598,11 @@ class DaqLCLS2(DaqBase):
                 )
             )
 
-    def _handle_duration_thread(self, duration: float) -> None:
+    def _handle_duration_thread(
+        self,
+        duration: float,
+        running_status: DeviceStatus,
+    ) -> None:
         """
         Wait a fixed amount of time, then stop the daq.
 
@@ -606,11 +618,21 @@ class DaqLCLS2(DaqBase):
         ----------
         duration : float
             The amount of time to wait in seconds.
+        running_status : DeviceStatus
+            The status returned by state_transition, so that we can
+            start the timer appropriately.
+            Note: this is the state transition to "running"
         """
         logger.debug(
             "DaqLCLS2._handle_duration_thread(duration=%s)",
             duration,
         )
+        try:
+            running_status.wait()
+        except Exception:
+            logger.debug("Never made it to running, abort duration thread")
+            return
+
         end_status = self.get_status_for(
             state=['starting'],
             transition=['endstep'],
@@ -620,7 +642,7 @@ class DaqLCLS2(DaqBase):
         try:
             # If this succeeds, someone else stopped the DAQ
             # So in success, nothing to do
-            end_status.wait()
+            end_status.wait(timeout=duration)
             logger.debug("Duration thread ending, DAQ already stopped.")
         except (StatusTimeoutError, WaitTimeoutError):
             logger.debug("Duration thread expired, stopping the DAQ.")
