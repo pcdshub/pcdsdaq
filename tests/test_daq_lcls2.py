@@ -527,17 +527,78 @@ def test_trigger(daq_lcls2: DaqLCLS2):
         assert not step_status.done
         step_status.wait(timeout=2)
         assert step_status.done
-        assert (
-            daq_lcls2.transition_sig.get()
-            == daq_lcls2.transition_enum['endstep']
+        sig_wait_value(
+            daq_lcls2.transition_sig,
+            daq_lcls2.transition_enum['endstep'],
         )
 
 
-@pytest.mark.skip(reason='Test not written yet.')
-def test_begin():
-    # Test this after wait
-    # TODO make sure duration arg is checked here
-    1/0
+def test_begin(daq_lcls2: DaqLCLS2):
+    """
+    Begin must do the following:
+    - Start or resume a run (go from connected or higher to running)
+    - wait kwarg = wait until we stop taking events
+    - end_run kwarg = end the run after we stop taking events
+    - other kwargs = configure for that kwarg before running, revert after
+    """
+    logger.debug('test_begin')
+
+    def assert_no_cfg_change():
+        sig_wait_value(daq_lcls2.duration_cfg, None)
+        assert daq_lcls2.config == daq_lcls2.default_config
+
+    daq_lcls2.state_transition('connected')
+    # Simple one second acquisition
+    daq_lcls2.begin(duration=1)
+    for transition in ('enable', 'endstep'):
+        sig_wait_value(
+            daq_lcls2.transition_sig,
+            daq_lcls2.transition_enum[transition],
+            timeout=2,
+        )
+    assert_no_cfg_change()
+
+    # Same thing, but with wait. We also need to verify we hit running.
+    enable_status = daq_lcls2.get_status_for(state=['running'])
+    daq_lcls2.begin(duration=1, wait=True)
+    sig_wait_value(
+        daq_lcls2.transition_sig,
+        daq_lcls2.transition_enum['endstep'],
+    )
+    assert enable_status.success
+    assert_no_cfg_change()
+
+    # Repeat, but with end_run
+    daq_lcls2.begin(duration=1, wait=True, end_run=True)
+    sig_wait_value(
+        daq_lcls2.transition_sig,
+        daq_lcls2.transition_enum['endrun'],
+    )
+    assert_no_cfg_change()
+
+    # Last case: end_run, but no wait. This requires some threading.
+    enable_status = daq_lcls2.get_status_for(state=['running'])
+    daq_lcls2.begin(duration=1, end_run=True)
+    enable_status.wait(timeout=1)
+    sig_wait_value(
+        daq_lcls2.transition_sig,
+        daq_lcls2.transition_enum['endrun'],
+        timeout=2,
+    )
+    assert_no_cfg_change()
+
+    # Check the "record" configuration specifically, which may get some use
+    # and requires extra handling
+    daq_lcls2.state_transition('connected')
+    assert not daq_lcls2._control._recording
+    daq_lcls2.begin(duration=1, record=True, end_run=True)
+    assert daq_lcls2._control._recording
+    sig_wait_value(
+        daq_lcls2.state,
+        daq_lcls2.state_enum['configured'],
+        timeout=2,
+    )
+    sig_wait_value(daq_lcls2.record_cfg, False)
 
 
 @pytest.mark.skip(reason='Test not written yet.')
