@@ -613,6 +613,7 @@ def test_stop(daq_lcls2: DaqLCLS2):
     Stop brings us down to the endstep transition.
     It has no effect if we're already stopped.
     """
+    logger.debug('test_stop')
     stop_state_names = ['paused', 'running']
     valid_stop_states = daq_lcls2.state_enum.include(stop_state_names)
     invalid_stop_states = daq_lcls2.state_enum.exclude(stop_state_names)
@@ -638,22 +639,63 @@ def test_stop(daq_lcls2: DaqLCLS2):
         assert daq_lcls2.state_sig.get() == state
 
 
-@pytest.mark.skip(reason='Test not written yet.')
-def test_begin_infinite():
-    # Test this after stop
-    1/0
+def test_begin_infinite(daq_lcls2: DaqLCLS2):
+    """
+    Regardless of our config, begin_infinite should keep going.
+    Arguments for duration/events are ignored.
+    """
+    logger.debug('test_begin_infinite')
+    daq_lcls2.state_transition('connected')
+    daq_lcls2.configure(duration=1)
+    daq_lcls2.begin_infinite(events=1, duration=0.1)
+    time.sleep(5)
+    assert daq_lcls2.state_sig.get() == daq_lcls2.state_enum['running']
 
 
-@pytest.mark.skip(reason='Test not written yet.')
-def test_end_run():
-    # Test this after stop
-    1/0
+def test_end_run(daq_lcls2: DaqLCLS2):
+    """
+    End run brings down to the endrun transition.
+    It has no effect if a run isn't open.
+    """
+    logger.debug('test_end_run')
+    end_run_state_names = ['starting', 'paused', 'running']
+    valid_end_states = daq_lcls2.state_enum.include(end_run_state_names)
+    invalid_end_states = daq_lcls2.state_enum.exclude(end_run_state_names)
+    # Check for the correct transition where applicable
+    for state in valid_end_states:
+        daq_lcls2.state_transition(state)
+        daq_lcls2.end_run()
+        sig_wait_value(
+            daq_lcls2.transition_sig,
+            daq_lcls2.transition_enum['endrun'],
+        )
+    # Make sure we won't transition to the "configured" state,
+    # which is the normal destination for end_run, but shouldn't happen
+    # if the run isn't going!
+    for state in invalid_end_states:
+        daq_lcls2.state_transition(state)
+        daq_lcls2.stop()
+        sig_wait_value(
+            daq_lcls2.state_sig,
+            daq_lcls2.state_enum['configured'],
+            assert_success=False,
+        )
+        assert daq_lcls2.state_sig.get() == state
 
 
-@pytest.mark.skip(reason='Test not written yet.')
-def test_read():
-    # Test this after begin_infinite
-    1/0
+def test_read(daq_lcls2: DaqLCLS2):
+    """
+    Read has the following additional behavior here:
+    - stop an "infinite" run (to allow certain sequencer-timed plans)
+    """
+    logger.debug('test_read')
+    daq_lcls2.state_transition('connected')
+    daq_lcls2.begin_infinite()
+    daq_lcls2.read()
+    sig_wait_value(
+        daq_lcls2.transition_sig,
+        daq_lcls2.transition_enum['endstep'],
+    )
 
 
 @pytest.mark.skip(reason='Test not written yet.')
