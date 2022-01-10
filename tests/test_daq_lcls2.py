@@ -504,10 +504,33 @@ def test_wait(daq_lcls2: DaqLCLS2):
         daq_lcls2.wait(timeout=0.1)
 
 
-@pytest.mark.skip(reason='Test not written yet.')
-def test_trigger():
-    # Test this after kickoff
-    1/0
+def test_trigger(daq_lcls2: DaqLCLS2):
+    """
+    Trigger must do the following:
+    - Start acquisition, with whatever fixed length we've configured
+    - Return a status that is marked done when the acquisition is done
+
+    Other elements should be adequately tested in kickoff
+    Note that this implicitly relies on it being possible to reconfigure
+    events/duration during an open run.
+    It also requires configuring on events and duration to work at all.
+    """
+    logger.debug('test_trigger')
+    daq_lcls2.state_transition('connected')
+    for config in (
+        {'events': 120},
+        {'duration': 1},
+    ):
+        daq_lcls2.configure(**config)
+        step_status = daq_lcls2.trigger()
+        sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum['running'])
+        assert not step_status.done
+        step_status.wait(timeout=2)
+        assert step_status.done
+        assert (
+            daq_lcls2.transition_sig.get()
+            == daq_lcls2.transition_enum['endstep']
+        )
 
 
 @pytest.mark.skip(reason='Test not written yet.')
