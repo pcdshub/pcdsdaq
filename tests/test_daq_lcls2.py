@@ -509,6 +509,8 @@ def test_trigger(daq_lcls2: DaqLCLS2):
     Trigger must do the following:
     - Start acquisition, with whatever fixed length we've configured
     - Return a status that is marked done when the acquisition is done
+    - Return a status that is marked done immediately if we're configured
+      for infinite runs.
 
     Other elements should be adequately tested in kickoff
     Note that this implicitly relies on it being possible to reconfigure
@@ -531,6 +533,10 @@ def test_trigger(daq_lcls2: DaqLCLS2):
             daq_lcls2.transition_sig,
             daq_lcls2.transition_enum['endstep'],
         )
+    daq_lcls2.configure(events=0)
+    status = daq_lcls2.trigger()
+    status.wait(timeout=1)
+    assert status.done
 
 
 def test_begin(daq_lcls2: DaqLCLS2):

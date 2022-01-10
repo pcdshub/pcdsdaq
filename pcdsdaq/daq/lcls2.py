@@ -973,6 +973,12 @@ class DaqLCLS2(DaqBase):
             timeout=self.begin_timeout_cfg.get(),
         )
         self.kickoff()
+        if self._infinite_run:
+            logger.debug("Infinite run, setting status to finsihed.")
+            try:
+                status.set_finished()
+            except InvalidState:
+                ...
         return status
 
     def kickoff(self, **kwargs) -> DeviceStatus:
