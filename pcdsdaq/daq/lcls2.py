@@ -1015,6 +1015,7 @@ class DaqLCLS2(DaqBase):
             timeout=self.begin_timeout_cfg.get(),
             wait=False,
         )
+        # TODO design decision: revert after endrun, or after endstep?
         end_run_status = self.get_status_for(
             transition=['endrun'],
             check_now=False,
