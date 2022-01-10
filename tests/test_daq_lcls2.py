@@ -608,10 +608,34 @@ def test_begin(daq_lcls2: DaqLCLS2):
         daq_lcls2.begin(duration=0.1, record=False)
 
 
-@pytest.mark.skip(reason='Test not written yet.')
-def test_stop():
-    # Test this after begin
-    1/0
+def test_stop(daq_lcls2: DaqLCLS2):
+    """
+    Stop brings us down to the endstep transition.
+    It has no effect if we're already stopped.
+    """
+    stop_state_names = ['paused', 'running']
+    valid_stop_states = daq_lcls2.state_enum.include(stop_state_names)
+    invalid_stop_states = daq_lcls2.state_enum.exclude(stop_state_names)
+    # Check for the correct transition where applicable
+    for state in valid_stop_states:
+        daq_lcls2.state_transition(state)
+        daq_lcls2.stop()
+        sig_wait_value(
+            daq_lcls2.transition_sig,
+            daq_lcls2.transition_enum['endstep'],
+        )
+    # Make sure we won't transition to the "starting" state,
+    # which is the normal destination for stop, but shouldn't happen
+    # if the run isn't going!
+    for state in invalid_stop_states:
+        daq_lcls2.state_transition(state)
+        daq_lcls2.stop()
+        sig_wait_value(
+            daq_lcls2.state_sig,
+            daq_lcls2.state_enum['starting'],
+            assert_success=False,
+        )
+        assert daq_lcls2.state_sig.get() == state
 
 
 @pytest.mark.skip(reason='Test not written yet.')
