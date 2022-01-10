@@ -952,13 +952,18 @@ class DaqLCLS2(DaqBase):
         Returns a status object that will be marked done when the daq has
         stopped acquiring.
 
+        The status object will alternatively be marked done immediately if
+        the DAQ is configured to run forever. This is so that the infinite-run
+        behavior can be used in scans in conjunction with other time-bound
+        triggers without freezing the scan indefinitely.
+
         This will raise a RuntimeError if the daq was never configured for
         events or duration.
 
         Returns
         -------
-        done_status: ``DeviceStatus``
-            ``DeviceStatus`` that will be marked as done when the daq is done.
+        done_status: ``Status``
+            ``Status`` that will be marked as done when the daq has begun.
         """
         logger.debug("DaqLCLS2.trigger()")
         status = self.get_status_for(
