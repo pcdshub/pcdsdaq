@@ -816,8 +816,11 @@ def test_fly_scan(daq_lcls2: DaqLCLS2, RE: RunEngine):
     daq_lcls2.configure(events=0)
     cbid = daq_lcls2.transition_sig.subscribe(enable_counter)
     RE(
-        bpp.fly_during_wrapper(
-            bp.scan([], motor, 0, 10, 11),
+        bpp.stage_wrapper(
+            bpp.fly_during_wrapper(
+                bp.scan([], motor, 0, 10, 11),
+                [daq_lcls2],
+            ),
             [daq_lcls2],
         )
     )
