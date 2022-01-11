@@ -463,10 +463,7 @@ def test_kickoff(daq_lcls2: DaqLCLS2):
     conf_st.wait(timeout=1)
     run_st.wait(timeout=1)
     end_st.wait(timeout=1)
-    # While the run is still open, our config is still set
-    assert daq_lcls2.events_cfg.get() == 10
-    daq_lcls2.state_transition('configured', timeout=1, wait=True)
-    # But now, after end_run, our config should have reverted
+    # Now, after endstep, our config should have reverted
     # Need to wait because this is largely asynchronous
     sig_wait_value(daq_lcls2.events_cfg, None)
 
@@ -728,22 +725,45 @@ def test_pause_resume(daq_lcls2: DaqLCLS2):
     sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum['running'])
 
 
-@pytest.mark.skip(reason='Test not written yet.')
-def test_collect():
-    # Test this after kickoff
-    1/0
+def test_collect(daq_lcls2: DaqLCLS2):
+    """
+    From the bluesky flyer interface docs:
+    - Yield dictionaries that are partial Event documents.
+    - They should contain the keys "time", "data", and "timestamps".
+      A uid is added by the RunEngine.
+
+    Note that the current implementation yields nothing, which also
+    is enough to pass this test.
+    """
+    logger.debug('test_collect')
+    for event in daq_lcls2.collect():
+        assert 'time' in event
+        assert 'data' in event
+        assert 'timestamp' in event
 
 
-@pytest.mark.skip(reason='Test not written yet.')
-def test_complete():
-    # Test this after collect
-    1/0
+def test_complete(daq_lcls2: DaqLCLS2):
+    logger.debug('test_complete')
+    """
+    From the bluesky flyer interface docs:
+    - Return a Status and mark it done when acquisition has completed.
+    """
+    logger.debug('test_complete')
+    daq_lcls2.state_transition('connected')
+    with assert_timespan(min=1, max=2):
+        daq_lcls2.kickoff(duration=1).wait(timeout=1)
+        status = daq_lcls2.complete()
+        status.wait(timeout=3)
 
 
-@pytest.mark.skip(reason='Test not written yet.')
-def test_describe_collect():
-    # Test this after collect
-    1/0
+def test_describe_collect(daq_lcls2: DaqLCLS2):
+    """
+    This is like describe_configuration, but for collect.
+
+    For now, this just needs to not throw any errors.
+    """
+    logger.debug('test_describe_collect')
+    daq_lcls2.describe_collect()
 
 
 @pytest.mark.skip(reason='Test not written yet.')
