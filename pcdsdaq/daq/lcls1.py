@@ -1,8 +1,10 @@
 """
 Module that defines the controls python interface for the LCLS1 DAQ.
 
-This is an experimental refactoring of the code found in original.py,
-but is intended to replace that code once fully tested.
+Note: this not yet ready for use. It was added alongside lcls2.py, but
+it has not been finished or tested.
+
+This is an experimental refactoring of the code found in original.py.
 """
 from __future__ import annotations
 

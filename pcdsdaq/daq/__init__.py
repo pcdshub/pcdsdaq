@@ -10,17 +10,16 @@ This top-level __init__ for pcdsdaq.daq contains the user Daq classes that
 correspond to each of the existing Daq versions, as well as the ``get_daq``
 helper for locating the Daq singleton.
 
-``DaqLCLS1`` is aliased here as ``Daq`` for backcompatibility with previous
-versions of the library, e.g. the following should still work:
-
-.. code-block:: python
-
-   # Old code is expecting this to be LCLS1
-   from pcdsdaq.daq import Daq
+Here are the available classes:
+- ``Daq`` is the original lcls1-compatible interface.
+- ``DaqLCLS2`` is the latest lcls2-compatible interface.
+- ``DaqLCLS1`` is not yet ready, but it is intended to be a new
+  lcls1-compatible interface for maximum parity between lcls1 and lcls2.
+  It will be importable once it is ready for testing.
 """
 # flake8: noqa
 from .interface import (DaqError, DaqStateTransitionError, DaqTimeoutError,
                         get_daq)
-from .lcls1 import DaqLCLS1
+# from .lcls1 import DaqLCLS1  # DaqLCLS1 is not yet ready
 from .lcls2 import DaqLCLS2
 from .original import Daq  # Backcompat, will be deprecated
