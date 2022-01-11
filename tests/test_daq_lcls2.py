@@ -102,14 +102,16 @@ def test_preconfig(daq_lcls2: DaqLCLS2):
         ('true', 1, 0, -1, object()),
     )
 
-    good_controls = dict(
-        sig=Signal(name='sig'),
-        mot=SoftPositioner(name='mot'),
+    good_controls = (
+        Signal(name='sig'),
+        SoftPositioner(name='mot'),
+        ('constant', 4),
+        ('altname', Signal(name='potato')),
     )
     for kw in ('controls', 'motors'):
         test_one(
             kw,
-            (good_controls, list(good_controls.values())),
+            (good_controls, list(good_controls)),
             ('text', 0, Signal(name='sig')),
         )
         # NOTE: we don't check that the contents of the controls are OK
@@ -296,6 +298,7 @@ def test_configure(daq_lcls2: DaqLCLS2):
     - From the conf state, we unconf before confing
     - Configure transition not caused if not needed
     - Error if we're not in conn/conf states and a transition is needed
+    - Controls arg processed with no errors (except bad user ValueError)
     """
     logger.debug('test_configure')
     # The first configure should cause a transition
@@ -351,6 +354,27 @@ def test_configure(daq_lcls2: DaqLCLS2):
     daq_lcls2.configure(events=999)
     st_conn.wait(timeout=1)
     st_conf.wait(timeout=1)
+
+    # Let's set up a controls arg and make sure it at least doesn't error
+    # Hard to check the DAQ side without making a very sophisticated sim
+    daq_lcls2._control.setState('connected', {})
+    daq_lcls2.get_status_for(state=['connected']).wait(timeout=1)
+    daq_lcls2._last_config = {}
+    daq_lcls2.configure(controls=(
+        Signal(name='sig'),
+        SoftPositioner(init_pos=0, name='pos'),
+        ('const', 3),
+    ))
+    # Again, but with at least one example of a bad controls arg
+    daq_lcls2._control.setState('connected', {})
+    daq_lcls2.get_status_for(state=['connected']).wait(timeout=1)
+    daq_lcls2._last_config = {}
+    with pytest.raises(ValueError):
+        daq_lcls2.configure(controls=(
+            Signal(name='one_good_thing'),
+            'some bad stuff here',
+            0.232323232323,
+        ))
 
 
 def test_config_info(daq_lcls2: DaqLCLS2):

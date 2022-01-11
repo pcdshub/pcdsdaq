@@ -48,12 +48,18 @@ CONFIG_VAL = Sentinel('CONFIG_VAL')
 _daq_instance = None
 
 # Types
-# Type hint for objects that have .position or .get
-ControlsObject = Union[PositionerBase, Signal]
+# Type hint for objects that can be included in the controls list
+# Must have .name and either .position or .get(), or be a tuple (name, obj)
+# Where obj can either be as described above or be a primitive value
+ControlsObject = Union[
+    PositionerBase,
+    Signal,
+    tuple[str, Union[PositionerBase, Signal, int, float, str]]
+]
 # Type hint for valid arguments to configure(controls=)
 ControlsArg = Union[
     list[ControlsObject],
-    dict[str, ControlsObject],
+    tuple[ControlsObject],
 ]
 # Type hint for valid identifiers for an enum
 EnumId = Union[Enum, int, str]
@@ -224,11 +230,14 @@ def get_controls_value(obj: ControlsObject) -> Any:
 
     In the case of positioners, this will be the .position attribute.
     In the case of signals, this will be the return value from .get.
+    This can also be a tuple where the first element is an alternate name
+    and the second element is either a valid ControlsObject or a
+    primitive value.
 
     Parameters
     ----------
     obj : ControlsObject
-        The positioner or signal to extract a value from.
+        The positioner, signal, or tuple to extract a value from.
 
     Returns
     -------
@@ -236,10 +245,50 @@ def get_controls_value(obj: ControlsObject) -> Any:
         The value associated with that signal. Most commonly this will
         be a float, but it could be any Python type.
     """
+    if isinstance(obj, tuple):
+        try:
+            obj = obj[1]
+        except IndexError as exc:
+            raise ValueError(
+                f'Expected tuple of length 2, got {obj}'
+            ) from exc
     try:
         return obj.position
     except Exception:
-        return obj.get()
+        try:
+            return obj.get()
+        except Exception:
+            if isinstance(obj, (int, float, str)):
+                return obj
+            raise ValueError(
+                'Controls arguments must have a position attribute, '
+                'a get method, or be a simple primitive type '
+                f'(int, float, str). Recieved {obj} instead.'
+            )
+
+
+def get_controls_name(obj: ControlsObject) -> str:
+    """
+    Return the name associated with a controls object.
+
+    This will be the "name" attribute unless obj is a tuple,
+    in which case it will be the first element of the tuple.
+    """
+    if isinstance(obj, tuple):
+        try:
+            return str(obj[1])
+        except IndexError as exc:
+            raise ValueError(
+                f'Expected tuple of length 2, got {obj}'
+            ) from exc
+    else:
+        try:
+            return obj.name
+        except AttributeError as exc:
+            raise ValueError(
+                'Expected a "name" attribute. Try giving your object a name '
+                f'or try passing in a tuple of (name, obj). Object was {obj}.'
+            ) from exc
 
 
 def typing_check(value: Any, hint: Any) -> bool:
@@ -310,7 +359,7 @@ class DaqBase(Device):
     events_cfg = Cpt(Signal, value=None, kind='config')
     duration_cfg = Cpt(Signal, value=None, kind='config')
     record_cfg = Cpt(Signal, value=TernaryBool.NONE, kind='config')
-    controls_cfg = Cpt(Signal, value=None, kind='config')
+    controls_cfg = Cpt(Signal, value=(), kind='config')
     begin_timeout_cfg = Cpt(Signal, value=15, kind='config')
     begin_throttle_cfg = Cpt(Signal, value=1, kind='config')
     begin_sleep_cfg = Cpt(Signal, value=0, kind='config')

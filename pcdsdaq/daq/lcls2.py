@@ -30,7 +30,7 @@ from psdaq.control.DaqControl import DaqControl
 from .interface import (CONFIG_VAL, ControlsArg, DaqBase,
                         DaqStateTransitionError, DaqTimeoutError, EnumId,
                         HelpfulIntEnum, Sentinel, TernaryBool,
-                        get_controls_value, typing_check)
+                        get_controls_name, get_controls_value, typing_check)
 
 logger = logging.getLogger(__name__)
 
@@ -724,24 +724,18 @@ class DaqLCLS2(DaqBase):
         """
         controls = self.controls_cfg.get()
 
+        if not isinstance(controls, (list, tuple)):
+            raise RuntimeError(
+                f'Expected controls={controls} to be list or tuple'
+            )
+
         # Always includes a step value, and let the user override it
         step_value = self.step_value_sig.get()
 
-        if isinstance(controls, dict):
-            try:
-                step_value = get_controls_value(
-                    controls[ControlDef.STEP_VALUE]
-                )
-            except KeyError:
-                ...
-        elif isinstance(controls, (list, tuple)):
-            for ctrl in controls:
-                if ctrl.name == ControlDef.STEP_VALUE:
-                    step_value = get_controls_value(ctrl)
-        elif controls is not None:
-            raise RuntimeError(
-                f'Expected controls={controls} to be dict, list, or None'
-            )
+        for ctrl in controls:
+            name = get_controls_name(ctrl)
+            if name == ControlDef.STEP_VALUE:
+                step_value = get_controls_value(ctrl)
 
         data = {
             'step_value': step_value,
@@ -753,14 +747,10 @@ class DaqLCLS2(DaqBase):
         }
 
         # Add all the other controls/motors
-        if isinstance(controls, dict):
-            for key, ctrl in controls.items():
-                if key != ControlDef.STEP_VALUE:
-                    data[key] = get_controls_value(ctrl)
-        if isinstance(controls, list):
-            for ctrl in controls:
-                if ctrl.name != ControlDef.STEP_VALUE:
-                    data[ctrl.name] = get_controls_value(ctrl)
+        for ctrl in controls:
+            name = get_controls_name(ctrl)
+            if name != ControlDef.STEP_VALUE:
+                data[name] = get_controls_value(ctrl)
 
         return data
 
@@ -812,13 +802,16 @@ class DaqLCLS2(DaqBase):
             state at whatever it is at the start of the run.
             Changing the DAQ recording state cannot be done during a run,
             as it will require a configure transition.
-        controls : list or dict of signals or positioners, or None, optional
+        controls : list or tuple of valid objects, or None, optional
             The objects to include per-step in the DAQ data stream.
-            These must implement either the "position" attribute or the
-            "get" method to retrieve their current value.
-            If a list, we'll use the object's "name" attribute to seed the
-            data key. If a dict, we'll use the dictionary's keys instead.
-            If None, we'll only include the default DAQ step counter,
+            These must implement the "name" attribute and either the
+            "position" attribute or the "get" method to retrieve their
+            current value. To enforce an alternate name, you can pass a tuple
+            instead of an object where the first element of the tuple is
+            the replacement name. The tuple syntax can also be used to send
+            primitive constants to the DAQ if the constant is an int, float,
+            or str.
+            If None or empty, we'll only include the default DAQ step counter,
             which will always be included.
         motors : list or dict of signals or positioners, or None, optional
             Alias of "controls" for backwards compatibility.
@@ -1133,13 +1126,16 @@ class DaqLCLS2(DaqBase):
             state at whatever it is at the start of the run.
             Changing the DAQ recording state cannot be done during a run,
             as it will require a configure transition.
-        controls : list or dict of signals or positioners, or None, optional
+        controls : list or tuple of valid objects, or None, optional
             The objects to include per-step in the DAQ data stream.
-            These must implement either the "position" attribute or the
-            "get" method to retrieve their current value.
-            If a list, we'll use the object's "name" attribute to seed the
-            data key. If a dict, we'll use the dictionary's keys instead.
-            If None, we'll only include the default DAQ step counter,
+            These must implement the "name" attribute and either the
+            "position" attribute or the "get" method to retrieve their
+            current value. To enforce an alternate name, you can pass a tuple
+            instead of an object where the first element of the tuple is
+            the replacement name. The tuple syntax can also be used to send
+            primitive constants to the DAQ if the constant is an int, float,
+            or str.
+            If None or empty, we'll only include the default DAQ step counter,
             which will always be included.
         motors : list or dict of signals or positioners, or None, optional
             Alias of "controls" for backwards compatibility.
@@ -1289,13 +1285,16 @@ class DaqLCLS2(DaqBase):
             state at whatever it is at the start of the run.
             Changing the DAQ recording state cannot be done during a run,
             as it will require a configure transition.
-        controls : list or dict of signals or positioners, or None, optional
+        controls : list or tuple of valid objects, or None, optional
             The objects to include per-step in the DAQ data stream.
-            These must implement either the "position" attribute or the
-            "get" method to retrieve their current value.
-            If a list, we'll use the object's "name" attribute to seed the
-            data key. If a dict, we'll use the dictionary's keys instead.
-            If None, we'll only include the default DAQ step counter,
+            These must implement the "name" attribute and either the
+            "position" attribute or the "get" method to retrieve their
+            current value. To enforce an alternate name, you can pass a tuple
+            instead of an object where the first element of the tuple is
+            the replacement name. The tuple syntax can also be used to send
+            primitive constants to the DAQ if the constant is an int, float,
+            or str.
+            If None or empty, we'll only include the default DAQ step counter,
             which will always be included.
         motors : list or dict of signals or positioners, or None, optional
             Alias of "controls" for backwards compatibility.
