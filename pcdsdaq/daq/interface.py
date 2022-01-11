@@ -241,7 +241,7 @@ def get_controls_value(obj: ControlsObject) -> Any:
 
     Returns
     -------
-    val: Any
+    val : Any
         The value associated with that signal. Most commonly this will
         be a float, but it could be any Python type.
     """
@@ -273,6 +273,16 @@ def get_controls_name(obj: ControlsObject) -> str:
 
     This will be the "name" attribute unless obj is a tuple,
     in which case it will be the first element of the tuple.
+
+    Parameters
+    ----------
+    obj : ControlsObject
+        The positioner, signal, or tuple to extract a name from.
+
+    Returns
+    -------
+    name : str
+        The name associated with the controls object.
     """
     if isinstance(obj, tuple):
         try:
@@ -283,7 +293,7 @@ def get_controls_name(obj: ControlsObject) -> str:
             ) from exc
     else:
         try:
-            return obj.name
+            return str(obj.name)
         except AttributeError as exc:
             raise ValueError(
                 'Expected a "name" attribute. Try giving your object a name '
