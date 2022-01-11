@@ -527,7 +527,7 @@ class DaqLCLS2(DaqBase):
             # enable transition:
             phase1_info['enable'] = {
                 # this is the event count, 0 means run forever
-                'readout_count': self.events_cfg.get() or 0,
+                'readout_count': self.events_cfg.get(),
                 'group_mask': self.group_mask_cfg.get(),
             }
         # Get a status to track the transition's success or failure
@@ -545,8 +545,8 @@ class DaqLCLS2(DaqBase):
         # Handle duration ourselves in another thread for LCLS1 compat
         if (
             state == self.state_enum['running']
-            and self.events_cfg.get() is None
-            and self.duration_cfg.get() is not None
+            and self.events_cfg.get() == 0
+            and self.duration_cfg.get() > 0
         ):
             logger.debug("Starting duration handler")
             duration_thread = threading.Thread(
@@ -786,16 +786,19 @@ class DaqLCLS2(DaqBase):
             If True, end the run when the daq stops.
         events : int or None, optional
             The number of events to take per step. Incompatible with the
-            "duration" argument. Defaults to "None", and running without
-            configuring events or duration gives us an endless run (that
-            can be terminated manually). Supplying an argument to "events"
-            will reset "duration" to "None".
-        duration : float or None, optional
+            "duration" argument. Defaults to 0, and having both events
+            and duration configured to 0 gives us an endless run (that
+            can be terminated manually).
+            Supplying an argument to "events" will reset "duration" to 0.
+            If events is 0 and duration is nonzero, events will be ignored.
+        duration : int, float, or None, optional
             How long to acquire data at each step in seconds.
-            Incompatible with the "events" argument. Defaults to "None",
-            and running without configuring events or duration dives us
+            Incompatible with the "events" argument. Defaults to 0,
+            and having both events and duration configured to 0 gives us
             an endless run (that can be terminated manually). Supplying
-            an argument to "duration" will reset "events" to "None".
+            an argument to "duration" will reset "events" to 0.
+            If duration is 0 and events is nonzero, duration will be
+            ignored.
         record : bool or None, optional
             Whether or not to save data during the DAQ run. Defaults to
             "None", which means that we'll keep the DAQ's recording
@@ -914,7 +917,7 @@ class DaqLCLS2(DaqBase):
         """
         True if the DAQ is configured to run forever.
         """
-        return self.events_cfg.get() == 0
+        return self.events_cfg.get() == 0 and self.duration_cfg.get() == 0
 
     def stop(self, success: bool = False) -> None:
         """
@@ -1209,10 +1212,10 @@ class DaqLCLS2(DaqBase):
 
         # Enforce only events or duration, not both
         if isinstance(events, int):
-            duration = None
+            duration = 0
         elif isinstance(duration, Real):
             duration = float(duration)
-            events = None
+            events = 0
         # Handle motors as an alias for controls
         if not isinstance(motors, Sentinel):
             controls = motors

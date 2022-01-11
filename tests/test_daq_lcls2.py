@@ -497,7 +497,7 @@ def test_kickoff(daq_lcls2: DaqLCLS2):
     end_st.wait(timeout=1)
     # Now, after endstep, our config should have reverted
     # Need to wait because this is largely asynchronous
-    sig_wait_value(daq_lcls2.events_cfg, None)
+    sig_wait_value(daq_lcls2.events_cfg, 0)
 
     # Errors if a configure is needed and cannot be done
     # This case here is start/stop recording during a run,
@@ -581,7 +581,7 @@ def test_begin(daq_lcls2: DaqLCLS2):
     logger.debug('test_begin')
 
     def assert_no_cfg_change():
-        sig_wait_value(daq_lcls2.duration_cfg, None)
+        sig_wait_value(daq_lcls2.duration_cfg, 0)
         assert daq_lcls2.config == daq_lcls2.default_config
 
     daq_lcls2.state_transition('connected')

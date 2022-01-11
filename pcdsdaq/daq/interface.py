@@ -366,8 +366,8 @@ class DaqBase(Device):
     state_sig = Cpt(AttributeSignal, 'state', kind='normal')
     configured_sig = Cpt(Signal, value=False, kind='normal')
 
-    events_cfg = Cpt(Signal, value=None, kind='config')
-    duration_cfg = Cpt(Signal, value=None, kind='config')
+    events_cfg = Cpt(Signal, value=0, kind='config')
+    duration_cfg = Cpt(Signal, value=0, kind='config')
     record_cfg = Cpt(Signal, value=TernaryBool.NONE, kind='config')
     controls_cfg = Cpt(Signal, value=(), kind='config')
     begin_timeout_cfg = Cpt(Signal, value=15, kind='config')
