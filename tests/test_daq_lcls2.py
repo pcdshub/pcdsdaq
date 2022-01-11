@@ -4,10 +4,13 @@ from contextlib import contextmanager
 from threading import Event
 
 import bluesky.plan_stubs as bps
+import bluesky.plans as bp
+import bluesky.preprocessors as bpp
 import pytest
 from bluesky import RunEngine
 from ophyd.positioner import SoftPositioner
 from ophyd.signal import Signal
+from ophyd.sim import motor
 from ophyd.utils.errors import WaitTimeoutError
 from psdaq.control.ControlDef import ControlDef
 
@@ -766,13 +769,61 @@ def test_describe_collect(daq_lcls2: DaqLCLS2):
     daq_lcls2.describe_collect()
 
 
-@pytest.mark.skip(reason='Test not written yet.')
-def test_step_scan():
-    # Test at the end
-    1/0
+def test_step_scan(daq_lcls2: DaqLCLS2, RE: RunEngine):
+    """
+    This puts it all together:
+    - The daq should be usable in a normal step scan as a det
+    - During the scan, the daq should run at each point
+    - The run should end at the end of the scan
+    """
+    logger.debug('test_step_scan')
+    counter = 0
+
+    def enable_counter(value, **kwargs):
+        nonlocal counter
+        if value == daq_lcls2.transition_enum['enable']:
+            counter += 1
+
+    daq_lcls2.state_transition('connected')
+    daq_lcls2.configure(events=1)
+    cbid = daq_lcls2.transition_sig.subscribe(enable_counter)
+    RE(bp.scan([daq_lcls2], motor, 0, 10, 11))
+    daq_lcls2.transition_sig.unsubscribe(cbid)
+    assert counter == 11
+    sig_wait_value(
+        daq_lcls2.transition_sig,
+        daq_lcls2.transition_enum['endrun'],
+    )
 
 
-@pytest.mark.skip(reason='Test not written yet.')
-def test_fly_scan():
-    # Test at the end
-    1/0
+def test_fly_scan(daq_lcls2: DaqLCLS2, RE: RunEngine):
+    """
+    Make sure we can also use the DAQ as a standard flyer:
+    - Configure DAQ for infinite run
+    - fly_during a normal scan
+    - only 1 enable transition should be seen
+    - run should be ended
+    """
+    logger.debug('test_fly_scan')
+    counter = 0
+
+    def enable_counter(value, **kwargs):
+        nonlocal counter
+        if value == daq_lcls2.transition_enum['enable']:
+            counter += 1
+
+    daq_lcls2.state_transition('connected')
+    daq_lcls2.configure(events=0)
+    cbid = daq_lcls2.transition_sig.subscribe(enable_counter)
+    RE(
+        bpp.fly_during_wrapper(
+            bp.scan([], motor, 0, 10, 11),
+            [daq_lcls2],
+        )
+    )
+    daq_lcls2.transition_sig.unsubscribe(cbid)
+    assert counter == 1
+    sig_wait_value(
+        daq_lcls2.transition_sig,
+        daq_lcls2.transition_enum['endrun'],
+    )
