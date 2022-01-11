@@ -15,6 +15,7 @@ from ophyd.utils.errors import WaitTimeoutError
 from psdaq.control.ControlDef import ControlDef
 
 from pcdsdaq.daq import DaqLCLS2, DaqTimeoutError
+from pcdsdaq.daq.interface import TernaryBool
 
 logger = logging.getLogger(__name__)
 
@@ -95,7 +96,11 @@ def test_preconfig(daq_lcls2: DaqLCLS2):
 
     test_one('events', (1, 10, 100), (45.3, 'peanuts', object()))
     test_one('duration', (1, 2.3, 100), ('walnuts', object()))
-    test_one('record', (True, False), (1, 0, object()))
+    test_one(
+        'record',
+        (True, False, TernaryBool.TRUE, TernaryBool.FALSE, TernaryBool.NONE),
+        ('true', 1, 0, -1, object()),
+    )
 
     good_controls = dict(
         sig=Signal(name='sig'),
@@ -128,7 +133,7 @@ def test_record(daq_lcls2: DaqLCLS2):
     the monitorStatus calls.
 
     Then, check that the record property has the following behavior:
-    - When setattr, record_cfg is put to as appropriate (True/False/None)
+    - When setattr, record_cfg is put to as an int-compatible type
     - When getattr, we see the correct value:
       - True if the last set was True
       - False if the last set was False
@@ -144,17 +149,17 @@ def test_record(daq_lcls2: DaqLCLS2):
     # Establish that record setattr works
     for record in (True, False, True, False):
         daq_lcls2.record = record
-        assert daq_lcls2.record_cfg.get() == record
+        assert bool(daq_lcls2.record_cfg.get()) == record
 
     # Establish that the getattr logic table is correct
-    daq_cfg = (True, False, None)
+    daq_cfg = (TernaryBool.TRUE, TernaryBool.FALSE, TernaryBool.NONE)
     daq_status = (True, False)
 
     def assert_expected(daq: DaqLCLS2):
-        if daq.record_cfg.get() is None:
+        if daq.record_cfg.get() is TernaryBool.NONE:
             assert daq.record == daq.recording_sig.get()
         else:
-            assert daq.record == daq.record_cfg.get()
+            assert daq.record == bool(daq.record_cfg.get())
 
     for cfg in daq_cfg:
         daq_lcls2.record_cfg.put(cfg)
@@ -606,7 +611,7 @@ def test_begin(daq_lcls2: DaqLCLS2):
         daq_lcls2.state_enum['configured'],
         timeout=2,
     )
-    sig_wait_value(daq_lcls2.record_cfg, None)
+    sig_wait_value(daq_lcls2.record_cfg, TernaryBool.NONE)
 
     # Check multiple record=True in the same run is ok
     for _ in range(10):

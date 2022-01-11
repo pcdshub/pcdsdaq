@@ -135,6 +135,29 @@ class HelpfulIntEnum(IntEnum):
         return set(cls.__members__.values()) - cls.include(identifiers)
 
 
+class TernaryBool(IntEnum):
+    NONE = -1
+    FALSE = 0
+    TRUE = 1
+
+    @classmethod
+    def from_primitive(
+        cls,
+        value: Union[bool, TernaryBool, None],
+    ) -> TernaryBool:
+        if value in (None, TernaryBool.NONE):
+            return cls.NONE
+        if value:
+            return cls.TRUE
+        return cls.FALSE
+
+    def to_primitive(self) -> Optional[bool]:
+        if self == TernaryBool.NONE:
+            return None
+        else:
+            return bool(self)
+
+
 class DaqError(Exception):
     """
     Base class for DAQ exceptions.
@@ -286,7 +309,7 @@ class DaqBase(Device):
 
     events_cfg = Cpt(Signal, value=None, kind='config')
     duration_cfg = Cpt(Signal, value=None, kind='config')
-    record_cfg = Cpt(Signal, value=None, kind='config')
+    record_cfg = Cpt(Signal, value=TernaryBool.NONE, kind='config')
     controls_cfg = Cpt(Signal, value=None, kind='config')
     begin_timeout_cfg = Cpt(Signal, value=15, kind='config')
     begin_throttle_cfg = Cpt(Signal, value=1, kind='config')
@@ -624,6 +647,8 @@ class DaqBase(Device):
                 ) from exc
             if value is None:
                 value = self.default_config[key]
+            if key == 'record':
+                value = TernaryBool.from_primitive(value)
             if isinstance(sig, Signal) and sig.kind == Kind.config:
                 sig.put(value)
             else:
@@ -708,13 +733,13 @@ class DaqBase(Device):
         If ``None``, we'll keep the current record/norecord state.
 
         Setting this is the equivalent of scheduling a `configure` call to be
-        executed later, e.g. ``configure(record=True)``, or putting to the
-        record_cfg signal.
+        executed later, e.g. ``configure(record=True)``, or putting the
+        appropriate TernaryBool enum to the record_cfg signal.
         """
-        return self.record_cfg.get()
+        return self.record_cfg.get().to_primitive()
 
     @record.setter
-    def record(self, record: Optional[bool]):
+    def record(self, record: Union[bool, TernaryBool, None]):
         self.preconfig(record=record, show_queued_cfg=False)
 
     def stage(self) -> list[DaqBase]:

@@ -29,8 +29,8 @@ from psdaq.control.DaqControl import DaqControl
 
 from .interface import (CONFIG_VAL, ControlsArg, DaqBase,
                         DaqStateTransitionError, DaqTimeoutError, EnumId,
-                        HelpfulIntEnum, Sentinel, get_controls_value,
-                        typing_check)
+                        HelpfulIntEnum, Sentinel, TernaryBool,
+                        get_controls_value, typing_check)
 
 logger = logging.getLogger(__name__)
 
@@ -770,7 +770,7 @@ class DaqLCLS2(DaqBase):
         end_run: bool = False,
         events: Union[int, None, Sentinel] = CONFIG_VAL,
         duration: Union[Real, None, Sentinel] = CONFIG_VAL,
-        record: Union[bool, None, Sentinel] = CONFIG_VAL,
+        record: Union[bool, TernaryBool, None, Sentinel] = CONFIG_VAL,
         controls: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
         motors: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
         begin_timeout: Union[Real, None, Sentinel] = CONFIG_VAL,
@@ -1080,7 +1080,7 @@ class DaqLCLS2(DaqBase):
         self,
         events: Union[int, None, Sentinel] = CONFIG_VAL,
         duration: Union[Real, None, Sentinel] = CONFIG_VAL,
-        record: Union[bool, None, Sentinel] = CONFIG_VAL,
+        record: Union[bool, TernaryBool, None, Sentinel] = CONFIG_VAL,
         controls: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
         motors: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
         begin_timeout: Union[Real, None, Sentinel] = CONFIG_VAL,
@@ -1241,7 +1241,7 @@ class DaqLCLS2(DaqBase):
         self,
         events: Union[int, None, Sentinel] = CONFIG_VAL,
         duration: Union[Real, None, Sentinel] = CONFIG_VAL,
-        record: Union[bool, None, Sentinel] = CONFIG_VAL,
+        record: Union[bool, TernaryBool, None, Sentinel] = CONFIG_VAL,
         controls: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
         motors: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
         begin_timeout: Union[Real, None, Sentinel] = CONFIG_VAL,
@@ -1350,8 +1350,10 @@ class DaqLCLS2(DaqBase):
         # Last check, in case user has changed record state in gui
         rec_cfg = self.record_cfg.get()
         if (
-            self._queue_configure_transition
-            or rec_cfg is not None and rec_cfg != self.recording_sig.get()
+            self._queue_configure_transition or (
+                rec_cfg is not TernaryBool.NONE
+                and bool(rec_cfg) != self.recording_sig.get()
+            )
         ):
             if self.state_sig.get() < self.state_enum['connected']:
                 raise RuntimeError('Not ready to configure.')
@@ -1366,8 +1368,8 @@ class DaqLCLS2(DaqBase):
                     timeout=self.begin_timeout_cfg.get(),
                     wait=True,
                 )
-            if self.record_cfg.get() is not None:
-                self._control.setRecord(self.record_cfg.get())
+            if rec_cfg is not TernaryBool.NONE:
+                self._control.setRecord(bool(rec_cfg))
             self.state_transition(
                 'configured',
                 timeout=self.begin_timeout_cfg.get(),
@@ -1393,12 +1395,12 @@ class DaqLCLS2(DaqBase):
         using daq.preconfig or daq.configure.
         """
         cfg_record = self.record_cfg.get()
-        if cfg_record is None:
+        if cfg_record is TernaryBool.NONE:
             return self.recording_sig.get()
-        return cfg_record
+        return cfg_record.to_primitive()
 
     @record.setter
-    def record(self, record: bool) -> None:
+    def record(self, record: Optional[bool]) -> None:
         self.preconfig(record=record, show_queued_cfg=False)
 
     def pause(self) -> None:
