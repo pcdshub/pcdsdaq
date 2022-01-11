@@ -268,7 +268,7 @@ def test_stage_unstage(daq_lcls2: DaqLCLS2, RE: RunEngine):
     # Unstage should end the run if it hasn't already ended
     logger.debug('unstage ends run')
     daq_lcls2._control.sim_set_states('endrun', 'configured')
-    sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum['configured'])
+    sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum.configured)
     daq_lcls2.stage()
     set_running()
     status = end_run_status()
@@ -522,13 +522,13 @@ def test_wait(daq_lcls2: DaqLCLS2):
         daq_lcls2.kickoff(events=120).wait(timeout=1)
         daq_lcls2.wait(timeout=2)
     # We should end in starting state, not configured
-    sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum['starting'])
+    sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum.starting)
     # No open events means we should barely wait at all
     # End run should end the run
     with assert_timespan(min=0, max=1):
         daq_lcls2.wait(timeout=2, end_run=True)
     # Now we should have the end run state!
-    sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum['configured'])
+    sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum.configured)
     # If timing out, a wait raises an exception
     daq_lcls2.kickoff().wait(timeout=1)
     with pytest.raises(DaqTimeoutError):
@@ -556,13 +556,13 @@ def test_trigger(daq_lcls2: DaqLCLS2):
     ):
         daq_lcls2.configure(**config)
         step_status = daq_lcls2.trigger()
-        sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum['running'])
+        sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum.running)
         assert not step_status.done
         step_status.wait(timeout=2)
         assert step_status.done
         sig_wait_value(
             daq_lcls2.transition_sig,
-            daq_lcls2.transition_enum['endstep'],
+            daq_lcls2.transition_enum.endstep,
         )
     daq_lcls2.configure(events=0)
     status = daq_lcls2.trigger()
@@ -600,7 +600,7 @@ def test_begin(daq_lcls2: DaqLCLS2):
     daq_lcls2.begin(duration=1, wait=True)
     sig_wait_value(
         daq_lcls2.transition_sig,
-        daq_lcls2.transition_enum['endstep'],
+        daq_lcls2.transition_enum.endstep,
     )
     assert enable_status.success
     assert_no_cfg_change()
@@ -609,7 +609,7 @@ def test_begin(daq_lcls2: DaqLCLS2):
     daq_lcls2.begin(duration=1, wait=True, end_run=True)
     sig_wait_value(
         daq_lcls2.transition_sig,
-        daq_lcls2.transition_enum['endrun'],
+        daq_lcls2.transition_enum.endrun,
     )
     assert_no_cfg_change()
 
@@ -619,7 +619,7 @@ def test_begin(daq_lcls2: DaqLCLS2):
     enable_status.wait(timeout=1)
     sig_wait_value(
         daq_lcls2.transition_sig,
-        daq_lcls2.transition_enum['endrun'],
+        daq_lcls2.transition_enum.endrun,
         timeout=2,
     )
     assert_no_cfg_change()
@@ -632,7 +632,7 @@ def test_begin(daq_lcls2: DaqLCLS2):
     assert daq_lcls2._control._recording
     sig_wait_value(
         daq_lcls2.state_sig,
-        daq_lcls2.state_enum['configured'],
+        daq_lcls2.state_enum.configured,
         timeout=2,
     )
     sig_wait_value(daq_lcls2.record_cfg, TernaryBool.NONE)
@@ -660,7 +660,7 @@ def test_stop(daq_lcls2: DaqLCLS2):
         daq_lcls2.stop()
         sig_wait_value(
             daq_lcls2.transition_sig,
-            daq_lcls2.transition_enum['endstep'],
+            daq_lcls2.transition_enum.endstep,
         )
     # Make sure we won't transition to the "starting" state,
     # which is the normal destination for stop, but shouldn't happen
@@ -670,7 +670,7 @@ def test_stop(daq_lcls2: DaqLCLS2):
         daq_lcls2.stop()
         sig_wait_value(
             daq_lcls2.state_sig,
-            daq_lcls2.state_enum['starting'],
+            daq_lcls2.state_enum.starting,
             assert_success=False,
         )
         assert daq_lcls2.state_sig.get() == state
@@ -686,7 +686,7 @@ def test_begin_infinite(daq_lcls2: DaqLCLS2):
     daq_lcls2.configure(duration=1)
     daq_lcls2.begin_infinite(events=1, duration=0.1)
     time.sleep(5)
-    assert daq_lcls2.state_sig.get() == daq_lcls2.state_enum['running']
+    assert daq_lcls2.state_sig.get() == daq_lcls2.state_enum.running
 
 
 def test_end_run(daq_lcls2: DaqLCLS2):
@@ -704,7 +704,7 @@ def test_end_run(daq_lcls2: DaqLCLS2):
         daq_lcls2.end_run()
         sig_wait_value(
             daq_lcls2.transition_sig,
-            daq_lcls2.transition_enum['endrun'],
+            daq_lcls2.transition_enum.endrun,
         )
     # Make sure we won't transition to the "configured" state,
     # which is the normal destination for end_run, but shouldn't happen
@@ -714,7 +714,7 @@ def test_end_run(daq_lcls2: DaqLCLS2):
         daq_lcls2.stop()
         sig_wait_value(
             daq_lcls2.state_sig,
-            daq_lcls2.state_enum['configured'],
+            daq_lcls2.state_enum.configured,
             assert_success=False,
         )
         assert daq_lcls2.state_sig.get() == state
@@ -731,7 +731,7 @@ def test_read(daq_lcls2: DaqLCLS2):
     daq_lcls2.read()
     sig_wait_value(
         daq_lcls2.transition_sig,
-        daq_lcls2.transition_enum['endstep'],
+        daq_lcls2.transition_enum.endstep,
     )
 
 
@@ -746,15 +746,15 @@ def test_pause_resume(daq_lcls2: DaqLCLS2):
     logger.debug('test_pause_resume')
     daq_lcls2.state_transition('connected')
     daq_lcls2.begin_infinite()
-    sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum['running'])
+    sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum.running)
     daq_lcls2.pause()
-    sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum['paused'])
+    sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum.paused)
     daq_lcls2.resume()
-    sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum['running'])
+    sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum.running)
     daq_lcls2.end_run()
-    sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum['configured'])
+    sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum.configured)
     daq_lcls2.resume()
-    sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum['running'])
+    sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum.running)
 
 
 def test_collect(daq_lcls2: DaqLCLS2):
@@ -810,7 +810,7 @@ def test_step_scan(daq_lcls2: DaqLCLS2, RE: RunEngine):
 
     def enable_counter(value, **kwargs):
         nonlocal counter
-        if value == daq_lcls2.transition_enum['enable']:
+        if value == daq_lcls2.transition_enum.enable:
             counter += 1
 
     daq_lcls2.state_transition('connected')
@@ -821,7 +821,7 @@ def test_step_scan(daq_lcls2: DaqLCLS2, RE: RunEngine):
     assert counter == 11
     sig_wait_value(
         daq_lcls2.transition_sig,
-        daq_lcls2.transition_enum['endrun'],
+        daq_lcls2.transition_enum.endrun,
     )
 
 
@@ -838,7 +838,7 @@ def test_fly_scan(daq_lcls2: DaqLCLS2, RE: RunEngine):
 
     def enable_counter(value, **kwargs):
         nonlocal counter
-        if value == daq_lcls2.transition_enum['enable']:
+        if value == daq_lcls2.transition_enum.enable:
             counter += 1
 
     daq_lcls2.state_transition('connected')
@@ -857,5 +857,5 @@ def test_fly_scan(daq_lcls2: DaqLCLS2, RE: RunEngine):
     assert counter == 1
     sig_wait_value(
         daq_lcls2.transition_sig,
-        daq_lcls2.transition_enum['endrun'],
+        daq_lcls2.transition_enum.endrun,
     )

@@ -108,8 +108,8 @@ class DaqLCLS2(DaqBase):
             sim,
         )
         super().__init__(RE=RE, hutch_name=hutch_name, platform=platform)
-        self.state_sig.put(self.state_enum['reset'])
-        self.transition_sig.put(self.transition_enum['reset'])
+        self.state_sig.put(self.state_enum.reset)
+        self.transition_sig.put(self.transition_enum.reset)
         self.group_mask_cfg.put(1 << platform)
         self._update_default_config(self.group_mask_cfg)
         if sim:
@@ -242,7 +242,7 @@ class DaqLCLS2(DaqBase):
             self.configured_sig.put(False)
         else:
             self.configured_sig.put(
-                value >= self.state_enum['configured']
+                value >= self.state_enum.configured
             )
 
     @property
@@ -507,21 +507,21 @@ class DaqLCLS2(DaqBase):
         phase1_info = {}
         if (
             self.state_sig.get()
-            < self.state_enum['configured']
+            < self.state_enum.configured
             <= state
         ):
             # configure transition
             phase1_info['configure'] = self._get_phase1('Configure')
         if (
             self.state_sig.get()
-            < self.state_enum['starting']
+            < self.state_enum.starting
             <= state
         ):
             # beginstep transition
             phase1_info['beginstep'] = self._get_phase1('BeginStep')
         if (
             self.state_sig.get()
-            < self.state_enum['running']
+            < self.state_enum.running
             <= state
         ):
             # enable transition:
@@ -544,7 +544,7 @@ class DaqLCLS2(DaqBase):
         trans_thread.start()
         # Handle duration ourselves in another thread for LCLS1 compat
         if (
-            state == self.state_enum['running']
+            state == self.state_enum.running
             and self.events_cfg.get() == 0
             and self.duration_cfg.get() > 0
         ):
@@ -930,7 +930,7 @@ class DaqLCLS2(DaqBase):
             bad stop. Currently unused.
         """
         logger.debug("DaqLCLS2.stop(success=%s)", success)
-        if self.state_sig.get() > self.state_enum['starting']:
+        if self.state_sig.get() > self.state_enum.starting:
             self.state_transition('starting', wait=False)
 
     def end_run(self) -> None:
@@ -938,7 +938,7 @@ class DaqLCLS2(DaqBase):
         End the current run. This includes a stop if needed.
         """
         logger.debug("DaqLCLS2.end_run()")
-        if self.state_sig.get() > self.state_enum['configured']:
+        if self.state_sig.get() > self.state_enum.configured:
             self.state_transition('configured', wait=False)
 
     def trigger(self) -> DeviceStatus:
@@ -1008,9 +1008,9 @@ class DaqLCLS2(DaqBase):
             ``Status`` that will be marked as done when the daq has begun.
         """
         logger.debug("DaqLCLS2.kickoff()")
-        if self.state_sig.get() < self.state_enum['connected']:
+        if self.state_sig.get() < self.state_enum.connected:
             raise RuntimeError('DAQ is not ready to run!')
-        if self.state_sig.get() == self.state_enum['running']:
+        if self.state_sig.get() == self.state_enum.running:
             raise RuntimeError('DAQ is already running!')
 
         original_config = self.config
@@ -1357,13 +1357,13 @@ class DaqLCLS2(DaqBase):
                 and bool(rec_cfg) != self.recording_sig.get()
             )
         ):
-            if self.state_sig.get() < self.state_enum['connected']:
+            if self.state_sig.get() < self.state_enum.connected:
                 raise RuntimeError('Not ready to configure.')
-            if self.state_sig.get() > self.state_enum['configured']:
+            if self.state_sig.get() > self.state_enum.configured:
                 raise RuntimeError(
                     'Cannot configure transition during an open run!'
                 )
-            if self.state_sig.get() == self.state_enum['configured']:
+            if self.state_sig.get() == self.state_enum.configured:
                 # Already configured, so we should unconfigure first
                 self.state_transition(
                     'connected',
@@ -1414,7 +1414,7 @@ class DaqLCLS2(DaqBase):
 
         This is a no-op if we're not in the "running" state.
         """
-        if self.state_sig.get() == self.state_enum['running']:
+        if self.state_sig.get() == self.state_enum.running:
             self.state_transition('paused')
 
     def resume(self) -> None:
@@ -1431,9 +1431,9 @@ class DaqLCLS2(DaqBase):
 
         This always puts the DAQ into the "running" state.
         """
-        if self.state_sig.get() == self.state_enum['paused']:
+        if self.state_sig.get() == self.state_enum.paused:
             self.state_transition('running')
-        elif self.state_sig.get() < self.state_enum['paused']:
+        elif self.state_sig.get() < self.state_enum.paused:
             self.kickoff()
 
     def run_number(self) -> int:
