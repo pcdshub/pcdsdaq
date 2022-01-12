@@ -8,6 +8,37 @@ This updated interface was created to meet expectations about specifics
 of what the interface should be as established in lcls1, largely for
 convenience of the end user. This should also make things more uniform
 between the lcls1 and the lcls2 usages of the DAQ.
+
+Some notes about the implementation:
+- DaqLCLS2._monitor_thread is the only communication point for reading
+  state from the DAQ. Here, we call a DaqControl API method called
+  "monitorStatus" which blocks and reads queued messages sent to our
+  ZMQ SUB socket from the DAQ. We unpack each of these messages and
+  fan out the information to each of the corresponding signals in a
+  background thread so we can write asynchronous code based on the
+  updating values of our various signals using the normal ophyd
+  subscription methods.
+- DaqLCLS2.get_status_for is a convenience method for setting up
+  DeviceStatus objects tied to the DAQ reaching specific states
+  and through specific transitions. This means we can schedule
+  code to be run when the daq reaches specific states e.g. when
+  it hits running or when it undergoes specific transitions e.g.
+  endrun, or more simply we can wait for specific states and
+  transitions.
+- DaqLCLS2.state_transition is the main communication point for
+  sending state to the DAQ. This is where we pass all information
+  to the DAQ with the exception of the record/no record
+  configuration. We assemble information like the extra controls
+  and the events for the step length here and make sure the DAQ
+  recieves them, as well as most of the cosmetic DAQ
+  configuration values. Ultimately this method causes the DAQ
+  to transition, e.g. to configure itself, to start a run,
+  to pause a run, etc.
+- DaqLCLS2.configure is the only place where we might find
+  ourselves setting the DAQ's recording state (if requested).
+
+See the following URL for a description of the DAQ state machine:
+https://confluence.slac.stanford.edu/display/PSDMInternal/Finite+State+Machine
 """
 from __future__ import annotations
 
