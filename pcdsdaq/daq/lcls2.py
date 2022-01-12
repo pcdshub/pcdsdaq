@@ -507,6 +507,17 @@ class DaqLCLS2(DaqBase):
         This passes extra data if we need to do the 'configure' or 'beginstep'
         transitions.
 
+        The status will have a DaqStateTransitionError applied to it if the
+        DAQ reports a failed transition, or a StatusTimeoutError applied to it
+        if the given timeout expires. The exception will be raised by this
+        method if wait=True, otherwise it will simply be applied to the
+        status object and it will be the responsibility of the caller to
+        inspect and handle the error. To inspect the error, the caller can
+        either:
+        - call status.exception() to return an exception or None
+        - call status.wait() to wait for the status to finish and raise
+          the exception if one has been applied.
+
         Parameters
         ----------
         state : EnumId
@@ -950,7 +961,12 @@ class DaqLCLS2(DaqBase):
         """
         return self.events_cfg.get() == 0 and self.duration_cfg.get() == 0
 
-    def stop(self, success: bool = False) -> None:
+    def stop(
+        self,
+        success: bool = False,
+        timeout: float = 10.0,
+        wait: bool = True,
+    ) -> None:
         """
         Stop the current acquisition, ending it early.
 
@@ -959,18 +975,41 @@ class DaqLCLS2(DaqBase):
         success : bool, optional
             Flag set by bluesky to signify whether this was a good stop or a
             bad stop. Currently unused.
+        timeout : float, optional
+            How long before we consider the state transition to be failed
+            in seconds. Defaults to a 10-second timeout so that it won't
+            pause the thread forever.
+        wait : bool, optional
+            Wait for the transition to complete. Defaults to True.
+            This also allows us to raise an exception if there is a
+            transition error.
         """
         logger.debug("DaqLCLS2.stop(success=%s)", success)
         if self.state_sig.get() > self.state_enum.starting:
-            self.state_transition('starting', wait=False)
+            self.state_transition('starting', timeout=timeout, wait=wait)
 
-    def end_run(self) -> None:
+    def end_run(
+        self,
+        timeout: float = 10.0,
+        wait: bool = True,
+    ) -> None:
         """
         End the current run. This includes a stop if needed.
+
+        Parameters
+        ----------
+        timeout : float, optional
+            How long before we consider the state transition to be failed
+            in seconds. Defaults to a 10-second timeout so that it won't
+            pause the thread forever.
+        wait : bool, optional
+            Wait for the transition to complete. Defaults to True.
+            This also allows us to raise an exception if there is a
+            transition error.
         """
         logger.debug("DaqLCLS2.end_run()")
         if self.state_sig.get() > self.state_enum.configured:
-            self.state_transition('configured', wait=False)
+            self.state_transition('configured', timeout=timeout, wait=wait)
 
     def trigger(self) -> DeviceStatus:
         """
@@ -991,22 +1030,33 @@ class DaqLCLS2(DaqBase):
         -------
         done_status: ``Status``
             ``Status`` that will be marked as done when the daq has begun.
+            This may fail with a DaqStateTransitionError or with a
+            StatusTimeoutError as appropriate.
         """
         logger.debug("DaqLCLS2.trigger()")
-        status = self.get_status_for(
+        trigger_status = self.get_status_for(
             state=['starting'],
             transition=['endstep'],
             check_now=False,
             timeout=self.begin_timeout_cfg.get(),
         )
-        self.kickoff()
+
+        def check_kickoff_fail(st: DeviceStatus):
+            if not st.success:
+                try:
+                    trigger_status.exception(st.exception())
+                except InvalidState:
+                    ...
+
+        self.kickoff().add_callback(check_kickoff_fail)
+
         if self._infinite_run:
             logger.debug("Infinite run, setting status to finsihed.")
             try:
-                status.set_finished()
+                trigger_status.set_finished()
             except InvalidState:
                 ...
-        return status
+        return trigger_status
 
     def kickoff(self, **kwargs) -> DeviceStatus:
         """
@@ -1036,7 +1086,10 @@ class DaqLCLS2(DaqBase):
         Returns
         -------
         ready_status : ``Status``
-            ``Status`` that will be marked as done when the daq has begun.
+            ``Status`` that will be marked as done when the daq has begun,
+            or will have an exception applied if the state transition
+            fails or times out. This will either be a
+            DaqStateTransitionError or a StatusTimeoutError
         """
         logger.debug("DaqLCLS2.kickoff()")
         if self.state_sig.get() < self.state_enum.connected:
@@ -1436,7 +1489,7 @@ class DaqLCLS2(DaqBase):
     def record(self, record: Optional[bool]) -> None:
         self.preconfig(record=record, show_queued_cfg=False)
 
-    def pause(self) -> None:
+    def pause(self, timeout: float = 10.0, wait: bool = True) -> None:
         """
         Interrupt an ongoing step, to be resumed later.
 
@@ -1444,11 +1497,22 @@ class DaqLCLS2(DaqBase):
         This puts the DAQ into the "paused" state.
 
         This is a no-op if we're not in the "running" state.
+
+        Parameters
+        ----------
+        timeout : float, optional
+            How long before we consider the state transition to be failed
+            in seconds. Defaults to a 10-second timeout so that it won't
+            pause the thread forever.
+        wait : bool, optional
+            Wait for the transition to complete. Defaults to True.
+            This also allows us to raise an exception if there is a
+            transition error.
         """
         if self.state_sig.get() == self.state_enum.running:
-            self.state_transition('paused')
+            self.state_transition('paused', timeout=timeout, wait=wait)
 
-    def resume(self) -> None:
+    def resume(self, timeout: float = 10.0, wait: bool = True) -> None:
         """
         The inverse of pause: return to a previously ongoing step.
 
@@ -1461,11 +1525,22 @@ class DaqLCLS2(DaqBase):
         ongoing step and resuming it.
 
         This always puts the DAQ into the "running" state.
+
+        Parameters
+        ----------
+        timeout : float, optional
+            How long before we consider the state transition to be failed
+            in seconds. Defaults to a 10-second timeout so that it won't
+            pause the thread forever.
+        wait : bool, optional
+            Wait for the transition to complete. Defaults to True.
+            This also allows us to raise an exception if there is a
+            transition error.
         """
         if self.state_sig.get() == self.state_enum.paused:
-            self.state_transition('running')
+            self.state_transition('running', timeout=timeout, wait=wait)
         elif self.state_sig.get() < self.state_enum.paused:
-            self.kickoff()
+            self.kickoff().wait(timeout=timeout)
 
     def run_number(self) -> int:
         """
