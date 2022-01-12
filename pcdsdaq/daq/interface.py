@@ -24,7 +24,7 @@ from ophyd.device import Device
 from ophyd.ophydobj import Kind, OphydObject
 from ophyd.positioner import PositionerBase
 from ophyd.signal import AttributeSignal, Signal
-from ophyd.status import DeviceStatus
+from ophyd.status import Status
 from ophyd.utils import StatusTimeoutError, WaitTimeoutError
 
 from ..ami import set_ami_hutch
@@ -577,7 +577,7 @@ class DaqBase(Device):
         """
         raise NotImplementedError('Please implement end_run in subclass.')
 
-    def trigger(self) -> DeviceStatus:
+    def trigger(self) -> Status:
         """
         Begin acquisition.
 
@@ -613,7 +613,7 @@ class DaqBase(Device):
             self.stop()
         return super().read()
 
-    def kickoff(self, **kwargs) -> DeviceStatus:
+    def kickoff(self, **kwargs) -> Status:
         """
         Begin acquisition. This method is non-blocking.
 
@@ -631,7 +631,7 @@ class DaqBase(Device):
         """
         raise NotImplementedError('Please implement kickoff in subclass.')
 
-    def complete(self) -> DeviceStatus:
+    def complete(self) -> Status:
         """
         Return a status that will be marked as done after acquisition stops.
 

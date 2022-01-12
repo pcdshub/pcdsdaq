@@ -19,7 +19,7 @@ Some notes about the implementation:
   updating values of our various signals using the normal ophyd
   subscription methods.
 - DaqLCLS2.get_status_for is a convenience method for setting up
-  DeviceStatus objects tied to the DAQ reaching specific states
+  Status objects tied to the DAQ reaching specific states
   and through specific transitions. This means we can schedule
   code to be run when the daq reaches specific states e.g. when
   it hits running or when it undergoes specific transitions e.g.
@@ -52,7 +52,7 @@ from typing import Any, Iterator, Optional, Union, get_type_hints
 from bluesky import RunEngine
 from ophyd.device import Component as Cpt
 from ophyd.signal import Signal
-from ophyd.status import DeviceStatus
+from ophyd.status import Status
 from ophyd.utils import StatusTimeoutError, WaitTimeoutError
 from ophyd.utils.errors import InvalidState
 from psdaq.control.ControlDef import ControlDef
@@ -326,7 +326,7 @@ class DaqLCLS2(DaqBase):
         transition: Optional[Iterator[EnumId]] = None,
         timeout: Optional[float] = None,
         check_now: bool = True,
-    ) -> DeviceStatus:
+    ) -> Status:
         """
         Return a status object for DAQ state transitions.
 
@@ -363,7 +363,7 @@ class DaqLCLS2(DaqBase):
 
         Returns
         -------
-        status : DeviceStatus
+        status : Status
             A status that will be marked successful after the corresponding
             states or transitions are reached.
         """
@@ -427,7 +427,7 @@ class DaqLCLS2(DaqBase):
             except InvalidState:
                 ...
 
-        def clean_up(status: DeviceStatus) -> None:
+        def clean_up(status: Status) -> None:
             """
             Undo the subscriptions once the status is done.
 
@@ -441,7 +441,7 @@ class DaqLCLS2(DaqBase):
         last_state = None
         last_transition = None
         lock = threading.Lock()
-        status = DeviceStatus(self, timeout=timeout)
+        status = Status(self, timeout=timeout)
         if any_change or state_arg:
             state_cbid = self.state_sig.subscribe(
                 check_state,
@@ -459,7 +459,7 @@ class DaqLCLS2(DaqBase):
         self,
         timeout: Optional[float] = None,
         check_now: bool = True,
-    ) -> DeviceStatus:
+    ) -> Status:
         """
         Return a status that is marked successful when the DAQ is done.
 
@@ -478,7 +478,7 @@ class DaqLCLS2(DaqBase):
 
         Returns
         -------
-        done_status : DeviceStatus
+        done_status : Status
             A status that is marked successful once the DAQ is done
             acquiring.
         """
@@ -500,7 +500,7 @@ class DaqLCLS2(DaqBase):
         state: EnumId,
         timeout: Optional[float] = None,
         wait: bool = True,
-    ) -> DeviceStatus:
+    ) -> Status:
         """
         Cause a daq state transition appropriately.
 
@@ -533,7 +533,7 @@ class DaqLCLS2(DaqBase):
 
         Returns
         -------
-        transition_status : DeviceStatus
+        transition_status : Status
             A status object that is marked done when the transition has
             completed.
         """
@@ -606,7 +606,7 @@ class DaqLCLS2(DaqBase):
         self,
         state: str,
         phase1_info: dict[str, Any],
-        status: DeviceStatus,
+        status: Status,
     ) -> None:
         """
         Do the raw setState command.
@@ -622,7 +622,7 @@ class DaqLCLS2(DaqBase):
         phase1_info : dict[str, Any]
             A dictionary that maps transition names to extra data that the
             DAQ can use.
-        status : DeviceStatus
+        status : Status
             The status returned by state_transition, so that we can
             mark it as failed if there is a problem here.
         """
@@ -634,7 +634,8 @@ class DaqLCLS2(DaqBase):
         error_msg = self._control.setState(state, phase1_info)
         self.last_transition_err_sig.put(error_msg)
         if error_msg is not None:
-            status.exception(
+            logger.debug("Setting exception in transition thread")
+            status.set_exception(
                 DaqStateTransitionError(
                     f'Error transitioning to {state}: {error_msg}'
                 )
@@ -643,7 +644,7 @@ class DaqLCLS2(DaqBase):
     def _handle_duration_thread(
         self,
         duration: float,
-        running_status: DeviceStatus,
+        running_status: Status,
     ) -> None:
         """
         Wait a fixed amount of time, then stop the daq.
@@ -660,7 +661,7 @@ class DaqLCLS2(DaqBase):
         ----------
         duration : float
             The amount of time to wait in seconds.
-        running_status : DeviceStatus
+        running_status : Status
             The status returned by state_transition, so that we can
             start the timer appropriately.
             Note: this is the state transition to "running"
@@ -925,12 +926,12 @@ class DaqLCLS2(DaqBase):
             alg_version=alg_version,
         )
 
-    def _end_run_callback(self, status: DeviceStatus) -> None:
+    def _end_run_callback(self, status: Status) -> None:
         """
         Callback for a status to end the run once the status completes.
 
         The status parameter is unused, but is passed in as self by
-        the DeviceStatus when this method is called.
+        the Status when this method is called.
 
         Regardless of the input, this will end the run.
         """
@@ -1011,7 +1012,7 @@ class DaqLCLS2(DaqBase):
         if self.state_sig.get() > self.state_enum.configured:
             self.state_transition('configured', timeout=timeout, wait=wait)
 
-    def trigger(self) -> DeviceStatus:
+    def trigger(self) -> Status:
         """
         Begin acquisition.
 
@@ -1041,7 +1042,7 @@ class DaqLCLS2(DaqBase):
             timeout=self.begin_timeout_cfg.get(),
         )
 
-        def check_kickoff_fail(st: DeviceStatus):
+        def check_kickoff_fail(st: Status):
             if not st.success:
                 try:
                     trigger_status.exception(st.exception())
@@ -1058,7 +1059,7 @@ class DaqLCLS2(DaqBase):
                 ...
         return trigger_status
 
-    def kickoff(self, **kwargs) -> DeviceStatus:
+    def kickoff(self, **kwargs) -> Status:
         """
         Begin acquisition. This method is non-blocking.
 
@@ -1115,7 +1116,7 @@ class DaqLCLS2(DaqBase):
         end_run_status.add_callback(revert_cfg_after_step)
         return kickoff_status
 
-    def complete(self) -> DeviceStatus:
+    def complete(self) -> Status:
         """
         If the daq is freely running, this will `stop` the daq.
         Otherwise, we'll simply return the end_status object.
@@ -1615,6 +1616,7 @@ class SimDaqControl:
         self._error = ''
         self._warning = ''
         self._path = 'tst'
+        self._cause_error = False
         self.sim_set_states('reset', 'reset')
 
     def monitorStatus(self) -> tuple[str, str, str, str, str, str, str, str]:
@@ -1624,8 +1626,8 @@ class SimDaqControl:
         with self._lock:
             logger.debug('SimDaqControl sending new status')
             self._new_status.clear()
-            if self._header == self._headers['status']:
-                status = (
+            if self._header == self._headers.status:
+                status = [
                     self._transition,
                     self._state,
                     self._config_alias,
@@ -1634,39 +1636,45 @@ class SimDaqControl:
                     self._experiment_name,
                     self._run_number,
                     self._last_run_number,
-                )
-            elif self._header == self._headers['error']:
-                status = ('error', self._error)
-            elif self._header == self._headers['warning']:
-                status = ('warning', self._warning)
-            elif self._header == self._headers['filereport']:
-                status = ('fileReport', self._path)
-            elif self._header == self._headers['progress']:
-                status = (
+                ]
+            elif self._header == self._headers.error:
+                status = ['error', self._error]
+            elif self._header == self._headers.warning:
+                status = ['warning', self._warning]
+            elif self._header == self._headers.filereport:
+                status = ['fileReport', self._path]
+            elif self._header == self._headers.progress:
+                status = [
                     'progress',
                     self._transition,
                     self._elapsed,
                     self._total,
-                )
-            elif self._header == self._headers['step']:
-                status = ('step', self._step_done)
+                ]
+            elif self._header == self._headers.step:
+                status = ['step', self._step_done]
             else:
                 raise RuntimeError('Error in sim, bad header')
         while len(status) < 8:
             status.append('error')
         return tuple(status)
 
-    def setState(self, state: EnumId, phase1_info: dict[str, Any]) -> None:
+    def setState(
+        self,
+        state: EnumId,
+        phase1_info: dict[str, Any],
+    ) -> Optional[str]:
         """
         Request the needed transitions to get to state.
 
         This may also cause additional state transitions e.g. if we're
         doing a fixed-length run.
+
+        Returns a str if there is an error.
         """
         logger.debug('SimDaqControl.setState(%s, %s)', state, phase1_info)
         with self._lock:
             state = self._states.from_any(state)
-            if state == self._states['reset']:
+            if state == self._states.reset:
                 return self.sim_transition('reset')
 
             now = self._states.from_any(self._state)
@@ -1677,9 +1685,11 @@ class SimDaqControl:
             else:
                 goal_indices = range(now.value - 1, state.value - 1, -1)
             for goal in goal_indices:
-                self.sim_transition(goal)
+                error = self.sim_transition(goal)
+                if error is not None:
+                    return error
 
-            if state == self._states['running']:
+            if state == self._states.running:
                 # We need to schedule end_step
                 try:
                     events = phase1_info['enable']['readout_count']
@@ -1716,33 +1726,44 @@ class SimDaqControl:
         logger.debug("SimDaqControl.setRecord(%s)", record)
         with self._lock:
             self._recording = record
-            self.sim_new_status(self._headers['status'])
+            self.sim_new_status(self._headers.status)
 
-    def sim_set_states(self, transition: EnumId, state: EnumId) -> None:
+    def sim_set_states(
+        self,
+        transition: EnumId,
+        state: EnumId,
+    ) -> Optional[str]:
         """Change the currently set state and emit update."""
         logger.debug("SimDaqControl.sim_set_state(%s, %s)", transition, state)
         with self._lock:
+            if self._cause_error:
+                self._cause_error = False
+                self.sim_new_status(self._headers.error)
+                logger.debug("Sim returning error: %s", self._error)
+                return self._error
             self._transition = self._transitions.from_any(transition).name
             self._state = self._states.from_any(state).name
-            if self._transition == self._transitions['beginrun']:
+            if self._transition == self._transitions.beginrun:
                 self._run_number += 1
-            elif self._transition == self._transitions['endrun']:
+            elif self._transition == self._transitions.endrun:
                 self._last_run_number += 1
-            self.sim_new_status(self._headers['status'])
+            self.sim_new_status(self._headers.status)
 
-    def sim_transition(self, state: EnumId) -> None:
+    def sim_transition(self, state: EnumId) -> Optional[str]:
         """Internal transition, checks if valid."""
         logger.debug("SimDaqControl.sim_transition(%s)", state)
         with self._lock:
             goal = self._states.from_any(state)
-            if goal == self._states['reset']:
+            if goal == self._states.reset:
                 return self.sim_set_states('reset', 'reset')
             now = self._states.from_any(self._state)
             try:
                 transition = self._tmap[now.name][goal.name]
             except KeyError:
                 raise RuntimeError(f'Invalid transition from {now} to {goal}')
-            self.sim_set_states(transition, goal.name)
+            error = self.sim_set_states(transition, goal.name)
+            if error is not None:
+                return error
 
     def sim_new_status(self, header: HelpfulIntEnum) -> None:
         """Emit a status update."""
@@ -1750,3 +1771,10 @@ class SimDaqControl:
         with self._lock:
             self._header = header
             self._new_status.set()
+
+    def sim_queue_error(self, message: str) -> None:
+        """The next requested transition will error."""
+        logger.debug("SimDaqControl.sim_queue_error(%s)", message)
+        with self._lock:
+            self._cause_error = True
+            self._error = message

@@ -20,7 +20,7 @@ from typing import Any, Optional, Union
 from bluesky import RunEngine
 from ophyd.device import Component as Cpt
 from ophyd.signal import Signal
-from ophyd.status import DeviceStatus
+from ophyd.status import Status
 from ophyd.utils import StatusTimeoutError, WaitTimeoutError
 
 from .. import ext_scripts
@@ -341,7 +341,7 @@ class DaqLCLS1(DaqBase):
 
     # Reader interface
     @check_connect
-    def trigger(self) -> DeviceStatus:
+    def trigger(self) -> Status:
         """
         Begin acquisition. This method blocks until the run begins.
 
@@ -376,7 +376,7 @@ class DaqLCLS1(DaqBase):
         duration: Union[int, None, Sentinel] = CONFIG_VAL,
         use_l3t: Union[bool, None, Sentinel] = CONFIG_VAL,
         controls: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
-    ) -> DeviceStatus:
+    ) -> Status:
         """
         Begin acquisition. This method is non-blocking.
         See `begin` for a description of the parameters.
@@ -456,7 +456,7 @@ class DaqLCLS1(DaqBase):
                 logger.debug('Marking kickoff as failed')
                 status.set_exception(RuntimeError('Daq begin failed!'))
 
-        begin_status = DeviceStatus(self)
+        begin_status = Status(self)
         watcher = threading.Thread(target=start_thread,
                                    args=(self._control, begin_status, events,
                                          duration, use_l3t, controls,
@@ -464,7 +464,7 @@ class DaqLCLS1(DaqBase):
         watcher.start()
         return begin_status
 
-    def complete(self) -> DeviceStatus:
+    def complete(self) -> Status:
         """
         If the daq is freely running, this will `stop` the daq.
         Otherwise, we'll simply return the end_status object.
@@ -482,7 +482,7 @@ class DaqLCLS1(DaqBase):
             self.stop()
         return end_status
 
-    def _get_end_status(self) -> DeviceStatus:
+    def _get_end_status(self) -> Status:
         """
         Return a `Status` object that will be marked done when the DAQ has
         finished acquiring.
@@ -513,7 +513,7 @@ class DaqLCLS1(DaqBase):
                 self._reset_begin()
                 status.set_finished()
                 logger.debug('Marked acquisition as complete')
-            end_status = DeviceStatus(self)
+            end_status = Status(self)
             watcher = threading.Thread(target=finish_thread,
                                        args=(self._control, end_status))
             watcher.start()
@@ -523,7 +523,7 @@ class DaqLCLS1(DaqBase):
             # the other things in the scan
             logger.debug('Returning finished status for infinite run with '
                          'events=%s, duration=%s', events, duration)
-            status = DeviceStatus(self)
+            status = Status(self)
             status.set_finished()
             return status
 

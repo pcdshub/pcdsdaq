@@ -15,7 +15,7 @@ from ophyd.utils.errors import WaitTimeoutError
 from psdaq.control.ControlDef import ControlDef
 
 from pcdsdaq.daq import DaqLCLS2, DaqTimeoutError
-from pcdsdaq.daq.interface import TernaryBool
+from pcdsdaq.daq.interface import DaqStateTransitionError, TernaryBool
 
 logger = logging.getLogger(__name__)
 
@@ -859,3 +859,59 @@ def test_fly_scan(daq_lcls2: DaqLCLS2, RE: RunEngine):
         daq_lcls2.transition_sig,
         daq_lcls2.transition_enum.endrun,
     )
+
+
+@pytest.mark.timeout(20)
+def test_transition_errors(daq_lcls2: DaqLCLS2):
+    """
+    Many methods should propagate a DaqStateTransitionError:
+    - state_transition
+    - kickoff
+    - trigger
+    - begin
+    - stop
+    - end_run
+    - pause
+    - resume
+    """
+    logger.debug('test_transition_errors')
+    # Test the error sim as a sanity check before going in
+    daq_lcls2._control.sim_queue_error('sanity')
+    assert daq_lcls2._control.setState('connected', {}) == 'sanity'
+
+    daq_lcls2._control.sim_queue_error('generic')
+    with pytest.raises(DaqStateTransitionError):
+        daq_lcls2.state_transition('connected')
+
+    daq_lcls2.state_transition('connected')
+
+    daq_lcls2._control.sim_queue_error('cannot configure')
+    with pytest.raises(DaqStateTransitionError):
+        daq_lcls2.kickoff().wait(timeout=1)
+
+    daq_lcls2._control.sim_queue_error('cannot configure')
+    with pytest.raises(DaqStateTransitionError):
+        daq_lcls2.trigger().wait(timeout=1)
+
+    daq_lcls2._control.sim_queue_error('cannot configure')
+    with pytest.raises(DaqStateTransitionError):
+        daq_lcls2.begin(wait=True)
+
+    daq_lcls2.state_transition('running')
+
+    daq_lcls2._control.sim_queue_error('cannot disable')
+    with pytest.raises(DaqStateTransitionError):
+        daq_lcls2.stop()
+
+    daq_lcls2._control.sim_queue_error('cannot disable')
+    with pytest.raises(DaqStateTransitionError):
+        daq_lcls2.end_run()
+
+    daq_lcls2._control.sim_queue_error('cannot disable')
+    with pytest.raises(DaqStateTransitionError):
+        daq_lcls2.pause()
+
+    daq_lcls2.state_transition('paused')
+    daq_lcls2._control.sim_queue_error('cannot enable')
+    with pytest.raises(DaqStateTransitionError):
+        daq_lcls2.resume()
