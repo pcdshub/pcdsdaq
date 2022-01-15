@@ -375,10 +375,7 @@ class DaqLCLS2(DaqBase):
             timeout,
             check_now,
         )
-        if state is None and transition is None:
-            any_change = True
-        else:
-            any_change = False
+        any_change = state is None and transition is None
         if state is None:
             state = {None}
             state_arg = False
