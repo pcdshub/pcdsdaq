@@ -251,12 +251,11 @@ texinfo_documents = [
     (
         'index',
         'pcdsdaq',
-        u'pcdsdaq Documentation',
-        u"SLAC National Accelerator Laboratories",
+        "pcdsdaq Documentation",
+        "SLAC National Accelerator Laboratory",
         'pcdsdaq',
         (
-            'Laucher and Config Reader for LCLS Python 3 '
-            'Interactive IPython Sessions'
+            "LCLS DAQ Control Interface"
         ),
         'Miscellaneous',
     ),
