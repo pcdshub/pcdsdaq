@@ -694,7 +694,7 @@ class DaqLCLS2(DaqBase):
                 timeout=self.begin_timeout_cfg.get(),
             )
 
-    def _get_phase1(self, transition: str) -> dict[str, any]:
+    def _get_phase1(self, transition: str) -> dict[str, Any]:
         """
         For a given transition, get the extra data we need to send to the DAQ.
 
