@@ -263,7 +263,7 @@ def get_controls_value(obj: ControlsObject) -> Any:
             raise ValueError(
                 'Controls arguments must have a position attribute, '
                 'a get method, or be a simple primitive type '
-                f'(int, float, str). Recieved {obj} instead.'
+                f'(int, float, str). Received {obj} instead.'
             )
 
 
