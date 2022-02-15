@@ -16,7 +16,7 @@ import logging
 import threading
 import time
 from enum import Enum, IntEnum
-from typing import Any, ClassVar, Generator, Iterator, Optional, Union
+from typing import Any, ClassVar, Generator, Optional, Union
 
 from bluesky import RunEngine
 from ophyd.device import Component as Cpt
@@ -63,82 +63,6 @@ ControlsArg = Union[
 ]
 # Type hint for valid identifiers for an enum
 EnumId = Union[Enum, int, str]
-
-
-class HelpfulIntEnum(IntEnum):
-    """
-    IntEnum subclass with some utility extensions.
-    """
-    @classmethod
-    def from_any(cls, identifier: EnumId) -> HelpfulIntEnum:
-        """
-        Try all the ways to interpret identifier as the enum.
-
-        This is intended to consolidate the try/except tree typically used
-        to interpret external input as an enum.
-
-        Parameters
-        ----------
-        identifier : EnumId
-            Any str, int, or Enum value that corresponds with a valid value
-            on this HelpfulIntEnum instance.
-
-        Returns
-        -------
-        enum : HelpfulIntEnum
-            The corresponding enum object associated with the identifier.
-        """
-        try:
-            return cls[identifier]
-        except KeyError:
-            return cls(identifier)
-
-    @classmethod
-    def include(
-        cls,
-        identifiers: Iterator[EnumId],
-    ) -> set[HelpfulIntEnum]:
-        """
-        Returns all enum values matching the identifiers given.
-
-        This is a shortcut for calling cls.from_any many times and
-        assembling a set of the results.
-
-        Parameters
-        ----------
-        identifiers : Iterator[EnumId]
-            Any iterable that contains strings, ints, and Enum values that
-            correspond with valid values on this HelpfulIntEnum instance.
-
-        Returns
-        -------
-        enums : set[HelpfulIntEnum]
-            A set whose elements are the enum objects associated with the
-            input identifiers.
-        """
-        return {cls.from_any(ident) for ident in identifiers}
-
-    @classmethod
-    def exclude(
-        cls,
-        identifiers: Iterator[EnumId],
-    ) -> set[HelpfulIntEnum]:
-        """
-        Return all enum values other than the ones given.
-
-        Parameters
-        ----------
-        identifiers : Iterator[EnumId]
-            Any iterable that contains strings, ints, and Enum values that
-            correspond with valid values on this HelpfulIntEnum instance.
-
-        Returns
-        -------
-        enums : set[HelpfulIntEnum]
-            A set whose elements are the valid enum objects not associated
-            with the input identifiers.
-        """
-        return set(cls.__members__.values()) - cls.include(identifiers)
 
 
 class TernaryBool(IntEnum):

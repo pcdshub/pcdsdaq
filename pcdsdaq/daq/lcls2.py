@@ -55,13 +55,14 @@ from ophyd.signal import Signal
 from ophyd.status import Status
 from ophyd.utils import StatusTimeoutError, WaitTimeoutError
 from ophyd.utils.errors import InvalidState
+from pcdsutils.enum import HelpfulIntEnum
 from psdaq.control.ControlDef import ControlDef
 from psdaq.control.DaqControl import DaqControl
 
 from .interface import (CONFIG_VAL, ControlsArg, DaqBase,
                         DaqStateTransitionError, DaqTimeoutError, EnumId,
-                        HelpfulIntEnum, Sentinel, TernaryBool,
-                        get_controls_name, get_controls_value, typing_check)
+                        Sentinel, TernaryBool, get_controls_name,
+                        get_controls_value, typing_check)
 
 logger = logging.getLogger(__name__)
 
