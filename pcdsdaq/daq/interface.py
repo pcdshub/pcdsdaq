@@ -273,7 +273,14 @@ def clip_name(obj: OphydObject):
     This lets me have nice looking read keys without needing to override
     legacy api from before these classes were ophyd-ized.
     """
-    obj.name = '_'.join(obj.name.split('_')[:-1])
+    obj.name = clipped_text(obj.name)
+
+
+def clipped_text(text: str) -> str:
+    """
+    Given a string, return a version that is clipped at the last underscore.
+    """
+    return '_'.join(text.split('_')[:-1])
 
 
 # Base classes
@@ -355,7 +362,7 @@ class DaqBase(Device):
         default = {}
         for walk in self.walk_components():
             if walk.item.kind == Kind.config:
-                cfg_name = '_'.join(walk.item.attr.split('_')[:-1])
+                cfg_name = clipped_text(walk.item.attr)
                 default[cfg_name] = walk.item.kwargs['value']
         default.update(self._default_config_overrides)
         self._default_config = default
