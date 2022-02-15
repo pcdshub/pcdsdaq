@@ -176,19 +176,19 @@ def get_controls_value(obj: ControlsObject) -> Any:
             raise ValueError(
                 f'Expected tuple of length 2, got {obj}'
             ) from exc
+    if isinstance(obj, (int, float, str)):
+        return obj
     try:
         return obj.position
     except Exception:
         try:
             return obj.get()
         except Exception:
-            if isinstance(obj, (int, float, str)):
-                return obj
             raise ValueError(
                 'Controls arguments must have a position attribute, '
                 'a get method, or be a simple primitive type '
                 f'(int, float, str). Received {obj} instead.'
-            )
+            ) from None
 
 
 def get_controls_name(obj: ControlsObject) -> str:
