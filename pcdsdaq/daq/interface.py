@@ -210,7 +210,7 @@ def get_controls_name(obj: ControlsObject) -> str:
     """
     if isinstance(obj, tuple):
         try:
-            return str(obj[1])
+            return str(obj[0])
         except IndexError as exc:
             raise ValueError(
                 f'Expected tuple of length 2, got {obj}'
