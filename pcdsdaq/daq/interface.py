@@ -26,6 +26,7 @@ from ophyd.positioner import PositionerBase
 from ophyd.signal import AttributeSignal, Signal
 from ophyd.status import Status
 from ophyd.utils import StatusTimeoutError, WaitTimeoutError
+from pcdsdevices.interface import BaseInterface
 
 from ..ami import set_ami_hutch
 
@@ -284,7 +285,7 @@ def clipped_text(text: str) -> str:
 
 
 # Base classes
-class DaqBase(Device):
+class DaqBase(BaseInterface, Device):
     """
     Base class to define shared DAQ API
 
@@ -315,6 +316,24 @@ class DaqBase(Device):
     _queue_configure_transition: bool
     _default_config_overrides: dict[str, Any]
     _re_cbid: Optional[int]
+
+    # Tab configuration for hutch-python tab filtering
+    tab_whitelist = (
+        'configured',
+        'default_config',
+        'config',
+        'state',
+        'wait',
+        'begin',
+        'begin_infinite',
+        'stop',
+        'end_run',
+        'preconfig',
+        'configure',
+        'config_info',
+        'record',
+        'run_number',
+    )
 
     def __init__(
         self,
