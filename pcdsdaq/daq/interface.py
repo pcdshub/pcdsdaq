@@ -392,8 +392,7 @@ class DaqBase(Device):
                 key[len(self.name) + 1:]: info['value']
                 for key, info in cfg.items()
             }
-        else:
-            return self.default_config.copy()
+        return self.default_config.copy()
 
     @property
     def state(self) -> str:
