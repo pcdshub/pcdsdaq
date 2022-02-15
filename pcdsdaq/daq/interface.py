@@ -215,14 +215,13 @@ def get_controls_name(obj: ControlsObject) -> str:
             raise ValueError(
                 f'Expected tuple of length 2, got {obj}'
             ) from exc
-    else:
-        try:
-            return str(obj.name)
-        except AttributeError as exc:
-            raise ValueError(
-                'Expected a "name" attribute. Try giving your object a name '
-                f'or try passing in a tuple of (name, obj). Object was {obj}.'
-            ) from exc
+    try:
+        return str(obj.name)
+    except AttributeError as exc:
+        raise ValueError(
+            'Expected a "name" attribute. Try giving your object a name '
+            f'or try passing in a tuple of (name, obj). Object was {obj}.'
+        ) from exc
 
 
 def typing_check(value: Any, hint: Any) -> bool:
