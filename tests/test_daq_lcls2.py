@@ -218,14 +218,14 @@ def test_stage_unstage(daq_lcls2: DaqLCLS2, RE: RunEngine):
 
     def running_status():
         logger.debug('running_status')
-        return daq_lcls2.get_status_for(
+        return daq_lcls2._get_status_for(
             state=['running'],
             check_now=False,
         )
 
     def end_run_status():
         logger.debug('end_run_status')
-        return daq_lcls2.get_status_for(
+        return daq_lcls2._get_status_for(
             transition=['endrun'],
             check_now=False,
         )
@@ -307,7 +307,7 @@ def test_configure(daq_lcls2: DaqLCLS2):
         transition='connect',
         state='connected',
     )
-    daq_lcls2.get_status_for(state=['connected']).wait(timeout=1)
+    daq_lcls2._get_status_for(state=['connected']).wait(timeout=1)
     prev_tst = daq_lcls2.read_configuration()
     prev_cfg, post_cfg = daq_lcls2.configure(events=100, detname='dat')
     assert daq_lcls2.events_cfg.get() == 100
@@ -316,14 +316,14 @@ def test_configure(daq_lcls2: DaqLCLS2):
     assert (prev_cfg, post_cfg) == (prev_tst, post_tst)
 
     # Changing record should make us reconfigure
-    st_conn = daq_lcls2.get_status_for(state=['connected'], check_now=False)
-    st_conf = daq_lcls2.get_status_for(state=['configured'], check_now=False)
+    st_conn = daq_lcls2._get_status_for(state=['connected'], check_now=False)
+    st_conf = daq_lcls2._get_status_for(state=['configured'], check_now=False)
     daq_lcls2.configure(record=not daq_lcls2.record)
     st_conn.wait(timeout=1)
     st_conf.wait(timeout=1)
 
     # Changing events should not make us reconfigure
-    st_any = daq_lcls2.get_status_for(check_now=False)
+    st_any = daq_lcls2._get_status_for(check_now=False)
     daq_lcls2.configure(events=1000)
     with pytest.raises(WaitTimeoutError):
         st_any.wait(1)
@@ -341,7 +341,7 @@ def test_configure(daq_lcls2: DaqLCLS2):
     # If we get desynced from the recording state, we should reconfigure
     # Get us into a normal state, regardless of previous testing
     daq_lcls2._control.setState('connected', {})
-    daq_lcls2.get_status_for(state=['connected']).wait(timeout=1)
+    daq_lcls2._get_status_for(state=['connected']).wait(timeout=1)
     daq_lcls2.configure(record=False)
     daq_lcls2.configure(record=True)
     sig_wait_value(daq_lcls2.recording_sig, True)
@@ -349,8 +349,8 @@ def test_configure(daq_lcls2: DaqLCLS2):
     daq_lcls2._control.setRecord(False)
     sig_wait_value(daq_lcls2.recording_sig, False)
     # Configure something else and check for transitions
-    st_conn = daq_lcls2.get_status_for(state=['connected'], check_now=False)
-    st_conf = daq_lcls2.get_status_for(state=['configured'], check_now=False)
+    st_conn = daq_lcls2._get_status_for(state=['connected'], check_now=False)
+    st_conf = daq_lcls2._get_status_for(state=['configured'], check_now=False)
     daq_lcls2.configure(events=999)
     st_conn.wait(timeout=1)
     st_conf.wait(timeout=1)
@@ -358,7 +358,7 @@ def test_configure(daq_lcls2: DaqLCLS2):
     # Let's set up a controls arg and make sure it at least doesn't error
     # Hard to check the DAQ side without making a very sophisticated sim
     daq_lcls2._control.setState('connected', {})
-    daq_lcls2.get_status_for(state=['connected']).wait(timeout=1)
+    daq_lcls2._get_status_for(state=['connected']).wait(timeout=1)
     daq_lcls2._last_config = {}
     daq_lcls2.configure(controls=(
         Signal(name='sig'),
@@ -367,7 +367,7 @@ def test_configure(daq_lcls2: DaqLCLS2):
     ))
     # Again, but with at least one example of a bad controls arg
     daq_lcls2._control.setState('connected', {})
-    daq_lcls2.get_status_for(state=['connected']).wait(timeout=1)
+    daq_lcls2._get_status_for(state=['connected']).wait(timeout=1)
     daq_lcls2._last_config = {}
     with pytest.raises(ValueError):
         daq_lcls2.configure(controls=(
@@ -393,7 +393,7 @@ def test_config(daq_lcls2: DaqLCLS2):
 
     assert daq_lcls2.config is not daq_lcls2.config
     daq_lcls2._control.setState('connected', {})
-    daq_lcls2.get_status_for(state=['connected']).wait(timeout=1)
+    daq_lcls2._get_status_for(state=['connected']).wait(timeout=1)
     conf = dict(events=100, record=True)
     daq_lcls2.configure(**conf)
     for key, value in conf.items():
@@ -417,7 +417,7 @@ def test_default_config(daq_lcls2: DaqLCLS2):
     daq_lcls2._control.setState('connected', {})
     default = daq_lcls2.default_config
     assert daq_lcls2.config == default
-    daq_lcls2.get_status_for(state=['connected']).wait(timeout=1)
+    daq_lcls2._get_status_for(state=['connected']).wait(timeout=1)
     daq_lcls2.configure(events=1000, record=False, begin_timeout=12)
     assert daq_lcls2.default_config == default
     default_events = daq_lcls2.default_config['events']
@@ -434,7 +434,7 @@ def test_configured(daq_lcls2: DaqLCLS2):
 
     def transition_wait_assert(state, expected_configured):
         daq_lcls2._control.setState(state, {})
-        daq_lcls2.get_status_for(state=[state]).wait(timeout=1)
+        daq_lcls2._get_status_for(state=[state]).wait(timeout=1)
         sig_wait_value(daq_lcls2.configured_sig, expected_configured)
         assert daq_lcls2.configured == expected_configured
 
@@ -461,32 +461,32 @@ def test_kickoff(daq_lcls2: DaqLCLS2):
 
     # Errors if not connected or already running
     for state in ('reset', 'unallocated', 'allocated', 'running'):
-        daq_lcls2.state_transition(state, timeout=1, wait=True)
+        daq_lcls2._state_transition(state, timeout=1, wait=True)
         with pytest.raises(RuntimeError):
             daq_lcls2.kickoff()
 
     # Starts from normal states
     for state in ('connected', 'configured', 'starting', 'paused'):
-        daq_lcls2.state_transition(state, timeout=1, wait=True)
+        daq_lcls2._state_transition(state, timeout=1, wait=True)
         daq_lcls2.kickoff()
-        daq_lcls2.get_status_for(state=['running']).wait(timeout=1)
+        daq_lcls2._get_status_for(state=['running']).wait(timeout=1)
 
     # Configures if needed, reverts parameters
     # Start in configured state, wait for unconfig/config/enable/endstep
-    daq_lcls2.state_transition('configured', timeout=1, wait=True)
-    unconf_st = daq_lcls2.get_status_for(
+    daq_lcls2._state_transition('configured', timeout=1, wait=True)
+    unconf_st = daq_lcls2._get_status_for(
         transition=['unconfigure'],
         check_now=False,
     )
-    conf_st = daq_lcls2.get_status_for(
+    conf_st = daq_lcls2._get_status_for(
         transition=['configure'],
         check_now=False,
     )
-    run_st = daq_lcls2.get_status_for(
+    run_st = daq_lcls2._get_status_for(
         transition=['enable'],
         check_now=False,
     )
-    end_st = daq_lcls2.get_status_for(
+    end_st = daq_lcls2._get_status_for(
         transition=['endstep'],
         check_now=False,
     )
@@ -502,7 +502,7 @@ def test_kickoff(daq_lcls2: DaqLCLS2):
     # Errors if a configure is needed and cannot be done
     # This case here is start/stop recording during a run,
     # Which must be invalid due to the DAQ architecture
-    daq_lcls2.state_transition('paused', timeout=1, wait=True)
+    daq_lcls2._state_transition('paused', timeout=1, wait=True)
     with pytest.raises(RuntimeError):
         daq_lcls2.kickoff(record=not daq_lcls2.recording_sig.get())
 
@@ -516,7 +516,7 @@ def test_wait(daq_lcls2: DaqLCLS2):
     - If end_run=True, end the run automatically
     """
     logger.debug('test_wait')
-    daq_lcls2.state_transition('configured')
+    daq_lcls2._state_transition('configured')
     # Normal behavior: wait for the 1 second run
     with assert_timespan(min=1, max=2):
         daq_lcls2.kickoff(events=120).wait(timeout=1)
@@ -549,7 +549,7 @@ def test_trigger(daq_lcls2: DaqLCLS2):
     It also requires configuring on events and duration to work at all.
     """
     logger.debug('test_trigger')
-    daq_lcls2.state_transition('connected')
+    daq_lcls2._state_transition('connected')
     for config in (
         {'events': 120},
         {'duration': 1},
@@ -584,7 +584,7 @@ def test_begin(daq_lcls2: DaqLCLS2):
         sig_wait_value(daq_lcls2.duration_cfg, 0)
         assert daq_lcls2.config == daq_lcls2.default_config
 
-    daq_lcls2.state_transition('connected')
+    daq_lcls2._state_transition('connected')
     # Simple one second acquisition
     daq_lcls2.begin(duration=1)
     for transition in ('enable', 'endstep'):
@@ -596,7 +596,7 @@ def test_begin(daq_lcls2: DaqLCLS2):
     assert_no_cfg_change()
 
     # Same thing, but with wait. We also need to verify we hit running.
-    enable_status = daq_lcls2.get_status_for(state=['running'])
+    enable_status = daq_lcls2._get_status_for(state=['running'])
     daq_lcls2.begin(duration=1, wait=True)
     sig_wait_value(
         daq_lcls2.transition_sig,
@@ -614,7 +614,7 @@ def test_begin(daq_lcls2: DaqLCLS2):
     assert_no_cfg_change()
 
     # Last case: end_run, but no wait. This requires some threading.
-    enable_status = daq_lcls2.get_status_for(state=['running'])
+    enable_status = daq_lcls2._get_status_for(state=['running'])
     daq_lcls2.begin(duration=1, end_run=True)
     enable_status.wait(timeout=1)
     sig_wait_value(
@@ -626,7 +626,7 @@ def test_begin(daq_lcls2: DaqLCLS2):
 
     # Check the "record" configuration specifically, which may get some use
     # and requires extra handling
-    daq_lcls2.state_transition('connected')
+    daq_lcls2._state_transition('connected')
     assert not daq_lcls2._control._recording
     daq_lcls2.begin(duration=1, record=True, end_run=True)
     assert daq_lcls2._control._recording
@@ -656,7 +656,7 @@ def test_stop(daq_lcls2: DaqLCLS2):
     invalid_stop_states = daq_lcls2.state_enum.exclude(stop_state_names)
     # Check for the correct transition where applicable
     for state in valid_stop_states:
-        daq_lcls2.state_transition(state)
+        daq_lcls2._state_transition(state)
         daq_lcls2.stop()
         sig_wait_value(
             daq_lcls2.transition_sig,
@@ -666,7 +666,7 @@ def test_stop(daq_lcls2: DaqLCLS2):
     # which is the normal destination for stop, but shouldn't happen
     # if the run isn't going!
     for state in invalid_stop_states:
-        daq_lcls2.state_transition(state)
+        daq_lcls2._state_transition(state)
         daq_lcls2.stop()
         sig_wait_value(
             daq_lcls2.state_sig,
@@ -682,7 +682,7 @@ def test_begin_infinite(daq_lcls2: DaqLCLS2):
     Arguments for duration/events are ignored.
     """
     logger.debug('test_begin_infinite')
-    daq_lcls2.state_transition('connected')
+    daq_lcls2._state_transition('connected')
     daq_lcls2.configure(duration=1)
     daq_lcls2.begin_infinite(events=1, duration=0.1)
     time.sleep(5)
@@ -700,7 +700,7 @@ def test_end_run(daq_lcls2: DaqLCLS2):
     invalid_end_states = daq_lcls2.state_enum.exclude(end_run_state_names)
     # Check for the correct transition where applicable
     for state in valid_end_states:
-        daq_lcls2.state_transition(state)
+        daq_lcls2._state_transition(state)
         daq_lcls2.end_run()
         sig_wait_value(
             daq_lcls2.transition_sig,
@@ -710,7 +710,7 @@ def test_end_run(daq_lcls2: DaqLCLS2):
     # which is the normal destination for end_run, but shouldn't happen
     # if the run isn't going!
     for state in invalid_end_states:
-        daq_lcls2.state_transition(state)
+        daq_lcls2._state_transition(state)
         daq_lcls2.stop()
         sig_wait_value(
             daq_lcls2.state_sig,
@@ -726,7 +726,7 @@ def test_read(daq_lcls2: DaqLCLS2):
     - stop an "infinite" run (to allow certain sequencer-timed plans)
     """
     logger.debug('test_read')
-    daq_lcls2.state_transition('connected')
+    daq_lcls2._state_transition('connected')
     daq_lcls2.begin_infinite()
     daq_lcls2.read()
     sig_wait_value(
@@ -744,7 +744,7 @@ def test_pause_resume(daq_lcls2: DaqLCLS2):
     behave like a bare "kickoff" in all other cases.
     """
     logger.debug('test_pause_resume')
-    daq_lcls2.state_transition('connected')
+    daq_lcls2._state_transition('connected')
     daq_lcls2.begin_infinite()
     sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum.running)
     daq_lcls2.pause()
@@ -781,7 +781,7 @@ def test_complete(daq_lcls2: DaqLCLS2):
     - Return a Status and mark it done when acquisition has completed.
     """
     logger.debug('test_complete')
-    daq_lcls2.state_transition('connected')
+    daq_lcls2._state_transition('connected')
     with assert_timespan(min=1, max=2):
         daq_lcls2.kickoff(duration=1).wait(timeout=1)
         status = daq_lcls2.complete()
@@ -813,7 +813,7 @@ def test_step_scan(daq_lcls2: DaqLCLS2, RE: RunEngine):
         if value == daq_lcls2.transition_enum.enable:
             counter += 1
 
-    daq_lcls2.state_transition('connected')
+    daq_lcls2._state_transition('connected')
     daq_lcls2.configure(events=1)
     cbid = daq_lcls2.transition_sig.subscribe(enable_counter)
     RE(bp.scan([daq_lcls2], motor, 0, 10, 11))
@@ -841,7 +841,7 @@ def test_fly_scan(daq_lcls2: DaqLCLS2, RE: RunEngine):
         if value == daq_lcls2.transition_enum.enable:
             counter += 1
 
-    daq_lcls2.state_transition('connected')
+    daq_lcls2._state_transition('connected')
     daq_lcls2.configure(events=0)
     cbid = daq_lcls2.transition_sig.subscribe(enable_counter)
     RE(
@@ -865,7 +865,7 @@ def test_fly_scan(daq_lcls2: DaqLCLS2, RE: RunEngine):
 def test_transition_errors(daq_lcls2: DaqLCLS2):
     """
     Many methods should propagate a DaqStateTransitionError:
-    - state_transition
+    - _state_transition
     - kickoff
     - trigger
     - begin
@@ -881,9 +881,9 @@ def test_transition_errors(daq_lcls2: DaqLCLS2):
 
     daq_lcls2._control.sim_queue_error('generic')
     with pytest.raises(DaqStateTransitionError):
-        daq_lcls2.state_transition('connected')
+        daq_lcls2._state_transition('connected')
 
-    daq_lcls2.state_transition('connected')
+    daq_lcls2._state_transition('connected')
 
     daq_lcls2._control.sim_queue_error('cannot configure')
     with pytest.raises(DaqStateTransitionError):
@@ -897,7 +897,7 @@ def test_transition_errors(daq_lcls2: DaqLCLS2):
     with pytest.raises(DaqStateTransitionError):
         daq_lcls2.begin(wait=True)
 
-    daq_lcls2.state_transition('running')
+    daq_lcls2._state_transition('running')
 
     daq_lcls2._control.sim_queue_error('cannot disable')
     with pytest.raises(DaqStateTransitionError):
@@ -911,7 +911,7 @@ def test_transition_errors(daq_lcls2: DaqLCLS2):
     with pytest.raises(DaqStateTransitionError):
         daq_lcls2.pause()
 
-    daq_lcls2.state_transition('paused')
+    daq_lcls2._state_transition('paused')
     daq_lcls2._control.sim_queue_error('cannot enable')
     with pytest.raises(DaqStateTransitionError):
         daq_lcls2.resume()

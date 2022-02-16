@@ -18,14 +18,14 @@ Some notes about the implementation:
   background thread so we can write asynchronous code based on the
   updating values of our various signals using the normal ophyd
   subscription methods.
-- DaqLCLS2.get_status_for is a convenience method for setting up
+- DaqLCLS2._get_status_for is a convenience method for setting up
   Status objects tied to the DAQ reaching specific states
   and through specific transitions. This means we can schedule
   code to be run when the daq reaches specific states e.g. when
   it hits running or when it undergoes specific transitions e.g.
   endrun, or more simply we can wait for specific states and
   transitions.
-- DaqLCLS2.state_transition is the main communication point for
+- DaqLCLS2._state_transition is the main communication point for
   sending state to the DAQ. This is where we pass all information
   to the DAQ with the exception of the record/no record
   configuration. We assemble information like the extra controls
@@ -407,7 +407,7 @@ class DaqLCLS2(DaqBase):
             timeout,
             end_run,
         )
-        done_status = self.get_done_status(timeout=timeout, check_now=True)
+        done_status = self._get_done_status(timeout=timeout, check_now=True)
         try:
             done_status.wait()
         except (StatusTimeoutError, WaitTimeoutError):
@@ -419,7 +419,7 @@ class DaqLCLS2(DaqBase):
         if end_run:
             self.end_run()
 
-    def get_status_for(
+    def _get_status_for(
         self,
         state: Optional[Iterator[EnumId]] = None,
         transition: Optional[Iterator[EnumId]] = None,
@@ -467,7 +467,7 @@ class DaqLCLS2(DaqBase):
             states or transitions are reached.
         """
         logger.debug(
-            "DaqLCLS2.get_status_for"
+            "DaqLCLS2._get_status_for"
             "(state=%s, transition=%s, timeout=%s, check_now=%s)",
             state,
             transition,
@@ -551,7 +551,7 @@ class DaqLCLS2(DaqBase):
         status.add_callback(clean_up)
         return status
 
-    def get_done_status(
+    def _get_done_status(
         self,
         timeout: Optional[float] = None,
         check_now: bool = True,
@@ -579,11 +579,11 @@ class DaqLCLS2(DaqBase):
             acquiring.
         """
         logger.debug(
-            "DaqLCLS2.get_done_status(timeout=%s, check_now=%s)",
+            "DaqLCLS2._get_done_status(timeout=%s, check_now=%s)",
             timeout,
             check_now,
         )
-        return self.get_status_for(
+        return self._get_status_for(
             transition=self.transition_enum.exclude(
                 ['beginrun', 'beginstep', 'enable']
             ),
@@ -591,7 +591,7 @@ class DaqLCLS2(DaqBase):
             check_now=check_now,
         )
 
-    def state_transition(
+    def _state_transition(
         self,
         state: EnumId,
         timeout: Optional[float] = None,
@@ -634,7 +634,7 @@ class DaqLCLS2(DaqBase):
             completed.
         """
         logger.debug(
-            "DaqLCLS2.state_transition(state=%s, timeout=%s, wait=%s)",
+            "DaqLCLS2._state_transition(state=%s, timeout=%s, wait=%s)",
             state,
             timeout,
             wait,
@@ -657,7 +657,7 @@ class DaqLCLS2(DaqBase):
                 'group_mask': self.group_mask_cfg.get(),
             }
         # Get a status to track the transition's success or failure
-        status = self.get_status_for(
+        status = self._get_status_for(
             state=[state],
             timeout=timeout,
         )
@@ -707,7 +707,7 @@ class DaqLCLS2(DaqBase):
             A dictionary that maps transition names to extra data that the
             DAQ can use.
         status : Status
-            The status returned by state_transition, so that we can
+            The status returned by _state_transition, so that we can
             mark it as failed if there is a problem here.
         """
         logger.debug(
@@ -746,7 +746,7 @@ class DaqLCLS2(DaqBase):
         duration : float
             The amount of time to wait in seconds.
         running_status : Status
-            The status returned by state_transition, so that we can
+            The status returned by _state_transition, so that we can
             start the timer appropriately.
             Note: this is the state transition to "running"
         """
@@ -760,7 +760,7 @@ class DaqLCLS2(DaqBase):
             logger.debug("Never made it to running, abort duration thread")
             return
 
-        end_status = self.get_status_for(
+        end_status = self._get_status_for(
             state=['starting'],
             transition=['endstep'],
             timeout=duration,
@@ -775,7 +775,7 @@ class DaqLCLS2(DaqBase):
             logger.debug("Duration thread expired, stopping the DAQ.")
             # The error means our wait expired
             # Time to stop the DAQ
-            self.state_transition(
+            self._state_transition(
                 'starting',
                 wait=True,
                 timeout=self.begin_timeout_cfg.get(),
@@ -1071,7 +1071,7 @@ class DaqLCLS2(DaqBase):
         """
         logger.debug("DaqLCLS2.stop(success=%s)", success)
         if self.state_sig.get() > self.state_enum.starting:
-            self.state_transition('starting', timeout=timeout, wait=wait)
+            self._state_transition('starting', timeout=timeout, wait=wait)
 
     def end_run(
         self,
@@ -1094,7 +1094,7 @@ class DaqLCLS2(DaqBase):
         """
         logger.debug("DaqLCLS2.end_run()")
         if self.state_sig.get() > self.state_enum.configured:
-            self.state_transition('configured', timeout=timeout, wait=wait)
+            self._state_transition('configured', timeout=timeout, wait=wait)
 
     def trigger(self) -> Status:
         """
@@ -1119,7 +1119,7 @@ class DaqLCLS2(DaqBase):
             StatusTimeoutError as appropriate.
         """
         logger.debug("DaqLCLS2.trigger()")
-        trigger_status = self.get_status_for(
+        trigger_status = self._get_status_for(
             state=['starting'],
             transition=['endstep'],
             check_now=False,
@@ -1188,11 +1188,11 @@ class DaqLCLS2(DaqBase):
             self.preconfig(show_queued_cfg=False, **original_config)
 
         self.configure(**kwargs)
-        end_run_status = self.get_status_for(
+        end_run_status = self._get_status_for(
             transition=['endstep'],
             check_now=False,
         )
-        kickoff_status = self.state_transition(
+        kickoff_status = self._state_transition(
             'running',
             timeout=self.begin_timeout_cfg.get(),
             wait=False,
@@ -1212,7 +1212,7 @@ class DaqLCLS2(DaqBase):
             acquiring
         """
         logger.debug("DaqLCLS2.complete()")
-        done_status = self.get_done_status(check_now=True)
+        done_status = self._get_done_status(check_now=True)
         if self._infinite_run:
             # Configured to run forever
             self.stop()
@@ -1534,14 +1534,14 @@ class DaqLCLS2(DaqBase):
                 )
             if self.state_sig.get() == self.state_enum.configured:
                 # Already configured, so we should unconfigure first
-                self.state_transition(
+                self._state_transition(
                     'connected',
                     timeout=self.begin_timeout_cfg.get(),
                     wait=True,
                 )
             if rec_cfg is not TernaryBool.NONE:
                 self._control.setRecord(bool(rec_cfg))
-            self.state_transition(
+            self._state_transition(
                 'configured',
                 timeout=self.begin_timeout_cfg.get(),
                 wait=True,
@@ -1595,7 +1595,7 @@ class DaqLCLS2(DaqBase):
             transition error.
         """
         if self.state_sig.get() == self.state_enum.running:
-            self.state_transition('paused', timeout=timeout, wait=wait)
+            self._state_transition('paused', timeout=timeout, wait=wait)
 
     def resume(self, timeout: float = 10.0, wait: bool = True) -> None:
         """
@@ -1623,7 +1623,7 @@ class DaqLCLS2(DaqBase):
             transition error.
         """
         if self.state_sig.get() == self.state_enum.paused:
-            self.state_transition('running', timeout=timeout, wait=wait)
+            self._state_transition('running', timeout=timeout, wait=wait)
         elif self.state_sig.get() < self.state_enum.paused:
             self.kickoff().wait(timeout=timeout)
 
