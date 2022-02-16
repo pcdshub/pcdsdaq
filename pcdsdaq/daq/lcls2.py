@@ -92,30 +92,120 @@ class DaqLCLS2(DaqBase):
     sim: bool, optional
         If True, simulate the daq. Defaults to False.
     """
-    step_value_sig = Cpt(Signal, value=1, kind='normal')
-    state_sig = Cpt(Signal, value=None, kind='normal')
-    transition_sig = Cpt(Signal, value=None, kind='normal')
-    transition_elapsed_sig = Cpt(Signal, value=0.0, kind='normal')
-    transition_total_sig = Cpt(Signal, value=0.0, kind='normal')
-    config_alias_sig = Cpt(Signal, value='None', kind='normal')
-    recording_sig = Cpt(Signal, value=False, kind='normal')
-    bypass_activedet_sig = Cpt(Signal, value=False, kind='normal')
-    experiment_name_sig = Cpt(Signal, value='None', kind='normal')
-    run_number_sig = Cpt(Signal, value=0, kind='normal')
-    last_run_number_sig = Cpt(Signal, value=0, kind='normal')
+    step_value_sig = Cpt(
+        Signal, value=1, kind='normal',
+        doc='The index of the step we are on, according to the DAQ.',
+    )
+    state_sig = Cpt(
+        Signal, value=None, kind='normal',
+        doc='The current state according to the DAQ state machine.',
+    )
+    transition_sig = Cpt(
+        Signal, value=None, kind='normal',
+        doc='The current or last transition according to the DAQ.',
+    )
+    transition_elapsed_sig = Cpt(
+        Signal, value=0.0, kind='normal',
+        doc='The number of seconds elapsed in the current transition.',
+    )
+    transition_total_sig = Cpt(
+        Signal, value=0.0, kind='normal',
+        doc='The expected total transition time according to the DAQ.',
+    )
+    config_alias_sig = Cpt(
+        Signal, value='None', kind='normal',
+        doc='The config alias as reported by the DAQ, e.g. "BEAM".',
+    )
+    recording_sig = Cpt(
+        Signal, value=False, kind='normal',
+        doc='If True, the DAQ is configured to save the data.',
+    )
+    bypass_activedet_sig = Cpt(
+        Signal, value=False, kind='normal',
+        doc='If True, the DAQ is... bypassing the active detector?',
+    )
+    experiment_name_sig = Cpt(
+        Signal, value='None', kind='normal',
+        doc='The name of the active experiment as reported by the DAQ.',
+    )
+    run_number_sig = Cpt(
+        Signal, value=0, kind='normal',
+        doc='The current run number as reported by the DAQ.',
+    )
+    last_run_number_sig = Cpt(
+        Signal, value=0, kind='normal',
+        doc='The run number of the most recent completed run.',
+    )
 
-    group_mask_cfg = Cpt(Signal, value=None, kind='config')
-    detname_cfg = Cpt(Signal, value='scan', kind='config')
-    scantype_cfg = Cpt(Signal, value='scan', kind='config')
-    serial_number_cfg = Cpt(Signal, value='1234', kind='config')
-    alg_name_cfg = Cpt(Signal, value='raw', kind='config')
-    alg_version_cfg = Cpt(Signal, value=[1, 0, 0], kind='config')
+    group_mask_cfg = Cpt(
+        Signal, value=None, kind='config',
+        doc='Bitmask used by the DAQ to select active groups.',
+    )
+    detname_cfg = Cpt(
+        Signal, value='scan', kind='config',
+        doc=(
+            'Name of the scan variables in the DAQ. '
+            'There is currently no reason to change this.'
+        ),
+    )
+    scantype_cfg = Cpt(
+        Signal, value='scan', kind='config',
+        doc=(
+            'Name of the scan type in the DAQ. '
+            'There is currently no reason to change this.'
+        ),
+    )
+    serial_number_cfg = Cpt(
+        Signal, value='1234', kind='config',
+        doc=(
+            'Serial number of the... scan? In the DAQ. '
+            'There is currently no reason to change this.'
+        ),
+    )
+    alg_name_cfg = Cpt(
+        Signal, value='raw', kind='config',
+        doc=(
+            'Another standard DAQ data field. '
+            'There is currently no reason to change this.'
+        ),
+    )
+    alg_version_cfg = Cpt(
+        Signal, value=[1, 0, 0], kind='config',
+        doc=(
+            'The version number associated with the alg name. '
+            'There is currently no reason to change this.'
+        ),
+    )
 
-    last_err_sig = Cpt(Signal, value=None, kind='omitted')
-    last_warning_sig = Cpt(Signal, value=None, kind='omitted')
-    last_file_report_sig = Cpt(Signal, value=None, kind='omitted')
-    step_done_sig = Cpt(Signal, value=None, kind='omitted')
-    last_transition_err_sig = Cpt(Signal, value=None, kind='omitted')
+    last_err_sig = Cpt(
+        Signal, value=None, kind='omitted',
+        doc=(
+            'Signal that holds the text from the last error reported by '
+            'the DAQ.'
+        ),
+    )
+    last_warning_sig = Cpt(
+        Signal, value=None, kind='omitted',
+        doc=(
+            'Signal that holds the text from the last warning reported by '
+            'the DAQ.'
+        ),
+    )
+    last_file_report_sig = Cpt(
+        Signal, value=None, kind='omitted',
+        doc=(
+            'Signal that holds the text from the last file report sent '
+            'by the DAQ.'
+        ),
+    )
+    step_done_sig = Cpt(
+        Signal, value=None, kind='omitted',
+        doc='Is set to True when a step is done.',
+    )
+    last_transition_err_sig = Cpt(
+        Signal, value=None, kind='omitted',
+        doc='Signal that holds the text from the last transition error.',
+    )
 
     requires_configure_transition = {'record'}
 

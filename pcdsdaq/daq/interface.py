@@ -294,16 +294,52 @@ class DaqBase(BaseInterface, Device):
     Also defines some shared features so that different DAQ versions
     do not have to reinvent the wheel for basic API choices.
     """
-    state_sig = Cpt(AttributeSignal, 'state', kind='normal')
-    configured_sig = Cpt(Signal, value=False, kind='normal')
+    state_sig = Cpt(
+        AttributeSignal, 'state', kind='normal',
+        doc='The current state according to the DAQ state machine.',
+    )
+    configured_sig = Cpt(
+        Signal, value=False, kind='normal',
+        doc='True if the DAQ is configured, False otherwise.',
+    )
 
-    events_cfg = Cpt(Signal, value=0, kind='config')
-    duration_cfg = Cpt(Signal, value=0, kind='config')
-    record_cfg = Cpt(Signal, value=TernaryBool.NONE, kind='config')
-    controls_cfg = Cpt(Signal, value=(), kind='config')
-    begin_timeout_cfg = Cpt(Signal, value=15, kind='config')
-    begin_throttle_cfg = Cpt(Signal, value=1, kind='config')
-    begin_sleep_cfg = Cpt(Signal, value=0, kind='config')
+    events_cfg = Cpt(
+        Signal, value=0, kind='config',
+        doc=(
+            'Configuration parameter to specify the number of events to '
+            'take at each scan point. Mutually exclusive with "duration".'
+        ),
+    )
+    duration_cfg = Cpt(
+        Signal, value=0, kind='config',
+        doc=(
+            'Configuration parameter to specify the duration to run the '
+            'daq at each scan point. Mutually exclusive with "events".'
+        ),
+    )
+    record_cfg = Cpt(
+        Signal, value=TernaryBool.NONE, kind='config',
+        doc='If True, save the data from the run.',
+    )
+    controls_cfg = Cpt(
+        Signal, value=(), kind='config',
+        doc=(
+            'A sequence of controls devices/values to additionally '
+            'include in the data stream.'
+        ),
+    )
+    begin_timeout_cfg = Cpt(
+        Signal, value=15, kind='config',
+        doc='Number of seconds as a default timeout on begin.',
+    )
+    begin_throttle_cfg = Cpt(
+        Signal, value=1, kind='config',
+        doc='Number of seconds to between runs to avoid breaking the DAQ.',
+    )
+    begin_sleep_cfg = Cpt(
+        Signal, value=0, kind='config',
+        doc='Extra seconds to wait before signaling that we have begun.'
+    )
 
     # Define these in subclass
     requires_configure_transition: ClassVar[set[str]]
