@@ -308,39 +308,47 @@ class DaqLCLS2(DaqBase):
         logger.debug("DaqLCLS2._monitor_thread()")
         while not self._destroyed:
             try:
-                info = self._control.monitorStatus()
-                logger.debug("Received %s from monitor.", info)
-                if info[0] == 'error':
-                    self.last_err_sig.put(info[1])
-                elif info[0] == 'warning':
-                    self.last_warning_sig.put(info[1])
-                elif info[0] == 'fileReport':
-                    self.last_file_report_sig.put(info[1])
-                elif info[0] == 'progress':
+                command, *args = self._control.monitorStatus()
+                logger.debug(
+                    "Received command %s with args %s from monitor.",
+                    command,
+                    args,
+                )
+                if command == 'error':
+                    self.last_err_sig.put(args[0])
+                elif command == 'warning':
+                    self.last_warning_sig.put(args[0])
+                elif command == 'fileReport':
+                    self.last_file_report_sig.put(args[0])
+                elif command == 'progress':
+                    transition, elapsed, total, *_ = args
                     self.transition_sig.put(
-                        self.transition_enum[self.info[1]]
+                        self.transition_enum[transition]
                     )
-                    self.transition_elapsed_sig.put(info[2])
-                    self.transition_total_sig.put(info[3])
-                elif info[0] == 'step':
+                    self.transition_elapsed_sig.put(elapsed)
+                    self.transition_total_sig.put(total)
+                elif command == 'step':
                     self.step_value_sig.put(self.step_value_sig.get() + 1)
-                    self.step_done_sig.put(info[1])
+                    self.step_done_sig.put(args[0])
                 else:
                     # Last case is normal status
-                    if info[0] == 'endrun':
+                    transition = command
+                    (state, config_alias, recording, bypass_activedet,
+                     experiment_name, run_number, last_run_number) = args
+                    if transition == 'endrun':
                         self.step_value_sig.put(1)
                     self.transition_sig.put(
-                        self.transition_enum[info[0]]
+                        self.transition_enum[transition]
                     )
                     self.state_sig.put(
-                        self.state_enum[info[1]]
+                        self.state_enum[state]
                     )
-                    self.config_alias_sig.put(info[2])
-                    self.recording_sig.put(info[3])
-                    self.bypass_activedet_sig.put(info[4])
-                    self.experiment_name_sig.put(info[5])
-                    self.run_number_sig.put(info[6])
-                    self.last_run_number_sig.put(info[7])
+                    self.config_alias_sig.put(config_alias)
+                    self.recording_sig.put(recording)
+                    self.bypass_activedet_sig.put(bypass_activedet)
+                    self.experiment_name_sig.put(experiment_name)
+                    self.run_number_sig.put(run_number)
+                    self.last_run_number_sig.put(last_run_number)
             except Exception as exc:
                 logger.debug("Exception in monitor thread: %s", exc)
 
