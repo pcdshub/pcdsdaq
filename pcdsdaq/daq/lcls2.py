@@ -1641,6 +1641,18 @@ class DaqLCLS2(DaqBase):
         """
         return self.run_number_sig.get()
 
+    def status_info(self) -> dict[str, Any]:
+        """
+        Overide the default status info to display enums as strs.
+        """
+        status = super().status_info()
+        for val in status.values():
+            try:
+                val['value'] = val['value'].name
+            except (AttributeError, KeyError, TypeError):
+                pass
+        return status
+
 
 class SimDaqControl:
     """

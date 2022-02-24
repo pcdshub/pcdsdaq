@@ -868,3 +868,11 @@ class DaqBase(BaseInterface, Device):
         Return the number of the current run, or the previous run otherwise.
         """
         raise NotImplementedError('Please implement run_number in subclass.')
+
+    def status_info(self) -> dict[str, Any]:
+        """
+        Override the default status info to strip the units.
+        """
+        status = super().status_info()
+        status.pop('units', None)
+        return status
