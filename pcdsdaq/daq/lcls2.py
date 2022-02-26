@@ -306,9 +306,16 @@ class DaqLCLS2(DaqBase):
         useful quantities.
         """
         logger.debug("DaqLCLS2._monitor_thread()")
+        first_loop = True
         while not self._destroyed:
             try:
-                command, *args = self._control.monitorStatus()
+                if first_loop:
+                    command, *args = self._control.getStatus()
+                    # Remove the platform dictionary in middle of tuple
+                    args = args[:3] + args[4:]
+                    first_loop = False
+                else:
+                    command, *args = self._control.monitorStatus()
                 logger.debug(
                     "Received command %s with args %s from monitor.",
                     command,
