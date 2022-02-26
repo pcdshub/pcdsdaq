@@ -825,6 +825,11 @@ class DaqLCLS2(DaqBase):
             'alg_name': self.alg_name_cfg.get(),
             'alg_version': self.alg_version_cfg.get(),
         }
+        logger.debug(
+            'Assembling block for transition=%s, data=%s',
+            transition,
+            data,
+        )
         try:
             data['transitionid'] = ControlDef.transitionId[transition]
         except KeyError as exc:
@@ -838,7 +843,7 @@ class DaqLCLS2(DaqBase):
             data["add_shapes_data"] = True
 
         data["namesid"] = ControlDef.STEPINFO
-        block = self._control.getBlock(transition=transition, data=data)
+        block = self._control.getBlock(data=data)
         return {phase1_key: block}
 
     def _get_motors_for_transition(self) -> dict[str, Any]:
@@ -1813,16 +1818,15 @@ class SimDaqControl:
 
     def getBlock(
         self,
-        transition: str,
         data: dict[str, Any]
-    ) -> tuple[str, dict[str, Any]]:
+    ) -> dict[str, Any]:
         """
         Get relevant phase1_info for setState.
 
         This won't emulate the real daq's behavior, it's just for feeding back
         into the sim setState.
         """
-        return (transition, data)
+        return data
 
     def setRecord(self, record: bool) -> None:
         """Match API for changing the recording state and emit update."""
