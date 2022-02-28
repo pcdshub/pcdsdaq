@@ -358,6 +358,8 @@ class DaqLCLS2(DaqBase):
                     self.experiment_name_sig.put(experiment_name)
                     self.run_number_sig.put(run_number)
                     self.last_run_number_sig.put(last_run_number)
+                    self.transition_elapsed_sig.put(0)
+                    self.transition_total_sig.put(0)
             except Exception as exc:
                 logger.debug("Exception in monitor thread: %s", exc)
 
