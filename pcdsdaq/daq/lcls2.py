@@ -199,7 +199,7 @@ class DaqLCLS2(DaqBase):
         ),
     )
     step_done_sig = Cpt(
-        Signal, value=None, kind='omitted',
+        Signal, value=False, kind='omitted',
         doc='Is set to True when a step is done.',
     )
     last_transition_err_sig = Cpt(
@@ -336,7 +336,7 @@ class DaqLCLS2(DaqBase):
                     self.transition_total_sig.put(total)
                 elif command == 'step':
                     self.step_value_sig.put(self.step_value_sig.get() + 1)
-                    self.step_done_sig.put(args[0])
+                    self.step_done_sig.put(bool(args[0]))
                 else:
                     # Last case is normal status
                     transition = command
@@ -344,6 +344,8 @@ class DaqLCLS2(DaqBase):
                      experiment_name, run_number, last_run_number) = args
                     if transition == 'endrun':
                         self.step_value_sig.put(1)
+                    if transition == 'endstep':
+                        self.step_done_sig.put(False)
                     self.transition_sig.put(
                         self.transition_enum[transition]
                     )
@@ -1212,6 +1214,22 @@ class DaqLCLS2(DaqBase):
         end_run_status.add_callback(revert_cfg_after_step)
         return kickoff_status
 
+    @step_done_sig.sub_value
+    def _step_ender(self, value: bool, **kwargs):
+        """
+        Formally end the step via asking for a transition back to "starting".
+
+        Called whenenever a step is completed (e.g. we took enough events).
+        """
+        if value and self.state_sig.get() == self.state_enum.running:
+            # This handles its own errors well enough
+            # See _transition_thread
+            self._state_transition(
+                'starting',
+                timeout=self.begin_timeout_cfg.get(),
+                wait=False,
+            )
+
     def complete(self) -> Status:
         """
         If the daq is freely running, this will `stop` the daq.
@@ -1799,6 +1817,7 @@ class SimDaqControl:
 
             if state == self._states.running:
                 # We need to schedule end_step
+                self._step_done = False
                 try:
                     events = phase1_info['enable']['readout_count']
                 except KeyError:
@@ -1814,7 +1833,8 @@ class SimDaqControl:
         time.sleep(events/120)
         if self._state == 'running':
             logger.debug('SimDaqControl ending step')
-            self.setState('starting', {})
+            self._step_done = True
+            self.sim_new_status(self._headers.step)
 
     def getBlock(
         self,
