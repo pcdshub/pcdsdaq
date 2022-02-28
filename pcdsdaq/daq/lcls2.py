@@ -653,7 +653,7 @@ class DaqLCLS2(DaqBase):
         if self.state_sig.get() < self.state_enum.configured <= state:
             # configure transition
             phase1_info['configure'] = self._get_phase1('Configure')
-        if self.state_sig.get() < self.state_enum.starting <= state:
+        if self.state_sig.get() < self.state_enum.paused <= state:
             # beginstep transition
             phase1_info['beginstep'] = self._get_phase1('BeginStep')
         if self.state_sig.get() < self.state_enum.running <= state:
