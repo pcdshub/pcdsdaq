@@ -1680,7 +1680,7 @@ class DaqLCLS2(DaqBase):
         -------
         run_number : int
         """
-        return self.run_number_sig.get()
+        return max(self.run_number_sig.get(), self.last_run_number_sig.get())
 
     def status_info(self) -> dict[str, Any]:
         """
