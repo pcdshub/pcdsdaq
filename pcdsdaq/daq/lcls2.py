@@ -1756,8 +1756,22 @@ class SimDaqControl:
         self._cause_error = False
         self.sim_set_states('reset', 'reset')
 
+    def getStatus(self) -> tuple[str, str, str, str, str, str, str, str]:
+        """Return the current status."""
+        return (
+            self._transition,
+            self._state,
+            self._config_alias,
+            self._recording,
+            {'platform': 'dictionary'},
+            self._bypass_activedet,
+            self._experiment_name,
+            self._run_number,
+            self._last_run_number,
+        )
+
     def monitorStatus(self) -> tuple[str, str, str, str, str, str, str, str]:
-        """Wait, then return the next updated status."""
+        """Wait, then return the next updated status when it changes."""
         logger.debug('SimDaqControl.monitorStatus() requested')
         self._new_status.wait()
         with self._lock:
