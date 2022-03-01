@@ -774,17 +774,26 @@ class DaqLCLS2(DaqBase):
         end_status = self._get_status_for(
             state=['starting'],
             transition=['endstep'],
-            timeout=duration,
             check_now=False,
         )
-        try:
-            # If this succeeds, someone else stopped the DAQ
-            # So in success, nothing to do
-            end_status.wait(timeout=duration)
+
+        # Handle timeouts and waits ourselves to avoid annoying ophyd message
+        end_event = threading.Event()
+
+        def done(*args, **kwargs):
+            end_event.set()
+
+        end_status.add_callback(done)
+        end_event.wait(timeout=duration)
+
+        if end_status.done:
             logger.debug("Duration thread ending, DAQ already stopped.")
-        except (StatusTimeoutError, WaitTimeoutError):
+        else:
             logger.debug("Duration thread expired, stopping the DAQ.")
-            # The error means our wait expired
+            try:
+                end_status.set_finished()
+            except Exception:
+                pass
             # Time to stop the DAQ
             self._state_transition(
                 'starting',
