@@ -1593,14 +1593,27 @@ class DaqLCLS2(DaqBase):
             alg_name=alg_name,
             alg_version=alg_version,
         )
+        other_proc_configured = (
+            self.configures_seen_sig.get()
+            != self.configures_requested_sig.get()
+        )
+        first_configure = self.configures_requested_sig.get() == 0
         # Cause a transition if we need to
-        if self._queue_configure_transition:
+        if any(
+            self._queue_configure_transition,
+            other_proc_configured,
+            first_configure,
+        ):
             if self.state_sig.get() < self.state_enum.connected:
                 raise RuntimeError('Not ready to configure.')
             if self.state_sig.get() > self.state_enum.configured:
                 raise RuntimeError(
                     'Cannot configure transition during an open run!'
                 )
+            if other_proc_configured:
+                # Reset the counters now, before we count this configure
+                self.configures_seen_sig.put(0)
+                self.configures_requested_sig.put(0)
             if self.state_sig.get() == self.state_enum.configured:
                 # Already configured, so we should unconfigure first
                 self._state_transition(
