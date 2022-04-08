@@ -1622,6 +1622,23 @@ class DaqLCLS2(DaqBase):
     def record(self, record: Optional[bool]) -> None:
         self.preconfig(record=record, show_queued_cfg=False)
 
+    def stage(self) -> list[DaqLCLS2]:
+        """
+        Extend stage to save the "recording" state for post-run restoration.
+        """
+        objs = super().stage()
+        self._pre_run_record = self.recording_sig.get()
+        return objs
+
+    def unstage(self) -> list[DaqLCLS2]:
+        """
+        Restore the pre-run "recording" state, if we do change it
+        """
+        objs = super().unstage()
+        if self.record_cfg.get() is not TernaryBool.NONE:
+            self._control.setRecord(self._pre_run_record)
+        return objs
+
     def pause(self, timeout: float = 10.0, wait: bool = True) -> None:
         """
         Interrupt an ongoing step, to be resumed later.
