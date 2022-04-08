@@ -207,7 +207,15 @@ class DaqLCLS2(DaqBase):
         doc='Signal that holds the text from the last transition error.',
     )
 
-    requires_configure_transition = {'record'}
+    # Require transition if we change any value used in the transition
+    requires_configure_transition = {
+        'controls',
+        'detname',
+        'scantype',
+        'serial_number',
+        'alg_name',
+        'alg_version',
+    }
 
     def __init__(
         self,
@@ -1470,6 +1478,9 @@ class DaqLCLS2(DaqBase):
         2. We are in the "configured" state but an important configuration
            parameter has been changed. In this case, we will revert to the
            "connected" state and then return to the "configured" state.
+        3. We are in the "configured" state but the configure was caused by
+           some other process, for example, the DAQ GUI or a different
+           Python session.
 
         In all other states, this will raise a "RuntimeError" if it decides
         that a "configure" transition is needed.
@@ -1497,7 +1508,7 @@ class DaqLCLS2(DaqBase):
             "None", which means that we'll keep the DAQ's recording
             state at whatever it is at the start of the run.
             Changing the DAQ recording state cannot be done during a run,
-            as it will require a configure transition.
+            but it will not require a configure transition.
         controls : list or tuple of valid objects, or None, optional
             The objects to include per-step in the DAQ data stream.
             These must implement the "name" attribute and either the
@@ -1559,14 +1570,8 @@ class DaqLCLS2(DaqBase):
             alg_name=alg_name,
             alg_version=alg_version,
         )
-        # Last check, in case user has changed record state in gui
-        rec_cfg = self.record_cfg.get()
-        if (
-            self._queue_configure_transition or (
-                rec_cfg is not TernaryBool.NONE
-                and bool(rec_cfg) != self.recording_sig.get()
-            )
-        ):
+        # Cause a transition if we need to
+        if self._queue_configure_transition:
             if self.state_sig.get() < self.state_enum.connected:
                 raise RuntimeError('Not ready to configure.')
             if self.state_sig.get() > self.state_enum.configured:
@@ -1580,8 +1585,6 @@ class DaqLCLS2(DaqBase):
                     timeout=self.begin_timeout_cfg.get(),
                     wait=True,
                 )
-            if rec_cfg is not TernaryBool.NONE:
-                self._control.setRecord(bool(rec_cfg))
             self._state_transition(
                 'configured',
                 timeout=self.begin_timeout_cfg.get(),
@@ -1589,6 +1592,10 @@ class DaqLCLS2(DaqBase):
             )
             self._last_config = self.config
             self._queue_configure_transition = False
+        # Apply the recording state if we need to
+        rec_cfg = self.record_cfg.get()
+        if rec_cfg is not TernaryBool.NONE:
+            self._control.setRecord(bool(rec_cfg))
         return old, new
 
     @property
