@@ -206,6 +206,20 @@ class DaqLCLS2(DaqBase):
         Signal, value=None, kind='omitted',
         doc='Signal that holds the text from the last transition error.',
     )
+    configures_seen_sig = Cpt(
+        Signal, value=0, kind='omitted',
+        doc=(
+            'A counter of how many time we see configure transitions. '
+            'May be reset to 0 periodically.'
+        )
+    )
+    configures_requested_sig = Cpt(
+        Signal, value=0, kind='omitted',
+        doc=(
+            'A counter of how many times we request a configure transitions. '
+            'May be reset to 0 periodically.'
+        )
+    )
 
     # Require transition if we change any value used in the transition
     requires_configure_transition = {
@@ -354,9 +368,12 @@ class DaqLCLS2(DaqBase):
                         self.step_value_sig.put(1)
                     if transition == 'endstep':
                         self.step_done_sig.put(False)
-                    self.transition_sig.put(
-                        self.transition_enum[transition]
-                    )
+                    trans_enum = self.transition_enum[transition]
+                    self.transition_sig.put(trans_enum)
+                    if trans_enum == self.transition_enum.configure:
+                        self.configures_seen_sig.put(
+                            self.configures_seen_sig.get() + 1
+                        )
                     self.state_sig.put(
                         self.state_enum[state]
                     )
@@ -700,6 +717,12 @@ class DaqLCLS2(DaqBase):
             )
             duration_thread.daemon = True
             duration_thread.start()
+
+        # Keep count to check for out of process configures
+        if 'configure' in phase1_info:
+            self.configures_requested_sig.put(
+                self.configures_requested_sig.get() + 1
+            )
 
         if wait:
             status.wait()
