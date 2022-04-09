@@ -1628,10 +1628,18 @@ class DaqLCLS2(DaqBase):
             )
             self._last_config = self.config
             self._queue_configure_transition = False
-        # Apply the recording state if we need to
+
+        # We need to adjust the recording state if configured
+        # to do so and if this represents a change
         rec_cfg = self.record_cfg.get()
         if rec_cfg is not TernaryBool.NONE:
-            self._control.setRecord(bool(rec_cfg))
+            new_rec = bool(rec_cfg)
+            if self.recording_sig.get() != new_rec:
+                if self.state_sig.get() > self.state_enum.configured:
+                    raise RuntimeError(
+                        'Cannot change recording state during an open run!'
+                    )
+                self._control.setRecord(bool(rec_cfg))
         return old, new
 
     @property
@@ -1671,7 +1679,7 @@ class DaqLCLS2(DaqBase):
         Restore the pre-run "recording" state, if we do change it
         """
         objs = super().unstage()
-        if self.record_cfg.get() is not TernaryBool.NONE:
+        if self.recording_sig.get() != self._pre_run_record:
             self._control.setRecord(self._pre_run_record)
         return objs
 
