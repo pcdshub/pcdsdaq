@@ -1599,11 +1599,11 @@ class DaqLCLS2(DaqBase):
         )
         first_configure = self.configures_requested_sig.get() == 0
         # Cause a transition if we need to
-        if any(
+        if any((
             self._queue_configure_transition,
             other_proc_configured,
             first_configure,
-        ):
+        )):
             if self.state_sig.get() < self.state_enum.connected:
                 raise RuntimeError('Not ready to configure.')
             if self.state_sig.get() > self.state_enum.configured:
