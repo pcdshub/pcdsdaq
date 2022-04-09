@@ -195,6 +195,7 @@ def test_stage_unstage(daq_lcls2: DaqLCLS2, RE: RunEngine):
     - RE subscription cleaned up if still active
     - end run if the run hasn't ended yet
     - infinite run if we were running before
+    - restore previous recording state
     These tests imply that daq can call stage/unstage multiple times
     with no errors, but this isn't a requirement.
     """
@@ -286,6 +287,15 @@ def test_stage_unstage(daq_lcls2: DaqLCLS2, RE: RunEngine):
     status.wait(timeout=1)
     daq_lcls2.end_run()
 
+    # Unstage should revert any changes to the recording state
+    logger.debug('unstage reverts record')
+    recording_before = daq_lcls2.recording_sig.get()
+    daq_lcls2.stage()
+    daq_lcls2._control.setRecord(not recording_before)
+    sig_wait_value(daq_lcls2.recording_sig, not recording_before)
+    daq_lcls2.unstage()
+    sig_wait_value(daq_lcls2.recording_sig, recording_before)
+
 
 def test_configure(daq_lcls2: DaqLCLS2):
     """
@@ -294,11 +304,13 @@ def test_configure(daq_lcls2: DaqLCLS2):
     - Returns (old_cfg, new_cfg)
     - Configure transition caused if needed from conn/conf states
     - Conf needed if recording gui clicked, or critical kwargs changed,
-      or if never done.
+      or if never done, or if someone else configured
     - From the conf state, we unconf before confing
     - Configure transition not caused if not needed
     - Error if we're not in conn/conf states and a transition is needed
     - Controls arg processed with no errors (except bad user ValueError)
+    - record doesn't require a configure transition, but it does
+      require no open run
     """
     logger.debug('test_configure')
     # The first configure should cause a transition
@@ -315,10 +327,10 @@ def test_configure(daq_lcls2: DaqLCLS2):
     post_tst = daq_lcls2.read_configuration()
     assert (prev_cfg, post_cfg) == (prev_tst, post_tst)
 
-    # Changing record should make us reconfigure
+    # Changing controls should make us reconfigure
     st_conn = daq_lcls2._get_status_for(state=['connected'], check_now=False)
     st_conf = daq_lcls2._get_status_for(state=['configured'], check_now=False)
-    daq_lcls2.configure(record=not daq_lcls2.record)
+    daq_lcls2.configure(controls=(Signal(name='sig'),))
     st_conn.wait(timeout=1)
     st_conf.wait(timeout=1)
 
@@ -329,31 +341,28 @@ def test_configure(daq_lcls2: DaqLCLS2):
         st_any.wait(1)
     st_any.set_finished()
 
+    # Any out of process configuration should make us reconfigure
+    daq_lcls2._control.setState('connected', {})
+    sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum.connected)
+    daq_lcls2._control.setState('configured', {})
+    sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum.configured)
+    st_conn = daq_lcls2._get_status_for(state=['connected'], check_now=False)
+    st_conf = daq_lcls2._get_status_for(state=['configured'], check_now=False)
+    assert (
+        daq_lcls2.configures_seen_sig.get()
+        > daq_lcls2.configures_requested_sig.get()
+    )
+    daq_lcls2.configure()
+    st_conn.wait(timeout=1)
+    st_conf.wait(timeout=1)
+
     # Configure should error if transition needed from most of the states
     bad_states = daq_lcls2.state_enum.exclude(['connected', 'configured'])
-    prev_record = daq_lcls2.record
     for state in bad_states:
         logger.debug('testing %s', state)
         daq_lcls2.state_sig.put(state)
         with pytest.raises(RuntimeError):
-            daq_lcls2.configure(record=not prev_record)
-
-    # If we get desynced from the recording state, we should reconfigure
-    # Get us into a normal state, regardless of previous testing
-    daq_lcls2._control.setState('connected', {})
-    daq_lcls2._get_status_for(state=['connected']).wait(timeout=1)
-    daq_lcls2.configure(record=False)
-    daq_lcls2.configure(record=True)
-    sig_wait_value(daq_lcls2.recording_sig, True)
-    # Simulate someone changing the recording state
-    daq_lcls2._control.setRecord(False)
-    sig_wait_value(daq_lcls2.recording_sig, False)
-    # Configure something else and check for transitions
-    st_conn = daq_lcls2._get_status_for(state=['connected'], check_now=False)
-    st_conf = daq_lcls2._get_status_for(state=['configured'], check_now=False)
-    daq_lcls2.configure(events=999)
-    st_conn.wait(timeout=1)
-    st_conf.wait(timeout=1)
+            daq_lcls2.configure(detname=state.name)
 
     # Let's set up a controls arg and make sure it at least doesn't error
     # Hard to check the DAQ side without making a very sophisticated sim
@@ -375,6 +384,19 @@ def test_configure(daq_lcls2: DaqLCLS2):
             'some bad stuff here',
             0.232323232323,
         ))
+    daq_lcls2.preconfig(controls=())
+
+    # Changing record during an open run should fail.
+    daq_lcls2.configure(record=True)
+    daq_lcls2._control.setState('running', {})
+    sig_wait_value(daq_lcls2.recording_sig, True)
+    sig_wait_value(daq_lcls2.state_sig, daq_lcls2.state_enum.running)
+    with pytest.raises(RuntimeError):
+        daq_lcls2.configure(record=False)
+    # Unless it's to the same recording state we already have
+    daq_lcls2.configure(record=True)
+    # But changing events should not cause an open run to fail
+    daq_lcls2.configure(events=120)
 
 
 def test_config_info(daq_lcls2: DaqLCLS2):
@@ -490,7 +512,7 @@ def test_kickoff(daq_lcls2: DaqLCLS2):
         transition=['endstep'],
         check_now=False,
     )
-    daq_lcls2.kickoff(events=10, record=not daq_lcls2.recording_sig.get())
+    daq_lcls2.kickoff(events=10, controls=(Signal(name='test'),))
     unconf_st.wait(timeout=1)
     conf_st.wait(timeout=1)
     run_st.wait(timeout=1)
