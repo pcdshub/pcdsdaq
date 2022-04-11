@@ -1639,7 +1639,7 @@ class DaqLCLS2(DaqBase):
                     raise RuntimeError(
                         'Cannot change recording state during an open run!'
                     )
-                self._control.setRecord(bool(rec_cfg))
+                self._set_record_state(bool(rec_cfg))
         return old, new
 
     @property
@@ -1666,6 +1666,16 @@ class DaqLCLS2(DaqBase):
     def record(self, record: Optional[bool]) -> None:
         self.preconfig(record=record, show_queued_cfg=False)
 
+
+    def _set_record_state(self, record: bool) -> None:
+        """
+        Explicitly modify the DAQ's recording state and increment the counter.
+        """
+        self._control.setRecord(record)
+        self.configures_requested_sig.put(
+            self.configures_seen_sig.get() + 1
+        )
+
     def stage(self) -> list[DaqLCLS2]:
         """
         Extend stage to save the "recording" state for post-run restoration.
@@ -1680,7 +1690,7 @@ class DaqLCLS2(DaqBase):
         """
         objs = super().unstage()
         if self.recording_sig.get() != self._pre_run_record:
-            self._control.setRecord(self._pre_run_record)
+            self._set_record_state(self._pre_run_record)
         return objs
 
     def pause(self, timeout: float = 10.0, wait: bool = True) -> None:
