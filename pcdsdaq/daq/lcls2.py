@@ -1672,9 +1672,11 @@ class DaqLCLS2(DaqBase):
         Explicitly modify the DAQ's recording state and increment the counter.
         """
         self._control.setRecord(record)
-        self.configures_requested_sig.put(
-            self.configures_seen_sig.get() + 1
-        )
+        if self.state_sig.get() == self.state_enum.configured:
+            # We see an extra config if we're in the config state
+            self.configures_requested_sig.put(
+                self.configures_requested_sig.get() + 1
+            )
 
     def stage(self) -> list[DaqLCLS2]:
         """
