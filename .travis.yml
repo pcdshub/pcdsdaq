@@ -29,7 +29,7 @@ env:
 
 jobs:
   allow_failures:
-    - name: "Python 3.6 - PIP"
+    - name: "Python - PIP"
 
 import:
   # This import enables a set of standard python jobs including:
