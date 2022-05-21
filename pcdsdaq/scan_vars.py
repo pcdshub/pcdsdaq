@@ -1,4 +1,5 @@
 import logging
+from typing import Any, Dict, List
 
 from bluesky.callbacks.core import CallbackBase
 from ophyd.device import Device, Component as Cpt
@@ -71,7 +72,7 @@ class ScanVars(Device, CallbackBase):
             self._RE.unsubscribe(self._cbid)
             self._cbid = None
 
-    def start(self, doc):
+    def start(self, doc: Dict[str, Any]):
         """
         Initialize the scan variables at the start of a run.
 
@@ -84,7 +85,7 @@ class ScanVars(Device, CallbackBase):
             self.i_step.put(self._i_start)
             self.is_scan.put(1)
             # inspect the doc
-            # first, check for motor names
+            # check for motor names
             try:
                 motors = doc['motors']
                 for i, name in enumerate(motors[:3]):
@@ -93,26 +94,38 @@ class ScanVars(Device, CallbackBase):
             except KeyError:
                 logger.debug('Skip var names, no "motors" in start doc')
 
-            # second, check for start/stop points
-            try:
-                motor_info = doc['plan_pattern_args']['args']
-                for i, (_, start, stop) in enumerate(partition(3, motor_info)):
-                    if i > 2:
-                        break
-                    sig_max = getattr(self, 'var{}_max'.format(i))
-                    sig_min = getattr(self, 'var{}_min'.format(i))
-                    sig_max.put(max(start, stop))
-                    sig_min.put(min(start, stop))
-            except KeyError:
-                logger.debug(('Skip max/min, no "plan_pattern_args" "args" in '
-                              'start doc'))
+            # check the plan pattern, determines how we read the args
+            # inner_product is mot, start, stop, (repeat), num
+            # outer_product is mot, start, stop, num, (repeat) + snakes
+            # inner_list_product and outer_list_product are mot, list (repeat)
+            # there are other patterns, but that's all we'll handle for now
+            plan_pattern = doc.get('plan_pattern')
 
-            # last, check for number of steps
             try:
-                num = doc['plan_args']['num']
-                self.n_steps.put(num)
+                plan_pattern_args = doc['plan_pattern_args']
             except KeyError:
-                logger.debug('Skip n_steps, no "plan_args" "num" in start doc')
+                logger.debug('No plan pattern args, skip max/min/num')
+            else:
+                try:
+                    if plan_pattern == 'inner_product':
+                        self.setup_inner_product(plan_pattern_args)
+                    elif plan_pattern == 'outer_product':
+                        self.setup_outer_product(plan_pattern_args)
+                    elif plan_pattern == 'inner_list_product':
+                        self.setup_inner_list_product(plan_pattern_args)
+                    elif plan_pattern == 'outer_list_product':
+                        self.setup_inner_list_product(plan_pattern_args)
+                    else:
+                        logger.debug(
+                            'No scan var setup for plan_pattern %s',
+                            plan_pattern,
+                        )
+                except Exception:
+                    logger.debug(
+                        'Error setting up plan_pattern %s',
+                        plan_pattern,
+                        exc_info=True,
+                    )
 
             # inspect the daq
             daq = get_daq()
@@ -127,6 +140,38 @@ class ScanVars(Device, CallbackBase):
             err = 'Error setting up scan var pvs: %s'
             logger.error(err, exc)
             logger.debug(err, exc, exc_info=True)
+
+    def setup_inner_product(self, plan_pattern_args: Dict[str, Any]) -> None:
+        """
+        Handle max, min, number of steps for inner_product scans.
+
+        These are the plans whose arguments are (mot, start, stop) repeat,
+        then a num later, such as the normal scan.
+        """
+        # check for start/stop points
+        motor_info = plan_pattern_args['args']
+        for i, (_, start, stop) in enumerate(partition(3, motor_info)):
+            if i > 2:
+                break
+            sig_max = getattr(self, 'var{}_max'.format(i))
+            sig_min = getattr(self, 'var{}_min'.format(i))
+            sig_max.put(max(start, stop))
+            sig_min.put(min(start, stop))
+
+        # check for number of steps
+        num = plan_pattern_args['num']
+        self.n_steps.put(num)
+
+    def setup_outer_product(self, plan_pattern_args: Dict[str, Any]) -> None:
+        """
+        Handle max, min, number of steps for inner_product scans.
+
+        These are the plans whose arguments are (mot, start, stop, num)
+        repeat, with snake directions intersperced sometimes, such as
+        grid_scan.
+        """
+        # check for start/stop points
+        # check for number of steps: a product of all the steps!
 
     def event(self, doc):
         """
