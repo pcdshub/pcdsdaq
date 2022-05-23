@@ -1,3 +1,5 @@
+import sys
+
 from bluesky import RunEngine
 from ophyd.sim import SynSignal, motor1
 
@@ -29,6 +31,8 @@ def nosim(reset):
 
 @pytest.fixture(scope='function')
 def daq(RE, sim):
+    if sys.platform == 'win32':
+        pytest.skip('Cannot make DAQ on windows')
     sim_pydaq.conn_err = None
     daq_module.BEGIN_THROTTLE = 0
     daq = Daq(RE=RE)

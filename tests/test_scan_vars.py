@@ -101,7 +101,7 @@ def test_scan_vars_no_daq(RE):
     [
         (
             scan,
-            ([], motor1, 0, 11, motor2, 10, 12, motor3, 20, 23, 100),
+            ([], motor1, 0, 11, motor2, 10, 12, motor3, 20, 23, 5),
             {
                 'var0_max': 11,
                 'var1_max': 12,
@@ -109,12 +109,12 @@ def test_scan_vars_no_daq(RE):
                 'var0_min': 0,
                 'var1_min': 10,
                 'var2_min': 20,
-                'n_steps': 100,
+                'n_steps': 5,
             }
         ),
         (
             grid_scan,
-            ([], motor1, 0, 11, 10, motor2, 10, 12, 10, motor3, 20, 23, 10),
+            ([], motor1, 0, 11, 2, motor2, 10, 12, 3, motor3, 20, 23, 2),
             {
                 'var0_max': 11,
                 'var1_max': 12,
@@ -122,7 +122,7 @@ def test_scan_vars_no_daq(RE):
                 'var0_min': 0,
                 'var1_min': 10,
                 'var2_min': 20,
-                'n_steps': 1000,
+                'n_steps': 12,
             }
         ),
         (
@@ -140,15 +140,15 @@ def test_scan_vars_no_daq(RE):
         ),
         (
             list_grid_scan,
-            ([], motor1, [0, 1], motor2, [10, 11], motor3, [20, 21]),
+            ([], motor1, [0, 1], motor2, [10, 11, 12], motor3, [20, 21]),
             {
                 'var0_max': 1,
-                'var1_max': 11,
+                'var1_max': 12,
                 'var2_max': 21,
                 'var0_min': 0,
                 'var1_min': 10,
                 'var2_min': 20,
-                'n_steps': 8,
+                'n_steps': 12,
             }
         ),
     ]
@@ -165,7 +165,7 @@ def test_scan_vars_with_plans(RE, plan, args, expected):
     initial_values = {}
 
     def cache_initial_values(name, _):
-        if name == 'descriptor':
+        if name == 'event' and not initial_values:
             for key in expected:
                 initial_values[key] = getattr(scan_vars, key).get()
 
