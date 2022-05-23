@@ -1,7 +1,8 @@
 import logging
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from bluesky.callbacks.core import CallbackBase
+from bluesky.plan_patterns import chunk_outer_product_args
 from ophyd.device import Device, Component as Cpt
 from ophyd.signal import EpicsSignal
 from toolz import partition
@@ -37,6 +38,8 @@ class ScanVars(Device, CallbackBase):
         The starting count for the i_step tracker. This defaults to zero,
         which is offset by one from the one-indexed bluesky counter.
     """
+    MAX_VARS = 3
+
     i_step = Cpt(EpicsSignal, ':ISTEP')
     is_scan = Cpt(EpicsSignal, ':ISSCAN')
     var0 = Cpt(EpicsSignal, ':SCANVAR00')
@@ -141,6 +144,15 @@ class ScanVars(Device, CallbackBase):
             logger.error(err, exc)
             logger.debug(err, exc, exc_info=True)
 
+    def update_min_max(self, start: float, stop: float, index: int) -> None:
+        """
+        Helper function for updating the min and max PVs for the scan table.
+        """
+        sig_max = getattr(self, f'var{index}_max')
+        sig_min = getattr(self, f'var{index}_min')
+        sig_max.put(max(start, stop))
+        sig_min.put(min(start, stop))
+
     def setup_inner_product(self, plan_pattern_args: Dict[str, Any]) -> None:
         """
         Handle max, min, number of steps for inner_product scans.
@@ -150,13 +162,10 @@ class ScanVars(Device, CallbackBase):
         """
         # check for start/stop points
         motor_info = plan_pattern_args['args']
-        for i, (_, start, stop) in enumerate(partition(3, motor_info)):
-            if i > 2:
+        for index, (_, start, stop) in enumerate(partition(3, motor_info)):
+            if index >= self.MAX_VARS:
                 break
-            sig_max = getattr(self, 'var{}_max'.format(i))
-            sig_min = getattr(self, 'var{}_min'.format(i))
-            sig_max.put(max(start, stop))
-            sig_min.put(min(start, stop))
+            self.update_min_max(start, stop, index)
 
         # check for number of steps
         num = plan_pattern_args['num']
@@ -164,14 +173,22 @@ class ScanVars(Device, CallbackBase):
 
     def setup_outer_product(self, plan_pattern_args: Dict[str, Any]) -> None:
         """
-        Handle max, min, number of steps for inner_product scans.
+        Handle max, min, number of steps for outer_product scans.
 
         These are the plans whose arguments are (mot, start, stop, num)
-        repeat, with snake directions intersperced sometimes, such as
-        grid_scan.
+        repeat, with snake directions intersperced starting after the second
+        num, such as grid_scan.
         """
         # check for start/stop points
-        # check for number of steps: a product of all the steps!
+        args = plan_pattern_args['args']
+        product_num = 1
+        for index, (_, start, stop, num, _) in chunk_outer_product_args(args):
+            if index >= self.MAX_VARS:
+                break
+            self.update_min_max(start, stop, index)
+            # check for number of steps: a product of all the steps!
+            product_num *= num
+        self.n_steps.put(product_num)
 
     def event(self, doc):
         """
