@@ -181,14 +181,37 @@ class ScanVars(Device, CallbackBase):
         """
         # check for start/stop points
         args = plan_pattern_args['args']
+        per_motor = enumerate(chunk_outer_product_args(args))
         product_num = 1
-        for index, (_, start, stop, num, _) in chunk_outer_product_args(args):
+        for index, (_, start, stop, num, _) in per_motor:
             if index >= self.MAX_VARS:
                 break
             self.update_min_max(start, stop, index)
             # check for number of steps: a product of all the steps!
             product_num *= num
         self.n_steps.put(product_num)
+
+    def setup_inner_list_product(
+        self,
+        plan_pattern_args: Dict[str, Any],
+    ) -> None:
+        """
+        Handle max, min, number of steps for inner_list_product scans.
+
+        These are the plans whose arguments are (mot, list) repeat,
+        where every list needs to have the same length because it's a 1D
+        scan with multiple motors, such as list_scan.
+        """
+        # check for start/stop points
+        args = plan_pattern_args['args']
+        for index, (_, points) in enumerate(args):
+            if index >= self.MAX_VARS:
+                break
+            self.update_min_max(min(points), max(points), index)
+
+            # On the first loop, cache the number of points
+            if index == 0:
+                self.n_steps.put(len(points))
 
     def event(self, doc):
         """
