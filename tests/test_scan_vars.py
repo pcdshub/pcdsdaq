@@ -1,7 +1,7 @@
 import logging
 
 from bluesky.callbacks.core import CallbackBase
-from bluesky.plans import count, scan
+from bluesky.plans import count, scan, grid_scan, list_scan, list_grid_scan
 from bluesky.plan_stubs import create, read, save
 from bluesky.preprocessors import run_wrapper, stage_wrapper
 from ophyd.signal import Signal
@@ -9,6 +9,8 @@ from ophyd.sim import motor, motor1, motor2, motor3, det1, det2
 
 import pcdsdaq.daq
 from pcdsdaq.scan_vars import ScanVars
+
+import pytest
 
 logger = logging.getLogger(__name__)
 
@@ -92,3 +94,81 @@ def test_scan_vars_no_daq(RE):
     pcdsdaq.daq._daq_instance = None
     scan_vars = ScanVars('TST', name='tst', RE=RE)
     scan_vars.start({})
+
+
+@pytest.mark.parametrize(
+    "plan,args,expected",
+    [
+        (
+            scan,
+            ([], motor1, 0, 11, motor2, 10, 12, motor3, 20, 23, 100),
+            {
+                'var0_max': 11,
+                'var1_max': 12,
+                'var2_max': 23,
+                'var0_min': 0,
+                'var1_min': 10,
+                'var2_min': 20,
+                'n_steps': 100,
+            }
+        ),
+        (
+            grid_scan,
+            ([], motor1, 0, 11, 10, motor2, 10, 12, 10, motor3, 20, 23, 10),
+            {
+                'var0_max': 11,
+                'var1_max': 12,
+                'var2_max': 23,
+                'var0_min': 0,
+                'var1_min': 10,
+                'var2_min': 20,
+                'n_steps': 1000,
+            }
+        ),
+        (
+            list_scan,
+            ([], motor1, [0, 1], motor2, [10, 11], motor3, [20, 21]),
+            {
+                'var0_max': 1,
+                'var1_max': 11,
+                'var2_max': 21,
+                'var0_min': 0,
+                'var1_min': 10,
+                'var2_min': 20,
+                'n_steps': 2,
+            }
+        ),
+        (
+            list_grid_scan,
+            ([], motor1, [0, 1], motor2, [10, 11], motor3, [20, 21]),
+            {
+                'var0_max': 1,
+                'var1_max': 11,
+                'var2_max': 21,
+                'var0_min': 0,
+                'var1_min': 10,
+                'var2_min': 20,
+                'n_steps': 8,
+            }
+        ),
+    ]
+)
+def test_scan_vars_with_plans(RE, plan, args, expected):
+    """
+    Can we get basic scan information correctly with different scan types?
+    """
+    logger.debug('test_scan_vars_with_plans')
+
+    scan_vars = ScanVars('TST', name='tst', RE=RE)
+    scan_vars.enable()
+
+    initial_values = {}
+
+    def cache_initial_values(name, _):
+        if name == 'descriptor':
+            for key in expected:
+                initial_values[key] = getattr(scan_vars, key).get()
+
+    RE.subscribe(cache_initial_values)
+    RE(plan(*args))
+    assert initial_values == expected
