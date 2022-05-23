@@ -2,7 +2,6 @@ import logging
 from typing import Any, Dict
 
 from bluesky.callbacks.core import CallbackBase
-from bluesky.plan_patterns import chunk_outer_product_args
 from ophyd.device import Device, Component as Cpt
 from ophyd.signal import EpicsSignal
 from toolz import partition
@@ -161,8 +160,8 @@ class ScanVars(Device, CallbackBase):
         then a num later, such as the normal scan.
         """
         # check for start/stop points
-        per_motor = enumerate(partition(3, plan_pattern_args['args']))
-        for index, (_, start, stop) in per_motor:
+        per_motor = partition(3, plan_pattern_args['args'])
+        for index, (_, start, stop) in enumerate(per_motor):
             if index >= self.MAX_VARS:
                 break
             self.update_min_max(start, stop, index)
@@ -177,13 +176,27 @@ class ScanVars(Device, CallbackBase):
 
         These are the plans whose arguments are (mot, start, stop, num)
         repeat, with snake directions intersperced starting after the second
-        num, such as grid_scan.
+        num (or not), such as grid_scan.
         """
         # check for start/stop points
         args = plan_pattern_args['args']
-        per_motor = enumerate(chunk_outer_product_args(args))
+        # Either we have 4n args
+        # Or we have 5n-1 args if we have snakes on all but the first motor
+        # Removes the snakes if they are here for some uniformity
+        if len(args) % 4 == 0:
+            # Just split into sets of 4
+            per_motor = partition(4, args)
+        elif (len(args) + 1) % 5 == 0:
+            # Remove the 9th, 14th, 19th...
+            keep_elems = (
+                elem for num, elem in enumerate(args)
+                if num < 9 or (num + 1) % 5 != 0
+            )
+            per_motor = partition(4, keep_elems)
+        else:
+            raise RuntimeError('Unexpected number of arguments')
         product_num = 1
-        for index, (_, start, stop, num, _) in per_motor:
+        for index, (_, start, stop, num) in enumerate(per_motor):
             if index >= self.MAX_VARS:
                 break
             self.update_min_max(start, stop, index)
@@ -225,7 +238,7 @@ class ScanVars(Device, CallbackBase):
         """
         # check for start/stop points
         product_num = 1
-        for index, (_, points) in plan_pattern_args['args']:
+        for index, (_, points) in enumerate(plan_pattern_args['args']):
             if index >= self.MAX_VARS:
                 break
             self.update_min_max(min(points), max(points), index)
