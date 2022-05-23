@@ -161,8 +161,8 @@ class ScanVars(Device, CallbackBase):
         then a num later, such as the normal scan.
         """
         # check for start/stop points
-        motor_info = plan_pattern_args['args']
-        for index, (_, start, stop) in enumerate(partition(3, motor_info)):
+        per_motor = enumerate(partition(3, plan_pattern_args['args']))
+        for index, (_, start, stop) in per_motor:
             if index >= self.MAX_VARS:
                 break
             self.update_min_max(start, stop, index)
@@ -203,8 +203,7 @@ class ScanVars(Device, CallbackBase):
         scan with multiple motors, such as list_scan.
         """
         # check for start/stop points
-        args = plan_pattern_args['args']
-        for index, (_, points) in enumerate(args):
+        for index, (_, points) in enumerate(plan_pattern_args['args']):
             if index >= self.MAX_VARS:
                 break
             self.update_min_max(min(points), max(points), index)
@@ -225,9 +224,8 @@ class ScanVars(Device, CallbackBase):
         mesh scan, like list_grid_scan.
         """
         # check for start/stop points
-        args = plan_pattern_args['args']
         product_num = 1
-        for index, (_, points) in args:
+        for index, (_, points) in plan_pattern_args['args']:
             if index >= self.MAX_VARS:
                 break
             self.update_min_max(min(points), max(points), index)
