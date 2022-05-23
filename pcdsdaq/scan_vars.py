@@ -117,7 +117,7 @@ class ScanVars(Device, CallbackBase):
                     elif plan_pattern == 'inner_list_product':
                         self.setup_inner_list_product(plan_pattern_args)
                     elif plan_pattern == 'outer_list_product':
-                        self.setup_inner_list_product(plan_pattern_args)
+                        self.setup_outer_list_product(plan_pattern_args)
                     else:
                         logger.debug(
                             'No scan var setup for plan_pattern %s',
@@ -212,6 +212,28 @@ class ScanVars(Device, CallbackBase):
             # On the first loop, cache the number of points
             if index == 0:
                 self.n_steps.put(len(points))
+
+    def setup_outer_list_product(
+        self,
+        plan_pattern_args: Dict[str, Any],
+    ) -> None:
+        """
+        Handle max, min, number of steps for outer_list_product scans.
+
+        These are the plans whose arguments are (mot, list) repeat,
+        where the lists can be any length because it's a multi-dimensional
+        mesh scan, like list_grid_scan.
+        """
+        # check for start/stop points
+        args = plan_pattern_args['args']
+        product_num = 1
+        for index, (_, points) in args:
+            if index >= self.MAX_VARS:
+                break
+            self.update_min_max(min(points), max(points), index)
+            # check for number of steps: a product of all the steps!
+            product_num *= len(points)
+        self.n_steps.put(product_num)
 
     def event(self, doc):
         """
