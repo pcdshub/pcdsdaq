@@ -99,6 +99,7 @@ def test_scan_vars_no_daq(RE):
 @pytest.mark.parametrize(
     "plan,args,expected",
     [
+        (count, ([], 5), {'n_steps': 5}),
         (
             scan,
             ([], motor1, 0, 11, motor2, 10, 12, motor3, 20, 23, 5),
