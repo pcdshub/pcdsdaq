@@ -126,6 +126,24 @@ def test_scan_vars_no_daq(RE):
             }
         ),
         (
+            grid_scan,
+            (
+                [],
+                motor1, 0, 11, 2,
+                motor2, 10, 12, 3, False,
+                motor3, 20, 23, 2, True,
+            ),
+            {
+                'var0_max': 11,
+                'var1_max': 12,
+                'var2_max': 23,
+                'var0_min': 0,
+                'var1_min': 10,
+                'var2_min': 20,
+                'n_steps': 12,
+            }
+        ),
+        (
             list_scan,
             ([], motor1, [0, 1], motor2, [10, 11], motor3, [20, 21]),
             {
