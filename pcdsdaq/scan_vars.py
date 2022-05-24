@@ -58,6 +58,7 @@ class ScanVars(Device, CallbackBase):
         self._cbid = None
         self._RE = RE
         self._i_start = i_start
+        self.seen_max_vars_warning = False
 
     def enable(self):
         """
@@ -83,6 +84,7 @@ class ScanVars(Device, CallbackBase):
         like ``scan``. It also inspects the daq object.
         """
         logger.debug('Seting up scan var pvs')
+        self.seen_max_vars_warning = False
         try:
             self.i_step.put(self._i_start)
             self.is_scan.put(1)
@@ -171,6 +173,13 @@ class ScanVars(Device, CallbackBase):
         Helper function for updating the min and max PVs for the scan table.
         """
         if index >= self.MAX_VARS:
+            # Once per start doc, warn about too many vars
+            if not self.seen_max_vars_warning:
+                self.seen_max_vars_warning = True
+                logger.warning(
+                    f'There are only PVs allocated for {self.MAX_VARS} '
+                    'motors in the scan PVs, additional motors are omitted.'
+                )
             return
         sig_max = getattr(self, f'var{index}_max')
         sig_min = getattr(self, f'var{index}_min')
@@ -187,8 +196,6 @@ class ScanVars(Device, CallbackBase):
         # check for start/stop points
         per_motor = partition(3, plan_pattern_args['args'])
         for index, (_, start, stop) in enumerate(per_motor):
-            if index >= self.MAX_VARS:
-                break
             self.update_min_max(start, stop, index)
 
         # check for number of steps
@@ -222,8 +229,6 @@ class ScanVars(Device, CallbackBase):
             raise RuntimeError('Unexpected number of arguments')
         product_num = 1
         for index, (_, start, stop, num) in enumerate(per_motor):
-            if index >= self.MAX_VARS:
-                break
             self.update_min_max(start, stop, index)
             # check for number of steps: a product of all the steps!
             product_num *= num
@@ -243,10 +248,7 @@ class ScanVars(Device, CallbackBase):
         # check for start/stop points
         per_motor = partition(2, plan_pattern_args['args'])
         for index, (_, points) in enumerate(per_motor):
-            if index >= self.MAX_VARS:
-                break
             self.update_min_max(min(points), max(points), index)
-
             # On the first loop, cache the number of points
             if index == 0:
                 self.n_steps.put(len(points))
@@ -266,8 +268,6 @@ class ScanVars(Device, CallbackBase):
         per_motor = partition(2, plan_pattern_args['args'])
         product_num = 1
         for index, (_, points) in enumerate(per_motor):
-            if index >= self.MAX_VARS:
-                break
             self.update_min_max(min(points), max(points), index)
             # check for number of steps: a product of all the steps!
             product_num *= len(points)
