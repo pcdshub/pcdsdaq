@@ -103,6 +103,7 @@ class ScanVars(Device, CallbackBase):
             # there are other patterns, but that's all we'll handle for now
             plan_pattern = doc.get('plan_pattern')
 
+            # in this block we find the min/max and number of points
             try:
                 plan_pattern_args = doc['plan_pattern_args']
             except KeyError:
@@ -118,11 +119,18 @@ class ScanVars(Device, CallbackBase):
                     elif plan_pattern == 'outer_list_product':
                         self.setup_outer_list_product(plan_pattern_args)
                     else:
+                        logger.error(
+                            'Encountered unknown plan type, '
+                            'did not set up min/max/num scan PVs.'
+                        )
                         logger.debug(
                             'No scan var setup for plan_pattern %s',
                             plan_pattern,
                         )
                 except Exception:
+                    logger.error(
+                        'Error setting up min/max/num scan PVs'
+                    )
                     logger.debug(
                         'Error setting up plan_pattern %s',
                         plan_pattern,
