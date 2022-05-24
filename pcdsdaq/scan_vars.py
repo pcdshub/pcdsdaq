@@ -96,6 +96,14 @@ class ScanVars(Device, CallbackBase):
             except KeyError:
                 logger.debug('Skip var names, no "motors" in start doc')
 
+            # check for a top level number of points, this is often present
+            try:
+                num_points = doc['num_points']
+            except KeyError:
+                pass
+            else:
+                self.n_steps.put(num_points)
+
             # check the plan pattern, determines how we read the args
             # inner_product is mot, start, stop, (repeat), num
             # outer_product is mot, start, stop, num, (repeat) + snakes
