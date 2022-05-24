@@ -147,6 +147,8 @@ class ScanVars(Device, CallbackBase):
         """
         Helper function for updating the min and max PVs for the scan table.
         """
+        if index >= self.MAX_VARS:
+            return
         sig_max = getattr(self, f'var{index}_max')
         sig_min = getattr(self, f'var{index}_min')
         sig_max.put(max(start, stop))
