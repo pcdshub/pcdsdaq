@@ -100,22 +100,29 @@ class ScanVars(Device, CallbackBase):
             try:
                 num_points = doc['num_points']
             except KeyError:
+                logger.debug('No num_points, skip num from top-level key.')
+                has_top_level_num = False
                 pass
             else:
                 self.n_steps.put(num_points)
+                has_top_level_num = True
 
+            # in this block we find the min/max and number of points
             # check the plan pattern, determines how we read the args
             # inner_product is mot, start, stop, (repeat), num
             # outer_product is mot, start, stop, num, (repeat) + snakes
             # inner_list_product and outer_list_product are mot, list (repeat)
             # there are other patterns, but that's all we'll handle for now
-            plan_pattern = doc.get('plan_pattern')
-
-            # in this block we find the min/max and number of points
             try:
+                plan_pattern = doc['plan_pattern']
                 plan_pattern_args = doc['plan_pattern_args']
             except KeyError:
-                logger.debug('No plan pattern args, skip max/min/num')
+                logger.debug('No plan pattern, skip max/min/num from shape')
+                if not has_top_level_num:
+                    logger.error(
+                        'Could not determine any max/min/num info for '
+                        'this scan due to invalid or missing metadata.'
+                    )
             else:
                 try:
                     if plan_pattern == 'inner_product':
