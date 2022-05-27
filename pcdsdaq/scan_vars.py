@@ -122,7 +122,7 @@ class ScanVars(Device, CallbackBase):
                 logger.debug('No plan pattern, skip max/min/num from shape')
                 if not has_top_level_num:
                     logger.error(
-                        'Could not determine any max/min/num info for '
+                        'Scan PVs will be missing any max/min/num info for '
                         'this scan due to invalid or missing metadata.'
                     )
             else:
