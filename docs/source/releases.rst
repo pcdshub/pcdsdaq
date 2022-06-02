@@ -1,6 +1,13 @@
 Release History
 ###############
 
+v2.3.5 (2022-06-02)
+===================
+
+- Fix issue where the scan variable min/max values would not fill in
+  correctly for scan types other then the normal "scan".
+
+
 v2.3.4 (2021-04-02)
 ===================
 
