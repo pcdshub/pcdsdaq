@@ -6,7 +6,7 @@
 set -e
 DAQ_ROOT="/reg/g/pcds/dist/pds"
 LINKER="linker"
-for hutch in current amo sxr xpp xcs mfx cxi mec det tst
+for hutch in current tmo rix txi xpp xcs mfx cxi mec det tst
 do
   for os in x86_64-linux x86_64-rhel7
   do

@@ -971,8 +971,8 @@ class Daq:
         try:
             if hutch_name is None:
                 hutch_name = ext_scripts.hutch_name()
-            if hutch_name not in ('amo', 'sxr', 'xpp', 'xcs', 'mfx', 'cxi',
-                                  'mec', 'tst'):
+            if hutch_name not in ('tmo', 'rix', 'txi', 'xpp', 'xcs', 'mfx',
+                                  'cxi', 'mec', 'det', 'tst'):
                 raise ValueError(('{} is not a valid hutch, cannot determine '
                                   'run number'.format(hutch_name)))
             if self.state in ('Open', 'Running') and self.config['record']:
