@@ -5,6 +5,6 @@ Preprocessors API
 .. autosummary::
    :nosignatures:
    :toctree: generated
-   
+
    daq_during_wrapper
    daq_during_decorator

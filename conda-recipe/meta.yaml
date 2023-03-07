@@ -8,17 +8,19 @@ source:
   path: ..
 
 build:
-  number: 1
+  number: 0
   noarch: python
 
 requirements:
   build:
-    - python >=3.6
+    - python >=3.9
     - setuptools
   run:
     - python >=3.6
-    - ophyd >=1.5.0
     - bluesky >=1.6.0
+    - ophyd >=1.5.0
+    - pcdsdevices >=2.1.0
+    - psdaq-control-minimal >=3.3.19
     - toolz
 
 test:

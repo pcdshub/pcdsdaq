@@ -1,11 +1,10 @@
 import logging
 
 import pytest
-from bluesky.plan_stubs import (trigger_and_read,
-                                create, read, save, null)
+from bluesky.plan_stubs import create, null, read, save, trigger_and_read
 from bluesky.preprocessors import run_decorator
 
-from pcdsdaq.preprocessors import daq_during_wrapper, daq_during_decorator
+from pcdsdaq.preprocessors import daq_during_decorator, daq_during_wrapper
 
 logger = logging.getLogger(__name__)
 

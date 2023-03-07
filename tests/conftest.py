@@ -1,17 +1,19 @@
+import functools
+import os
 import sys
 
+import pytest
 from bluesky import RunEngine
 from ophyd.sim import SynSignal, motor1
 
-import pcdsdaq.daq as daq_module
+import pcdsdaq.daq.original as daq_module
 import pcdsdaq.sim.pyami as sim_pyami
 import pcdsdaq.sim.pydaq as sim_pydaq
-from pcdsdaq.ami import (AmiDet, _reset_globals as ami_reset_globals)
-from pcdsdaq.daq import Daq
+from pcdsdaq.ami import AmiDet
+from pcdsdaq.ami import _reset_globals as ami_reset_globals
+from pcdsdaq.daq.original import Daq
 from pcdsdaq.sim import set_sim_mode
 from pcdsdaq.sim.pydaq import SimNoDaq
-
-import pytest
 
 
 @pytest.fixture(scope='function')
@@ -80,3 +82,12 @@ def sig():
 def mot():
     motor1.set(0)
     return motor1
+
+
+@pytest.fixture(scope='session', autouse=True)
+def windows_compat():
+    if sys.platform == 'win32':
+        os.uname = lambda: 'localhost'
+
+
+skip_windows = functools.partial(pytest.mark.skipif, sys.platform == 'win32')

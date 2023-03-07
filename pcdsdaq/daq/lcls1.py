@@ -1,36 +1,41 @@
 """
-This module defines a control interface for the LCLS1 DAQ.
+Module that defines the controls python interface for the LCLS1 DAQ.
+
+Note: this not yet ready for use. It was added alongside lcls2.py, but
+it has not been finished or tested.
+
+This is an experimental refactoring of the code found in original.py.
 """
+from __future__ import annotations
+
 import enum
 import functools
 import logging
 import os
-import time
 import threading
+import time
 from importlib import import_module
+from typing import Any, Optional, Union
 
+from bluesky import RunEngine
+from ophyd.device import Component as Cpt
+from ophyd.signal import Signal
 from ophyd.status import Status
 from ophyd.utils import StatusTimeoutError, WaitTimeoutError
 
-from . import ext_scripts
-from .ami import set_ami_hutch, set_pyami_filter, set_monitor_det
+from .. import ext_scripts
+from ..ami import AmiDet, set_monitor_det, set_pyami_filter
+from .interface import (CONFIG_VAL, ControlsArg, DaqBase,
+                        DaqStateTransitionError, DaqTimeoutError, Sentinel,
+                        get_controls_value)
 
 logger = logging.getLogger(__name__)
 pydaq = None
 
-# Wait up to this many seconds for daq to be ready for a begin call
-BEGIN_TIMEOUT = 15
-# Do not allow begins within this many seconds of a stop
-BEGIN_THROTTLE = 1
-
-# Not-None sentinal for default value when None has a special meaning
-# Indicates that the last configured value should be used
-_CONFIG_VAL = object()
-
 
 def check_connect(f):
     """
-    Decorator to ensure that the `Daq` is connected before running a method.
+    Decorator to ensure that the `DaqLCLS1` is connected.
     """
     @functools.wraps(f)
     def wrapper(self, *args, **kwargs):
@@ -49,11 +54,7 @@ def check_connect(f):
     return wrapper
 
 
-class DaqTimeoutError(Exception):
-    pass
-
-
-class Daq:
+class DaqLCLS1(DaqBase):
     """
     The LCLS1 daq as a ``bluesky``-compatible object.
 
@@ -78,76 +79,42 @@ class Daq:
     hutch_name: str, optional
         Define a hutch name to use instead of shelling out to get_hutch_name.
     """
-    _state_enum = enum.Enum('PydaqState',
-                            'Disconnected Connected Configured Open Running',
-                            start=0)
-    default_config = dict(events=None,
-                          duration=None,
-                          use_l3t=False,
-                          record=None,
-                          controls=None,
-                          begin_sleep=0)
-    name = 'daq'
-    parent = None
+    use_l3t_cfg = Cpt(Signal, value=False, kind='config')
+    begin_sleep_cfg = Cpt(Signal, value=0, kind='config')
 
-    def __init__(self, RE=None, hutch_name=None):
+    state_enum = enum.Enum(
+        'PydaqState',
+        'Disconnected Connected Configured Open Running',
+        start=0,
+    )
+    requires_configure_transition = {'record', 'use_l3t'}
+
+    def __init__(
+        self,
+        RE: Optional[RunEngine] = None,
+        hutch_name: Optional[str] = None,
+    ):
         if pydaq is None:
             globals()['pydaq'] = import_module('pydaq')
-        super().__init__()
+        super().__init__(RE=RE, hutch_name=hutch_name)
         self._control = None
-        self._config = None
-        self._desired_config = {}
         self._reset_begin()
         self._host = os.uname()[1]
-        self._RE = RE
         self._re_cbid = None
-        self._config_ts = {}
-        self._update_config_ts()
         self._pre_run_state = None
         self._last_stop = 0
         self._check_run_number_has_failed = False
-        self.hutch_name = hutch_name
-        register_daq(self)
 
     # Convenience properties
     @property
-    def connected(self):
+    def connected(self) -> bool:
         """
         ``True`` if the daq is connected, ``False`` otherwise.
         """
         return self._control is not None
 
     @property
-    def configured(self):
-        """
-        ``True`` if the daq is configured, ``False`` otherwise.
-        """
-        return self._config is not None
-
-    @property
-    def config(self):
-        """
-        The current configuration, e.g. the last call to `configure`
-        """
-        if self.configured:
-            return self._config.copy()
-        else:
-            return self.default_config.copy()
-
-    @property
-    def next_config(self):
-        """
-        The next queued configuration.
-
-        This can be different than `config` if we have queued up a
-        configuration to be run on the next begin.
-        """
-        cfg = self.config
-        cfg.update(self._desired_config)
-        return cfg
-
-    @property
-    def state(self):
+    def state(self) -> str:
         """
         State as reported by the daq. Can be any of the following:
         - ``Disconnected``: No active session in python
@@ -164,7 +131,7 @@ class Daq:
             return 'Disconnected'
 
     # Interactive methods
-    def connect(self):
+    def connect(self) -> None:
         """
         Connect to the live DAQ, giving full control to the Python process.
 
@@ -201,7 +168,7 @@ class Daq:
         else:
             logger.info('Connect requested, but already connected to DAQ')
 
-    def disconnect(self):
+    def disconnect(self) -> None:
         """
         Disconnect from the live DAQ, giving control back to the GUI.
 
@@ -213,19 +180,25 @@ class Daq:
             self._control.disconnect()
         del self._control
         self._control = None
-        self._desired_config = self._config or {}
-        self._config = None
+        self.preconfig(**self.default_config)
+        self.configured_sig.put(False)
         logger.info('DAQ is disconnected.')
 
     @check_connect
-    def wait(self, timeout=None):
+    def wait(
+        self,
+        timeout: Optional[float] = None,
+        end_run: bool = False,
+    ) -> None:
         """
         Pause the thread until the DAQ is done aquiring.
 
         Parameters
         ----------
-        timeout: ``float``
+        timeout: ``float``, optional
             Maximum time to wait in seconds.
+        end_run: ``bool``, optional
+            If ``True``, end the run after we're done waiting.
         """
         logger.debug('Daq.wait()')
         if self.state == 'Running':
@@ -240,10 +213,19 @@ class Daq:
             else:
                 raise RuntimeError('Cannot wait, daq configured to run '
                                    'forever.')
+        if end_run:
+            self.end_run()
 
-    def begin(self, events=_CONFIG_VAL, duration=_CONFIG_VAL,
-              record=_CONFIG_VAL, use_l3t=_CONFIG_VAL, controls=_CONFIG_VAL,
-              wait=False, end_run=False):
+    def begin(
+        self,
+        events: Union[int, None, Sentinel] = CONFIG_VAL,
+        duration: Union[int, None, Sentinel] = CONFIG_VAL,
+        record: Union[bool, None, Sentinel] = CONFIG_VAL,
+        use_l3t: Union[bool, None, Sentinel] = CONFIG_VAL,
+        controls: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
+        wait: bool = False,
+        end_run: bool = False,
+    ):
         """
         Start the daq and block until the daq has begun acquiring data.
 
@@ -287,35 +269,22 @@ class Daq:
         end_run: ``bool``, optional
             If ``True``, we'll end the run after the daq has stopped.
         """
-        logger.debug(('Daq.begin(events=%s, duration=%s, record=%s, '
+        logger.debug(('DaqLCLS1.begin(events=%s, duration=%s, record=%s, '
                       'use_l3t=%s, controls=%s, wait=%s)'),
                      events, duration, record, use_l3t, controls, wait)
         try:
-            if record is not _CONFIG_VAL and record != self.record:
+            if record is not CONFIG_VAL and record != self.record:
                 old_record = self.record
                 self.preconfig(record=record, show_queued_cfg=False)
-            begin_status = self.kickoff(events=events, duration=duration,
-                                        use_l3t=use_l3t, controls=controls)
-            try:
-                begin_status.wait(timeout=self._begin_timeout)
-            except (StatusTimeoutError, WaitTimeoutError):
-                msg = (f'Timeout after {self._begin_timeout} seconds waiting '
-                       'for daq to begin.')
-                raise DaqTimeoutError(msg) from None
-
-            # In some daq configurations the begin status returns very early,
-            # so we allow the user to configure an emperically derived extra
-            # sleep.
-            time.sleep(self.config['begin_sleep'])
-            if wait:
-                self.wait()
-                if end_run:
-                    self.end_run()
-            if end_run and not wait:
-                threading.Thread(target=self._ender_thread, args=()).start()
-        except KeyboardInterrupt:
-            self.end_run()
-            logger.info('%s.begin interrupted, ending run', self.name)
+            return super().begin(
+                events=events,
+                duration=duration,
+                record=record,
+                use_l3t=use_l3t,
+                controls=controls,
+                wait=wait,
+                end_run=end_run,
+            )
         finally:
             try:
                 self.preconfig(record=old_record, show_queued_cfg=False)
@@ -323,18 +292,22 @@ class Daq:
                 pass
 
     @property
-    def _begin_timeout(self):
-        return BEGIN_TIMEOUT + BEGIN_THROTTLE
+    def _begin_timeout(self) -> int:
+        return self.begin_timeout_cfg.get() + self.begin_throttle_cfg.get()
 
-    def begin_infinite(self, record=_CONFIG_VAL, use_l3t=_CONFIG_VAL,
-                       controls=_CONFIG_VAL):
+    def begin_infinite(
+        self,
+        record: Union[bool, None, Sentinel] = CONFIG_VAL,
+        use_l3t: Union[bool, None, Sentinel] = CONFIG_VAL,
+        controls: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
+    ) -> None:
         """
         Start the daq to run forever in the background.
         """
         self.begin(events=0, record=record, use_l3t=use_l3t,
                    controls=controls, wait=False, end_run=False)
 
-    def _ender_thread(self):
+    def _ender_thread(self) -> None:
         """
         End the run when the daq stops aquiring
         """
@@ -342,9 +315,15 @@ class Daq:
         self.end_run()
 
     @check_connect
-    def stop(self):
+    def stop(self, success: bool = False) -> None:
         """
         Stop the current acquisition, ending it early.
+
+        Parameters
+        ----------
+        success : bool, optional
+            Flag set by bluesky to signify whether this was a good stop or a
+            bad stop. Currently unused.
         """
         logger.debug('Daq.stop()')
         self._control.stop()
@@ -352,7 +331,7 @@ class Daq:
         self._last_stop = time.time()
 
     @check_connect
-    def end_run(self):
+    def end_run(self) -> None:
         """
         Call `stop`, then mark the run as finished.
         """
@@ -362,12 +341,17 @@ class Daq:
 
     # Reader interface
     @check_connect
-    def trigger(self):
+    def trigger(self) -> Status:
         """
         Begin acquisition. This method blocks until the run begins.
 
         Returns a status object that will be marked done when the daq has
         stopped acquiring.
+
+        The status object will alternatively be marked done immediately if
+        the DAQ is configured to run forever. This is so that the infinite-run
+        behavior can be used in scans in conjunction with other time-bound
+        triggers without freezing the scan indefinitely.
 
         This will raise a RuntimeError if the daq was never configured for
         events or duration.
@@ -377,35 +361,22 @@ class Daq:
         done_status: ``Status``
             ``Status`` that will be marked as done when the daq has begun.
         """
-        cfg = self.next_config
+        cfg = self.config
         if all(cfg[key] is None for key in ('events', 'duration')):
             raise RuntimeError('Cannot start daq in scan step, did not '
                                'configure events or duration.')
         self.begin()
         return self._get_end_status()
 
-    def read(self):
-        """
-        Return data. There is no data implemented yet.
-
-        This also stops if running so you can use this device in a bluesky scan
-        and wait for "everything else" to be done, then stop the daq
-        afterwards.
-        """
-        if self.state == 'Running':
-            self.stop()
-        return {}
-
-    def describe(self):
-        """
-        Explain what read returns. There is nothing  yet.
-        """
-        return {}
-
     # Flyer interface
     @check_connect
-    def kickoff(self, events=_CONFIG_VAL, duration=_CONFIG_VAL,
-                use_l3t=_CONFIG_VAL, controls=_CONFIG_VAL):
+    def kickoff(
+        self,
+        events: Union[int, None, Sentinel] = CONFIG_VAL,
+        duration: Union[int, None, Sentinel] = CONFIG_VAL,
+        use_l3t: Union[bool, None, Sentinel] = CONFIG_VAL,
+        controls: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
+    ) -> Status:
         """
         Begin acquisition. This method is non-blocking.
         See `begin` for a description of the parameters.
@@ -424,15 +395,15 @@ class Daq:
         logger.debug('Daq.kickoff()')
 
         self._check_duration(duration)
-        if self._desired_config or not self.configured:
+        if self._queue_configure_transition or not self.configured:
             try:
                 self.configure()
-            except StateTransitionError:
+            except DaqStateTransitionError:
                 err = ('Illegal reconfigure with {} during an open run. End '
                        'the current run with daq.end_run() before running '
-                       'with a new configuration'.format(self._desired_config))
+                       'with a new configuration'.format(self.config))
                 logger.debug(err, exc_info=True)
-                raise StateTransitionError(err)
+                raise DaqStateTransitionError(err)
 
         check_run_number = all((self.state == 'Configured',
                                 self.config['record'],
@@ -472,7 +443,7 @@ class Daq:
 
                 logger.debug('daq.control.begin(%s)', begin_args)
                 dt = time.time() - self._last_stop
-                tmo = BEGIN_THROTTLE - dt
+                tmo = self.begin_throttle_cfg.get() - dt
                 if tmo > 0:
                     time.sleep(tmo)
                 control.begin(**begin_args)
@@ -485,7 +456,7 @@ class Daq:
                 logger.debug('Marking kickoff as failed')
                 status.set_exception(RuntimeError('Daq begin failed!'))
 
-        begin_status = Status(obj=self)
+        begin_status = Status(self)
         watcher = threading.Thread(target=start_thread,
                                    args=(self._control, begin_status, events,
                                          duration, use_l3t, controls,
@@ -493,10 +464,10 @@ class Daq:
         watcher.start()
         return begin_status
 
-    def complete(self):
+    def complete(self) -> Status:
         """
         If the daq is freely running, this will `stop` the daq.
-        Otherwise, we'll simply collect the end_status object.
+        Otherwise, we'll simply return the end_status object.
 
         Returns
         -------
@@ -511,7 +482,7 @@ class Daq:
             self.stop()
         return end_status
 
-    def _get_end_status(self):
+    def _get_end_status(self) -> Status:
         """
         Return a `Status` object that will be marked done when the DAQ has
         finished acquiring.
@@ -542,7 +513,7 @@ class Daq:
                 self._reset_begin()
                 status.set_finished()
                 logger.debug('Marked acquisition as complete')
-            end_status = Status(obj=self)
+            end_status = Status(self)
             watcher = threading.Thread(target=finish_thread,
                                        args=(self._control, end_status))
             watcher.start()
@@ -552,66 +523,56 @@ class Daq:
             # the other things in the scan
             logger.debug('Returning finished status for infinite run with '
                          'events=%s, duration=%s', events, duration)
-            status = Status(obj=self)
+            status = Status(self)
             status.set_finished()
             return status
 
-    def collect(self):
-        """
-        Collect data as part of the ``bluesky`` ``Flyer`` interface.
-
-        As per the ``bluesky`` interface, this is a generator that is expected
-        to output partial event documents. However, since we don't have any
-        events to report to python, this will be a generator that immediately
-        ends.
-        """
-        logger.debug('Daq.collect()')
-        yield from ()
-
-    def describe_collect(self):
-        """
-        As per the ``bluesky`` interface, this is how you interpret the null
-        data from `collect`. There isn't anything here, as nothing will be
-        collected.
-        """
-        logger.debug('Daq.describe_collect()')
-        return {}
-
-    def preconfig(self, events=_CONFIG_VAL, duration=_CONFIG_VAL,
-                  record=_CONFIG_VAL, use_l3t=_CONFIG_VAL,
-                  controls=_CONFIG_VAL, begin_sleep=_CONFIG_VAL,
-                  show_queued_cfg=True):
+    def preconfig(
+        self,
+        events: Union[int, None, Sentinel] = CONFIG_VAL,
+        duration: Union[int, None, Sentinel] = CONFIG_VAL,
+        record: Union[bool, None, Sentinel] = CONFIG_VAL,
+        use_l3t: Union[bool, None, Sentinel] = CONFIG_VAL,
+        controls: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
+        begin_sleep: Union[int, None, Sentinel] = CONFIG_VAL,
+        show_queued_cfg: bool = True,
+    ) -> None:
         """
         Queue configuration parameters for next call to `configure`.
 
         These will be overridden by arguments passed directly to `configure`.
         These will be cleared after each call to `configure`.
 
-        This can be used to `configure` the `Daq` object without connecting.
+        This can be used to `configure` the `DaqLCLS1` object without
+        connecting.
 
         This will display the next queued configuration using logger.info,
         assuming the logger has been configured.
         """
         # Only one of (events, duration) should be preconfigured.
-        if events is not _CONFIG_VAL:
-            self._desired_config['events'] = events
-            self._desired_config['duration'] = None
-        elif duration is not _CONFIG_VAL:
-            self._desired_config['events'] = None
-            self._desired_config['duration'] = duration
+        if events is not CONFIG_VAL:
+            duration = CONFIG_VAL
 
-        for arg, name in zip((record, use_l3t, controls, begin_sleep),
-                             ('record', 'use_l3t', 'controls', 'begin_sleep')):
-            if arg is not _CONFIG_VAL:
-                self._desired_config[name] = arg
-
-        if show_queued_cfg:
-            self.config_info(self.next_config, 'Queued config:')
+        return super().preconfig(
+            events=events,
+            duration=duration,
+            record=record,
+            use_l3t=use_l3t,
+            controls=controls,
+            begin_sleep=begin_sleep,
+            show_queued_cfg=show_queued_cfg,
+        )
 
     @check_connect
-    def configure(self, events=_CONFIG_VAL, duration=_CONFIG_VAL,
-                  record=_CONFIG_VAL, use_l3t=_CONFIG_VAL,
-                  controls=_CONFIG_VAL, begin_sleep=_CONFIG_VAL):
+    def configure(
+        self,
+        events: Union[int, None, Sentinel] = CONFIG_VAL,
+        duration: Union[int, None, Sentinel] = CONFIG_VAL,
+        record: Union[bool, None, Sentinel] = CONFIG_VAL,
+        use_l3t: Union[bool, None, Sentinel] = CONFIG_VAL,
+        controls: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
+        begin_sleep: Union[int, None, Sentinel] = CONFIG_VAL,
+    ) -> tuple[dict, dict]:
         """
         Changes the daq's configuration for the next run.
 
@@ -677,15 +638,20 @@ class Daq:
         state = self.state
         if state not in ('Connected', 'Configured'):
             err = 'Cannot configure from state {}!'.format(state)
-            raise StateTransitionError(err)
+            raise DaqStateTransitionError(err)
 
         self._check_duration(duration)
-        old = self.read_configuration()
 
-        self.preconfig(events=events, duration=duration, record=record,
-                       use_l3t=use_l3t, controls=controls,
-                       begin_sleep=begin_sleep, show_queued_cfg=False)
-        config = self.next_config
+        old, new = super().configure(
+            events=events,
+            duration=duration,
+            record=record,
+            use_l3t=use_l3t,
+            controls=controls,
+            begin_sleep=begin_sleep,
+        )
+
+        config = self.config
 
         events = config['events']
         duration = config['duration']
@@ -704,75 +670,22 @@ class Daq:
             logger.debug('Daq.control.configure(%s)',
                          config_args)
             self._control.configure(**config_args)
-            # self._config should reflect exactly the arguments to configure,
-            # this is different than the arguments that pydaq.Control expects
-            self._config = dict(events=events, duration=duration,
-                                record=record, use_l3t=use_l3t,
-                                controls=controls, begin_sleep=begin_sleep)
-            self._update_config_ts()
             self.config_info(header='Daq configured:')
+            self._last_config = self.config
+            self._queue_configure_transition = False
+            self.configred_sig.put(True)
         except Exception as exc:
-            self._config = None
             msg = 'Failed to configure!'
             logger.debug(msg, exc_info=True)
             raise RuntimeError(msg) from exc
-        new = self.read_configuration()
-        self._desired_config = {}
         return old, new
 
-    def config_info(self, config=None, header='Config:'):
-        """
-        Show the config information as a logger.info message.
-
-        This will print to the screen if the logger is configured correctly.
-
-        Parameters
-        ----------
-        config: ``dict``, optional
-            The configuration to show. If omitted, we'll use the current
-            config.
-
-        header: ``str``, optional
-            A prefix for the config line.
-        """
-        if config is None:
-            config = self.config
-
-        txt = []
-        for key, value in config.items():
-            if value is not None:
-                txt.append('{}={}'.format(key, value))
-        if header:
-            header += ' '
-        logger.info(header + ', '.join(txt))
-
-    @property
-    def record(self):
-        """
-        If ``True``, we'll configure the daq to record data. If ``False``, we
-        will configure the daq to not record data.
-
-        Setting this is the equivalent of scheduling a `configure` call to be
-        executed later, e.g. ``configure(record=True)``
-        """
-        return self.next_config['record']
-
-    @record.setter
-    def record(self, record):
-        self.preconfig(record=record)
-
-    def _update_config_ts(self):
-        """
-        Create timestamps and update the ``bluesky`` readback for
-        `read_configuration`
-        """
-        for k, v in self.config.items():
-            old_value = self._config_ts.get(k, {}).get('value')
-            if old_value is None or v != old_value:
-                self._config_ts[k] = dict(value=v,
-                                          timestamp=time.time())
-
-    def _config_args(self, record, use_l3t, controls):
+    def _config_args(
+        self,
+        record: bool,
+        use_l3t: bool,
+        controls: ControlsArg,
+    ):
         """
         For a given set of arguments to `configure`, return the arguments that
         should be sent to ``pydaq.Control.configure``.
@@ -794,7 +707,7 @@ class Daq:
             config_args['controls'] = self._ctrl_arg(controls)
         return config_args
 
-    def _ctrl_arg(self, controls):
+    def _ctrl_arg(self, controls: ControlsArg) -> list[tuple[str, Any]]:
         """
         Assemble the list of ``(str, val)`` pairs from a ``{str: device}``
         dictionary or a device ``list``
@@ -811,10 +724,7 @@ class Daq:
             names = controls.keys()
             devices = controls.values()
         for name, device in zip(names, devices):
-            try:
-                val = device.position
-            except AttributeError:
-                val = device.get()
+            val = get_controls_value(device)
             try:
                 val = val[0]
             except Exception:
@@ -822,7 +732,13 @@ class Daq:
             ctrl_arg.append((name, val))
         return ctrl_arg
 
-    def _begin_args(self, events, duration, use_l3t, controls):
+    def _begin_args(
+        self,
+        events: Union[int, None, Sentinel] = CONFIG_VAL,
+        duration: Union[int, None, Sentinel] = CONFIG_VAL,
+        use_l3t: Union[bool, None, Sentinel] = CONFIG_VAL,
+        controls: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
+    ) -> dict[str, Any]:
         """
         For a given set of arguments to `begin`, return the arguments that
         should be sent to ``pydaq.Control.begin``
@@ -835,19 +751,19 @@ class Daq:
                      events, duration, use_l3t, controls)
         begin_args = {}
         # Handle default args for events and duration
-        if events is _CONFIG_VAL and duration is _CONFIG_VAL:
+        if events is CONFIG_VAL and duration is CONFIG_VAL:
             # If both are omitted, use last configured values
             events = self.config['events']
             duration = self.config['duration']
-        if events not in (None, _CONFIG_VAL):
+        if events not in (None, CONFIG_VAL):
             # We either passed the events arg, or loaded from config
-            if use_l3t in (None, _CONFIG_VAL) and self.configured:
+            if use_l3t in (None, CONFIG_VAL) and self.configured:
                 use_l3t = self.config['use_l3t']
             if use_l3t:
                 begin_args['l3t_events'] = events
             else:
                 begin_args['events'] = events
-        elif duration not in (None, _CONFIG_VAL):
+        elif duration not in (None, CONFIG_VAL):
             # We either passed the duration arg, or loaded from config
             secs = int(duration)
             nsec = int((duration - secs) * 1e9)
@@ -855,173 +771,58 @@ class Daq:
         else:
             # We passed None somewhere/everywhere
             begin_args['events'] = 0  # Run until manual stop
-        if controls is _CONFIG_VAL:
+        if controls is CONFIG_VAL:
             controls = self.config['controls']
         if controls is not None:
             begin_args['controls'] = self._ctrl_arg(controls)
         return begin_args
 
-    def _check_duration(self, duration):
-        if duration not in (None, _CONFIG_VAL) and duration < 1:
+    def _check_duration(self, duration: Union[int, None, Sentinel]):
+        if duration not in (None, CONFIG_VAL) and duration < 1:
             msg = ('Duration argument less than 1 is unreliable. Please '
                    'use the events argument to specify the length of '
                    'very short runs.')
             raise RuntimeError(msg)
 
-    def read_configuration(self):
-        """
-        ``bluesky`` interface for checking the current configuration
-
-        Returns
-        -------
-        config: ``dict``
-            Mapping of config key to current configured value and timestamp
-            when it was last set.
-        """
-        logger.debug('Daq.read_configuration()')
-        return self._config_ts.copy()
-
-    def describe_configuration(self):
-        """
-        ``bluesky`` interface for describing how to interpret the configured
-        values
-
-        Returns
-        -------
-        config_desc: ``dict``
-            Mapping of config key to field metadata.
-        """
-        logger.debug('Daq.describe_configuration()')
-        try:
-            controls_shape = [len(self.config['controls']), 2]
-        except (TypeError, RuntimeError, AttributeError):
-            controls_shape = []
-        return dict(events=dict(source='daq_events_in_run',
-                                dtype='number',
-                                shape=[]),
-                    duration=dict(source='daq_run_duration',
-                                  dtype='number',
-                                  shape=[]),
-                    use_l3t=dict(source='daq_use_l3trigger',
-                                 dtype='number',
-                                 shape=[]),
-                    record=dict(source='daq_record_run',
-                                dtype='number',
-                                shape=[]),
-                    controls=dict(source='daq_control_vars',
-                                  dtype='array',
-                                  shape=controls_shape),
-                    begin_sleep=dict(source='daq_begin_sleep',
-                                     dtype='number',
-                                     shape=[]),
-                    )
-
-    def stage(self):
-        """
-        ``bluesky`` interface for preparing a device for action.
-
-        This sets up the daq to end runs on run stop documents.
-        It also caches the current state, so we know what state to return to
-        after the ``bluesky`` scan.
-        If a run is already started, we'll end it here so that we can start a
-        new run during the scan.
-
-        Returns
-        -------
-        staged: ``list``
-            list of devices staged
-        """
-        logger.debug('Daq.stage()')
-        self._pre_run_state = self.state
-        if self._re_cbid is None:
-            self._re_cbid = self._RE.subscribe(self._re_manage_runs)
-        self.end_run()
-        return [self]
-
-    def _re_manage_runs(self, name, doc):
-        """
-        Callback for the RunEngine to manage run stop.
-        """
-        if name == 'stop':
-            self.end_run()
-
-    def unstage(self):
-        """
-        ``bluesky`` interface for undoing the `stage` routine.
-
-        Returns
-        -------
-        unstaged: ``list``
-            list of devices unstaged
-        """
-        logger.debug('Daq.unstage()')
-        if self._re_cbid is not None:
-            self._RE.unsubscribe(self._re_cbid)
-            self._re_cbid = None
-        # If we're still running, end now
-        if self.state in ('Open', 'Running'):
-            self.end_run()
-        # Return to running if we already were (to keep AMI running)
-        if self._pre_run_state == 'Running':
-            self.begin_infinite()
-        # For other states, end_run was sufficient.
-        # E.g. do not disconnect, or this would close the open plots!
-        return [self]
-
-    def pause(self):
-        """
-        ``bluesky`` interface for determining what to do when a plan is
-        interrupted. This will call `stop`, but it will not call `end_run`.
-        """
-        logger.debug('Daq.pause()')
-        if self.state == 'Running':
-            self.stop()
-
-    def resume(self):
-        """
-        ``bluesky`` interface for determining what to do when an interrupted
-        plan is resumed. This will call `begin`.
-        """
-        logger.debug('Daq.resume()')
-        if self.state == 'Open':
-            self.begin()
-
     @property
-    def _events(self):
+    def _events(self) -> Optional[int]:
         """
         For the current `begin` cycle, how many ``events`` we told the daq to
         run for.
         """
         events = self._begin['events']
-        if events is _CONFIG_VAL:
+        if events is CONFIG_VAL:
             events = self.config['events']
         return events
 
     @property
-    def _duration(self):
+    def _duration(self) -> Optional[int]:
         """
         For the current `begin` cycle, how long we told the daq to run for in
         seconds.
         """
         duration = self._begin['duration']
-        if duration is _CONFIG_VAL:
+        if duration is CONFIG_VAL:
             duration = self.config['duration']
         return duration
 
     @property
-    def _infinite_run(self):
+    def _infinite_run(self) -> bool:
+        """
+        True if configured for an infinite run.
+        """
         if self._events is None and self._duration is None:
             return True
         return self._events in (-1, 0)
 
-    def _reset_begin(self):
+    def _reset_begin(self) -> None:
         """
         Reset ``_begin`` to starting values for when we aren't running.
         """
         self._begin = dict(events=None, duration=None, use_l3t=None,
                            controls=None)
 
-    def run_number(self, hutch_name=None):
+    def run_number(self, hutch_name: Optional[str] = None):
         """
         Determine the run number of the last run, or current run if running.
 
@@ -1076,8 +877,13 @@ class Daq:
         except Exception:
             pass
 
-    def set_filter(self, *args, event_codes=None, operator='&',
-                   or_bykik=False):
+    def set_filter(
+        self,
+        *args,
+        event_codes: Optional[list[int]] = None,
+        operator: str = '&',
+        or_bykik: bool = False,
+    ) -> None:
         """
         Set up the l3t filters.
 
@@ -1121,39 +927,10 @@ class Daq:
         return set_pyami_filter(*args, event_codes=event_codes,
                                 operator=operator, or_bykik=or_bykik)
 
-    def set_monitor(self, det):
+    def set_monitor(self, det: AmiDet) -> None:
+        """
+        Pick the ami monitor det.
+        """
         return set_monitor_det(det)
+
     set_monitor.__doc__ = set_monitor_det.__doc__
-
-
-class StateTransitionError(Exception):
-    pass
-
-
-_daq_instance = None
-
-
-def register_daq(daq):
-    """
-    Called by `Daq` at the end of ``__init__`` to save our one daq instance as
-    the real `Daq`. There will always only be one `Daq`.
-
-    Parameters
-    ----------
-    daq: `Daq`
-    """
-    global _daq_instance
-    _daq_instance = daq
-    if daq.hutch_name is not None:
-        set_ami_hutch(daq.hutch_name.lower())
-
-
-def get_daq():
-    """
-    Called by other modules to get the registered `Daq` instance.
-
-    Returns
-    -------
-    daq: `Daq`
-    """
-    return _daq_instance

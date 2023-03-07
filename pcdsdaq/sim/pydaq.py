@@ -1,7 +1,7 @@
-import numbers
-import time
-import threading
 import logging
+import numbers
+import threading
+import time
 
 from pcdsdaq.daq import Daq
 from pcdsdaq.ext_scripts import get_hutch_name, get_run_number  # NOQA

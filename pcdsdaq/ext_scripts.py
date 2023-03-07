@@ -3,7 +3,6 @@ import re
 import socket
 import subprocess
 
-
 logger = logging.getLogger(__name__)
 CNF = '/reg/g/pcds/dist/pds/{0}/scripts/{0}.cnf'
 SCRIPTS = '/reg/g/pcds/engineering_tools/{}/scripts/{}'
