@@ -155,12 +155,13 @@ class DaqLCLS1(DaqBase):
                 except Exception as exc:
                     if 'query' in str(exc):
                         err = True
-                        logger.error('Failed to connect: DAQ is not '
-                                      'allocated!')
+                        logger.error("Failed to connect: DAQ is not allocated!")
             if not (err or conn):
                 err = True
-                logger.error('Failed to connect: DAQ is not running on this '
-                              'machine, and is not allocated!')
+                logger.error(
+                    "Failed to connect: DAQ is not running on this "
+                    "machine, and is not allocated!"
+                )
             if err:
                 logger.debug('del Daq.control')
                 del self._control
@@ -862,8 +863,9 @@ class DaqLCLS1(DaqBase):
             hutch_name = hutch_name.lower()
             if hutch_name not in ('amo', 'sxr', 'xpp', 'xcs', 'mfx', 'cxi',
                                   'mec', 'tst'):
-                raise ValueError('{} is not a valid hutch, cannot determine '
-                                  'run number'.format(hutch_name))
+                raise ValueError(
+                    f"{hutch_name} is not a valid hutch, cannot determine run number"
+                )
             if self.state in ('Open', 'Running') and self.config['record']:
                 return ext_scripts.get_run_number(hutch=hutch_name, live=True)
             else:

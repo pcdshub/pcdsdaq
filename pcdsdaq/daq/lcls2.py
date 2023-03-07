@@ -45,10 +45,10 @@ from __future__ import annotations
 import logging
 import threading
 import time
+from collections.abc import Iterator
 from functools import cache
 from numbers import Real
 from typing import Any, get_type_hints
-from collections.abc import Iterator
 
 from bluesky import RunEngine
 from ophyd.device import Component as Cpt
@@ -1666,7 +1666,6 @@ class DaqLCLS2(DaqBase):
     @record.setter
     def record(self, record: bool | None) -> None:
         self.preconfig(record=record, show_queued_cfg=False)
-
 
     def _set_record_state(self, record: bool) -> None:
         """

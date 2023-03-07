@@ -15,9 +15,9 @@ from __future__ import annotations
 import logging
 import threading
 import time
+from collections.abc import Generator
 from enum import Enum, IntEnum
 from typing import Any, ClassVar, Union
-from collections.abc import Generator
 
 from bluesky import RunEngine
 from ophyd.device import Component as Cpt
