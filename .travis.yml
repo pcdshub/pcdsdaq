@@ -29,7 +29,8 @@ env:
 
 jobs:
   allow_failures:
-    - name: "Python - PIP"
+    - name: "Pre-commit Checks"
+#    - name: "Python - PIP"
 
 import:
   # This import enables a set of standard python jobs including:
