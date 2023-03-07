@@ -15,7 +15,7 @@ import os
 import threading
 import time
 from importlib import import_module
-from typing import Any, Optional, Union
+from typing import Any
 
 from bluesky import RunEngine
 from ophyd.device import Component as Cpt

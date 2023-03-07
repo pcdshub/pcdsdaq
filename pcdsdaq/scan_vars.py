@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict
+from typing import Any
 
 from bluesky.callbacks.core import CallbackBase
 from ophyd.device import Component as Cpt
@@ -105,7 +105,6 @@ class ScanVars(Device, CallbackBase):
             except KeyError:
                 logger.debug('No num_points, skip num from top-level key.')
                 has_top_level_num = False
-                pass
             else:
                 self.n_steps.put(num_points)
                 has_top_level_num = True

@@ -16,7 +16,7 @@ import logging
 import threading
 import time
 from enum import Enum, IntEnum
-from typing import Any, ClassVar, Optional, Union
+from typing import Any, ClassVar, Union
 from collections.abc import Generator
 
 from bluesky import RunEngine

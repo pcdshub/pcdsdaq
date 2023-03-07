@@ -47,7 +47,7 @@ import threading
 import time
 from functools import cache
 from numbers import Real
-from typing import Any, Optional, Union, get_type_hints
+from typing import Any, get_type_hints
 from collections.abc import Iterator
 
 from bluesky import RunEngine
