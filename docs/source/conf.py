@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # pcdsdaq documentation build configuration file, created by
 # sphinx-quickstart.

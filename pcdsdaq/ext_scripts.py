@@ -13,7 +13,7 @@ def call_script(args, timeout=None, ignore_return_code=False):
     logger.debug('Calling external script %s with timeout=%s,'
                  ' ignore_fail=%s', args, timeout, ignore_return_code)
     try:
-        return subprocess.check_output(args, universal_newlines=True,
+        return subprocess.check_output(args, text=True,
                                        timeout=timeout)
     except subprocess.CalledProcessError as exc:
         if ignore_return_code:
