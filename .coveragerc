@@ -9,3 +9,4 @@ omit =
     #tests
     *test*
     pcdsdaq/tests/*
+    pcdsdaq/sim/*
