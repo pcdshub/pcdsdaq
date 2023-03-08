@@ -48,7 +48,7 @@ import time
 from collections.abc import Iterator
 from functools import cache
 from numbers import Real
-from typing import Any, get_type_hints
+from typing import Any, Union, get_type_hints
 
 from bluesky import RunEngine
 from ophyd.device import Component as Cpt
@@ -1316,20 +1316,20 @@ class DaqLCLS2(DaqBase):
 
     def preconfig(
         self,
-        events: int | None | Sentinel = CONFIG_VAL,
-        duration: Real | None | Sentinel = CONFIG_VAL,
-        record: bool | TernaryBool | None | Sentinel = CONFIG_VAL,
-        controls: ControlsArg | None | Sentinel = CONFIG_VAL,
-        motors: ControlsArg | None | Sentinel = CONFIG_VAL,
-        begin_timeout: Real | None | Sentinel = CONFIG_VAL,
-        begin_sleep: Real | None | Sentinel = CONFIG_VAL,
-        begin_throttle: Real | None | Sentinel = CONFIG_VAL,
-        group_mask: int | None | Sentinel = CONFIG_VAL,
-        detname: str | None | Sentinel = CONFIG_VAL,
-        scantype: str | None | Sentinel = CONFIG_VAL,
-        serial_number: str | None | Sentinel = CONFIG_VAL,
-        alg_name: str | None | Sentinel = CONFIG_VAL,
-        alg_version: list[int] | None | Sentinel = CONFIG_VAL,
+        events: Union[int, None, Sentinel] = CONFIG_VAL,
+        duration: Union[Real, None, Sentinel] = CONFIG_VAL,
+        record: Union[bool, TernaryBool, None, Sentinel] = CONFIG_VAL,
+        controls: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
+        motors: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
+        begin_timeout: Union[Real, None, Sentinel] = CONFIG_VAL,
+        begin_sleep: Union[Real, None, Sentinel] = CONFIG_VAL,
+        begin_throttle: Union[Real, None, Sentinel] = CONFIG_VAL,
+        group_mask: Union[int, None, Sentinel] = CONFIG_VAL,
+        detname: Union[str, None, Sentinel] = CONFIG_VAL,
+        scantype: Union[str, None, Sentinel] = CONFIG_VAL,
+        serial_number: Union[str, None, Sentinel] = CONFIG_VAL,
+        alg_name: Union[str, None, Sentinel] = CONFIG_VAL,
+        alg_version: Union[list[int], None, Sentinel] = CONFIG_VAL,
         show_queued_cfg: bool = True,
     ) -> None:
         """
