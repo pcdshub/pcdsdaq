@@ -1,16 +1,15 @@
 import logging
 
+import pytest
 from bluesky.callbacks.core import CallbackBase
 from bluesky.plan_stubs import create, read, save
-from bluesky.plans import count, scan, grid_scan, list_scan, list_grid_scan
+from bluesky.plans import count, grid_scan, list_grid_scan, list_scan, scan
 from bluesky.preprocessors import run_wrapper, stage_wrapper
 from ophyd.signal import Signal
 from ophyd.sim import det1, det2, motor, motor1, motor2, motor3
 
 import pcdsdaq.daq
 from pcdsdaq.scan_vars import ScanVars
-
-import pytest
 
 logger = logging.getLogger(__name__)
 

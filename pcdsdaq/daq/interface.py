@@ -15,8 +15,9 @@ from __future__ import annotations
 import logging
 import threading
 import time
+from collections.abc import Generator
 from enum import Enum, IntEnum
-from typing import Any, ClassVar, Generator, Optional, Union
+from typing import Any, ClassVar, Union
 
 from bluesky import RunEngine
 from ophyd.device import Component as Cpt
@@ -74,7 +75,7 @@ class TernaryBool(IntEnum):
     @classmethod
     def from_primitive(
         cls,
-        value: Union[bool, TernaryBool, None],
+        value: bool | TernaryBool | None,
     ) -> TernaryBool:
         if value in (None, TernaryBool.NONE):
             return cls.NONE
@@ -82,7 +83,7 @@ class TernaryBool(IntEnum):
             return cls.TRUE
         return cls.FALSE
 
-    def to_primitive(self) -> Optional[bool]:
+    def to_primitive(self) -> bool | None:
         if self == TernaryBool.NONE:
             return None
         else:
@@ -121,7 +122,7 @@ class DaqStateTransitionError(DaqError):
 
 
 # Helper functions
-def get_daq() -> Optional[DaqBase]:
+def get_daq() -> DaqBase | None:
     """
     Called by other modules to get the registered `DaqBase` instance.
 
@@ -345,13 +346,13 @@ class DaqBase(BaseInterface, Device):
     requires_configure_transition: ClassVar[set[str]]
 
     # Variables from init
-    _RE: Optional[RunEngine]
-    hutch_name: Optional[str]
-    platform: Optional[int]
+    _RE: RunEngine | None
+    hutch_name: str | None
+    platform: int | None
     _last_config: dict[str, Any]
     _queue_configure_transition: bool
     _default_config_overrides: dict[str, Any]
-    _re_cbid: Optional[int]
+    _re_cbid: int | None
 
     # Tab configuration for hutch-python tab filtering
     tab_whitelist = (
@@ -373,9 +374,9 @@ class DaqBase(BaseInterface, Device):
 
     def __init__(
         self,
-        RE: Optional[RunEngine] = None,
-        hutch_name: Optional[str] = None,
-        platform: Optional[int] = None,
+        RE: RunEngine | None = None,
+        hutch_name: str | None = None,
+        platform: int | None = None,
         *,
         name: str = 'daq',
     ):
@@ -458,7 +459,7 @@ class DaqBase(BaseInterface, Device):
 
     def wait(
         self,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
         end_run: bool = False,
     ) -> None:
         """
@@ -733,7 +734,7 @@ class DaqBase(BaseInterface, Device):
 
     def config_info(
         self,
-        config: Optional[dict[str, Any]] = None,
+        config: dict[str, Any] | None = None,
         header: str = 'Config:',
     ) -> None:
         """
@@ -761,13 +762,13 @@ class DaqBase(BaseInterface, Device):
         txt = []
         for key, value in config.items():
             if value is not None:
-                txt.append('{}={}'.format(key, value))
+                txt.append(f'{key}={value}')
         if header:
             header += ' '
         logger.info(header + ', '.join(txt))
 
     @property
-    def record(self) -> Optional[bool]:
+    def record(self) -> bool | None:
         """
         Whether or not to record data.
 
@@ -782,7 +783,7 @@ class DaqBase(BaseInterface, Device):
         return self.record_cfg.get().to_primitive()
 
     @record.setter
-    def record(self, record: Union[bool, TernaryBool, None]):
+    def record(self, record: bool | TernaryBool | None):
         self.preconfig(record=record, show_queued_cfg=False)
 
     def stage(self) -> list[DaqBase]:

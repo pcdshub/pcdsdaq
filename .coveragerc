@@ -3,11 +3,10 @@ source =
     pcdsdaq
 [report]
 omit =
-    #tests
-    */tests/*
-    *test*
     #versioning
     .*version.*
     *_version.py
-    #sim
+    #tests
+    *test*
+    pcdsdaq/tests/*
     pcdsdaq/sim/*

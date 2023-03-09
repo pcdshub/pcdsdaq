@@ -193,12 +193,13 @@ class Daq:
                 except Exception as exc:
                     if 'query' in str(exc):
                         err = True
-                        logger.error(('Failed to connect: DAQ is not '
-                                      'allocated!'))
+                        logger.error("Failed to connect: DAQ is not allocated!")
             if not (err or conn):
                 err = True
-                logger.error(('Failed to connect: DAQ is not running on this '
-                              'machine, and is not allocated!'))
+                logger.error(
+                    "Failed to connect: DAQ is not running on this "
+                    "machine, and is not allocated!"
+                )
             if err:
                 logger.debug('del Daq.control')
                 del self._control
@@ -681,7 +682,7 @@ class Daq:
                      events, duration, record, use_l3t, controls, begin_sleep)
         state = self.state
         if state not in ('Connected', 'Configured'):
-            err = 'Cannot configure from state {}!'.format(state)
+            err = f'Cannot configure from state {state}!'
             raise StateTransitionError(err)
 
         self._check_duration(duration)
@@ -746,7 +747,7 @@ class Daq:
         txt = []
         for key, value in config.items():
             if value is not None:
-                txt.append('{}={}'.format(key, value))
+                txt.append(f'{key}={value}')
         if header:
             header += ' '
         logger.info(header + ', '.join(txt))
@@ -1066,8 +1067,9 @@ class Daq:
             hutch_name = hutch_name.lower()
             if hutch_name not in ('amo', 'sxr', 'xpp', 'xcs', 'mfx', 'cxi',
                                   'mec', 'tst'):
-                raise ValueError(('{} is not a valid hutch, cannot determine '
-                                  'run number'.format(hutch_name)))
+                raise ValueError(
+                    f"{hutch_name} is not a valid hutch, cannot determine run number"
+                )
             if self.state in ('Open', 'Running') and self.config['record']:
                 return ext_scripts.get_run_number(hutch=hutch_name, live=True)
             else:

@@ -289,7 +289,7 @@ def basic_filter(ami_name, lower, upper):
     -------
     filter_string: ``str``
     """
-    return '{}<{}<{}'.format(lower, ami_name, upper)
+    return f'{lower}<{ami_name}<{upper}'
 
 
 def evr_filter(event_code):

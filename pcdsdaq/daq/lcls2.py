@@ -45,9 +45,10 @@ from __future__ import annotations
 import logging
 import threading
 import time
+from collections.abc import Iterator
 from functools import cache
 from numbers import Real
-from typing import Any, Iterator, Optional, Union, get_type_hints
+from typing import Any, Union, get_type_hints
 
 from bluesky import RunEngine
 from ophyd.device import Component as Cpt
@@ -236,8 +237,8 @@ class DaqLCLS2(DaqBase):
         platform: int,
         host: str,
         timeout: int,
-        RE: Optional[RunEngine] = None,
-        hutch_name: Optional[str] = None,
+        RE: RunEngine | None = None,
+        hutch_name: str | None = None,
         sim: bool = False,
     ):
         logger.debug(
@@ -391,7 +392,7 @@ class DaqLCLS2(DaqBase):
     @state_sig.sub_value
     def _configured_cb(
         self,
-        value: Optional[HelpfulIntEnum],
+        value: HelpfulIntEnum | None,
         **kwargs,
     ) -> None:
         """
@@ -425,7 +426,7 @@ class DaqLCLS2(DaqBase):
 
     def wait(
         self,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
         end_run: bool = False,
     ) -> None:
         """
@@ -457,9 +458,9 @@ class DaqLCLS2(DaqBase):
 
     def _get_status_for(
         self,
-        state: Optional[Iterator[EnumId]] = None,
-        transition: Optional[Iterator[EnumId]] = None,
-        timeout: Optional[float] = None,
+        state: Iterator[EnumId] | None = None,
+        transition: Iterator[EnumId] | None = None,
+        timeout: float | None = None,
         check_now: bool = True,
     ) -> Status:
         """
@@ -589,7 +590,7 @@ class DaqLCLS2(DaqBase):
 
     def _get_done_status(
         self,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
         check_now: bool = True,
     ) -> Status:
         """
@@ -630,7 +631,7 @@ class DaqLCLS2(DaqBase):
     def _state_transition(
         self,
         state: EnumId,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
         wait: bool = True,
     ) -> Status:
         """
@@ -941,19 +942,19 @@ class DaqLCLS2(DaqBase):
         self,
         wait: bool = False,
         end_run: bool = False,
-        events: Union[int, None, Sentinel] = CONFIG_VAL,
-        duration: Union[Real, None, Sentinel] = CONFIG_VAL,
-        record: Union[bool, TernaryBool, None, Sentinel] = CONFIG_VAL,
-        controls: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
-        motors: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
-        begin_timeout: Union[Real, None, Sentinel] = CONFIG_VAL,
-        begin_sleep: Union[Real, None, Sentinel] = CONFIG_VAL,
-        group_mask: Union[int, None, Sentinel] = CONFIG_VAL,
-        detname: Union[str, None, Sentinel] = CONFIG_VAL,
-        scantype: Union[str, None, Sentinel] = CONFIG_VAL,
-        serial_number: Union[str, None, Sentinel] = CONFIG_VAL,
-        alg_name: Union[str, None, Sentinel] = CONFIG_VAL,
-        alg_version: Union[list[int], None, Sentinel] = CONFIG_VAL,
+        events: int | None | Sentinel = CONFIG_VAL,
+        duration: Real | None | Sentinel = CONFIG_VAL,
+        record: bool | TernaryBool | None | Sentinel = CONFIG_VAL,
+        controls: ControlsArg | None | Sentinel = CONFIG_VAL,
+        motors: ControlsArg | None | Sentinel = CONFIG_VAL,
+        begin_timeout: Real | None | Sentinel = CONFIG_VAL,
+        begin_sleep: Real | None | Sentinel = CONFIG_VAL,
+        group_mask: int | None | Sentinel = CONFIG_VAL,
+        detname: str | None | Sentinel = CONFIG_VAL,
+        scantype: str | None | Sentinel = CONFIG_VAL,
+        serial_number: str | None | Sentinel = CONFIG_VAL,
+        alg_name: str | None | Sentinel = CONFIG_VAL,
+        alg_version: list[int] | None | Sentinel = CONFIG_VAL,
     ) -> None:
         """
         Interactive starting of the DAQ.
@@ -1479,19 +1480,19 @@ class DaqLCLS2(DaqBase):
 
     def configure(
         self,
-        events: Union[int, None, Sentinel] = CONFIG_VAL,
-        duration: Union[Real, None, Sentinel] = CONFIG_VAL,
-        record: Union[bool, TernaryBool, None, Sentinel] = CONFIG_VAL,
-        controls: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
-        motors: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
-        begin_timeout: Union[Real, None, Sentinel] = CONFIG_VAL,
-        begin_sleep: Union[Real, None, Sentinel] = CONFIG_VAL,
-        group_mask: Union[int, None, Sentinel] = CONFIG_VAL,
-        detname: Union[str, None, Sentinel] = CONFIG_VAL,
-        scantype: Union[str, None, Sentinel] = CONFIG_VAL,
-        serial_number: Union[str, None, Sentinel] = CONFIG_VAL,
-        alg_name: Union[str, None, Sentinel] = CONFIG_VAL,
-        alg_version: Union[list[int], None, Sentinel] = CONFIG_VAL,
+        events: int | None | Sentinel = CONFIG_VAL,
+        duration: Real | None | Sentinel = CONFIG_VAL,
+        record: bool | TernaryBool | None | Sentinel = CONFIG_VAL,
+        controls: ControlsArg | None | Sentinel = CONFIG_VAL,
+        motors: ControlsArg | None | Sentinel = CONFIG_VAL,
+        begin_timeout: Real | None | Sentinel = CONFIG_VAL,
+        begin_sleep: Real | None | Sentinel = CONFIG_VAL,
+        group_mask: int | None | Sentinel = CONFIG_VAL,
+        detname: str | None | Sentinel = CONFIG_VAL,
+        scantype: str | None | Sentinel = CONFIG_VAL,
+        serial_number: str | None | Sentinel = CONFIG_VAL,
+        alg_name: str | None | Sentinel = CONFIG_VAL,
+        alg_version: list[int] | None | Sentinel = CONFIG_VAL,
     ):
         """
         Adjusts the configuration, causing a "configure" transition if needed.
@@ -1663,9 +1664,8 @@ class DaqLCLS2(DaqBase):
         return cfg_record.to_primitive()
 
     @record.setter
-    def record(self, record: Optional[bool]) -> None:
+    def record(self, record: bool | None) -> None:
         self.preconfig(record=record, show_queued_cfg=False)
-
 
     def _set_record_state(self, record: bool) -> None:
         """
@@ -1891,7 +1891,7 @@ class SimDaqControl:
         self,
         state: EnumId,
         phase1_info: dict[str, Any],
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Request the needed transitions to get to state.
 
@@ -1962,7 +1962,7 @@ class SimDaqControl:
         self,
         transition: EnumId,
         state: EnumId,
-    ) -> Optional[str]:
+    ) -> str | None:
         """Change the currently set state and emit update."""
         logger.debug("SimDaqControl.sim_set_state(%s, %s)", transition, state)
         with self._lock:
@@ -1979,7 +1979,7 @@ class SimDaqControl:
                 self._last_run_number += 1
             self.sim_new_status(self._headers.status)
 
-    def sim_transition(self, state: EnumId) -> Optional[str]:
+    def sim_transition(self, state: EnumId) -> str | None:
         """Internal transition, checks if valid."""
         logger.debug("SimDaqControl.sim_transition(%s)", state)
         with self._lock:

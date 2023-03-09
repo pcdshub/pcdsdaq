@@ -15,7 +15,7 @@ import os
 import threading
 import time
 from importlib import import_module
-from typing import Any, Optional, Union
+from typing import Any
 
 from bluesky import RunEngine
 from ophyd.device import Component as Cpt
@@ -91,8 +91,8 @@ class DaqLCLS1(DaqBase):
 
     def __init__(
         self,
-        RE: Optional[RunEngine] = None,
-        hutch_name: Optional[str] = None,
+        RE: RunEngine | None = None,
+        hutch_name: str | None = None,
     ):
         if pydaq is None:
             globals()['pydaq'] = import_module('pydaq')
@@ -155,12 +155,13 @@ class DaqLCLS1(DaqBase):
                 except Exception as exc:
                     if 'query' in str(exc):
                         err = True
-                        logger.error(('Failed to connect: DAQ is not '
-                                      'allocated!'))
+                        logger.error("Failed to connect: DAQ is not allocated!")
             if not (err or conn):
                 err = True
-                logger.error(('Failed to connect: DAQ is not running on this '
-                              'machine, and is not allocated!'))
+                logger.error(
+                    "Failed to connect: DAQ is not running on this "
+                    "machine, and is not allocated!"
+                )
             if err:
                 logger.debug('del Daq.control')
                 del self._control
@@ -187,7 +188,7 @@ class DaqLCLS1(DaqBase):
     @check_connect
     def wait(
         self,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
         end_run: bool = False,
     ) -> None:
         """
@@ -218,11 +219,11 @@ class DaqLCLS1(DaqBase):
 
     def begin(
         self,
-        events: Union[int, None, Sentinel] = CONFIG_VAL,
-        duration: Union[int, None, Sentinel] = CONFIG_VAL,
-        record: Union[bool, None, Sentinel] = CONFIG_VAL,
-        use_l3t: Union[bool, None, Sentinel] = CONFIG_VAL,
-        controls: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
+        events: int | None | Sentinel = CONFIG_VAL,
+        duration: int | None | Sentinel = CONFIG_VAL,
+        record: bool | None | Sentinel = CONFIG_VAL,
+        use_l3t: bool | None | Sentinel = CONFIG_VAL,
+        controls: ControlsArg | None | Sentinel = CONFIG_VAL,
         wait: bool = False,
         end_run: bool = False,
     ):
@@ -297,9 +298,9 @@ class DaqLCLS1(DaqBase):
 
     def begin_infinite(
         self,
-        record: Union[bool, None, Sentinel] = CONFIG_VAL,
-        use_l3t: Union[bool, None, Sentinel] = CONFIG_VAL,
-        controls: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
+        record: bool | None | Sentinel = CONFIG_VAL,
+        use_l3t: bool | None | Sentinel = CONFIG_VAL,
+        controls: ControlsArg | None | Sentinel = CONFIG_VAL,
     ) -> None:
         """
         Start the daq to run forever in the background.
@@ -372,10 +373,10 @@ class DaqLCLS1(DaqBase):
     @check_connect
     def kickoff(
         self,
-        events: Union[int, None, Sentinel] = CONFIG_VAL,
-        duration: Union[int, None, Sentinel] = CONFIG_VAL,
-        use_l3t: Union[bool, None, Sentinel] = CONFIG_VAL,
-        controls: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
+        events: int | None | Sentinel = CONFIG_VAL,
+        duration: int | None | Sentinel = CONFIG_VAL,
+        use_l3t: bool | None | Sentinel = CONFIG_VAL,
+        controls: ControlsArg | None | Sentinel = CONFIG_VAL,
     ) -> Status:
         """
         Begin acquisition. This method is non-blocking.
@@ -529,12 +530,12 @@ class DaqLCLS1(DaqBase):
 
     def preconfig(
         self,
-        events: Union[int, None, Sentinel] = CONFIG_VAL,
-        duration: Union[int, None, Sentinel] = CONFIG_VAL,
-        record: Union[bool, None, Sentinel] = CONFIG_VAL,
-        use_l3t: Union[bool, None, Sentinel] = CONFIG_VAL,
-        controls: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
-        begin_sleep: Union[int, None, Sentinel] = CONFIG_VAL,
+        events: int | None | Sentinel = CONFIG_VAL,
+        duration: int | None | Sentinel = CONFIG_VAL,
+        record: bool | None | Sentinel = CONFIG_VAL,
+        use_l3t: bool | None | Sentinel = CONFIG_VAL,
+        controls: ControlsArg | None | Sentinel = CONFIG_VAL,
+        begin_sleep: int | None | Sentinel = CONFIG_VAL,
         show_queued_cfg: bool = True,
     ) -> None:
         """
@@ -566,12 +567,12 @@ class DaqLCLS1(DaqBase):
     @check_connect
     def configure(
         self,
-        events: Union[int, None, Sentinel] = CONFIG_VAL,
-        duration: Union[int, None, Sentinel] = CONFIG_VAL,
-        record: Union[bool, None, Sentinel] = CONFIG_VAL,
-        use_l3t: Union[bool, None, Sentinel] = CONFIG_VAL,
-        controls: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
-        begin_sleep: Union[int, None, Sentinel] = CONFIG_VAL,
+        events: int | None | Sentinel = CONFIG_VAL,
+        duration: int | None | Sentinel = CONFIG_VAL,
+        record: bool | None | Sentinel = CONFIG_VAL,
+        use_l3t: bool | None | Sentinel = CONFIG_VAL,
+        controls: ControlsArg | None | Sentinel = CONFIG_VAL,
+        begin_sleep: int | None | Sentinel = CONFIG_VAL,
     ) -> tuple[dict, dict]:
         """
         Changes the daq's configuration for the next run.
@@ -637,7 +638,7 @@ class DaqLCLS1(DaqBase):
                      events, duration, record, use_l3t, controls, begin_sleep)
         state = self.state
         if state not in ('Connected', 'Configured'):
-            err = 'Cannot configure from state {}!'.format(state)
+            err = f'Cannot configure from state {state}!'
             raise DaqStateTransitionError(err)
 
         self._check_duration(duration)
@@ -734,10 +735,10 @@ class DaqLCLS1(DaqBase):
 
     def _begin_args(
         self,
-        events: Union[int, None, Sentinel] = CONFIG_VAL,
-        duration: Union[int, None, Sentinel] = CONFIG_VAL,
-        use_l3t: Union[bool, None, Sentinel] = CONFIG_VAL,
-        controls: Union[ControlsArg, None, Sentinel] = CONFIG_VAL,
+        events: int | None | Sentinel = CONFIG_VAL,
+        duration: int | None | Sentinel = CONFIG_VAL,
+        use_l3t: bool | None | Sentinel = CONFIG_VAL,
+        controls: ControlsArg | None | Sentinel = CONFIG_VAL,
     ) -> dict[str, Any]:
         """
         For a given set of arguments to `begin`, return the arguments that
@@ -777,7 +778,7 @@ class DaqLCLS1(DaqBase):
             begin_args['controls'] = self._ctrl_arg(controls)
         return begin_args
 
-    def _check_duration(self, duration: Union[int, None, Sentinel]):
+    def _check_duration(self, duration: int | None | Sentinel):
         if duration not in (None, CONFIG_VAL) and duration < 1:
             msg = ('Duration argument less than 1 is unreliable. Please '
                    'use the events argument to specify the length of '
@@ -785,7 +786,7 @@ class DaqLCLS1(DaqBase):
             raise RuntimeError(msg)
 
     @property
-    def _events(self) -> Optional[int]:
+    def _events(self) -> int | None:
         """
         For the current `begin` cycle, how many ``events`` we told the daq to
         run for.
@@ -796,7 +797,7 @@ class DaqLCLS1(DaqBase):
         return events
 
     @property
-    def _duration(self) -> Optional[int]:
+    def _duration(self) -> int | None:
         """
         For the current `begin` cycle, how long we told the daq to run for in
         seconds.
@@ -822,7 +823,7 @@ class DaqLCLS1(DaqBase):
         self._begin = dict(events=None, duration=None, use_l3t=None,
                            controls=None)
 
-    def run_number(self, hutch_name: Optional[str] = None):
+    def run_number(self, hutch_name: str | None = None):
         """
         Determine the run number of the last run, or current run if running.
 
@@ -862,8 +863,9 @@ class DaqLCLS1(DaqBase):
             hutch_name = hutch_name.lower()
             if hutch_name not in ('amo', 'sxr', 'xpp', 'xcs', 'mfx', 'cxi',
                                   'mec', 'tst'):
-                raise ValueError(('{} is not a valid hutch, cannot determine '
-                                  'run number'.format(hutch_name)))
+                raise ValueError(
+                    f"{hutch_name} is not a valid hutch, cannot determine run number"
+                )
             if self.state in ('Open', 'Running') and self.config['record']:
                 return ext_scripts.get_run_number(hutch=hutch_name, live=True)
             else:
@@ -880,7 +882,7 @@ class DaqLCLS1(DaqBase):
     def set_filter(
         self,
         *args,
-        event_codes: Optional[list[int]] = None,
+        event_codes: list[int] | None = None,
         operator: str = '&',
         or_bykik: bool = False,
     ) -> None:
