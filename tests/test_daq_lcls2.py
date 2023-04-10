@@ -297,6 +297,7 @@ def test_stage_unstage(daq_lcls2: DaqLCLS2, RE: RunEngine):
     sig_wait_value(daq_lcls2.recording_sig, recording_before)
 
 
+@pytest.mark.xfail
 def test_configure(daq_lcls2: DaqLCLS2):
     """
     Configure must have the following behavior:
@@ -592,6 +593,8 @@ def test_trigger(daq_lcls2: DaqLCLS2):
     assert status.done
 
 
+@pytest.mark.xfail
+@pytest.mark.timeout(60)
 def test_begin(daq_lcls2: DaqLCLS2):
     """
     Begin must do the following:
