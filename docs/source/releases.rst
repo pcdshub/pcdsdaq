@@ -1,6 +1,31 @@
 Release History
 ###############
 
+v2.4.1 (2023-04-11)
+===================
+
+- Mark tests as xfail, we'll come back to fix them later.
+  This is not operation critical.
+  One of these tests contain a nasty race condition that
+  causes the suite to time out.
+- Fix an issue where automatic pypi/conda uploads would
+  not have proper authentication.
+
+
+v2.4.0 (2023-04-04)
+==================
+
+This includes a large update for lcls2 daq support,
+but the module is fully backwards compatible with
+the previous versions.
+
+- Huge addition of 1st-class lcls2 daq support
+  including monitoring the current daq's status and running it.
+  Uses the daq's own APIs repackaged for bluesky.
+- Migrate to github actions, pyproject.toml, and other ecs standards.
+- Merge an ancient PR that adds a useful feature for CXI
+
+
 v2.3.5 (2022-06-02)
 ===================
 
