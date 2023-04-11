@@ -8,6 +8,8 @@ v2.4.1 (2023-04-11)
   This is not operation critical.
   One of these tests contain a nasty race condition that
   causes the suite to time out.
+- Fix an issue where automatic pypi/conda uploads would
+  not have proper authentication.
 
 
 v2.4.0 (2023-04-04)
