@@ -1,6 +1,14 @@
 Release History
 ###############
 
+v2.4.2 (2023-04-13)
+===================
+
+- Fix issues related to the missing pcdsdaq_lib_setup script
+- Fix issues related to failing pypi builds
+- Fix issues related to failing docs builds
+
+
 v2.4.1 (2023-04-11)
 ===================
 
