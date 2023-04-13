@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Basic Usage &mdash; pcdsdaq 2.4.2.dev8+g6dfbb11 documentation</title>
+  <title>Basic Usage &mdash; pcdsdaq 2.4.2 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -36,7 +36,7 @@
             pcdsdaq
           </a>
               <div class="version">
-                2.4.2.dev8+g6dfbb11
+                2.4.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -180,7 +180,7 @@ Here I check <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.st
 <span class="gp">In [6]: </span><span class="n">daq</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
 
 <span class="gp">In [7]: </span><span class="nb">print</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
-<span class="go">1.0044567584991455</span>
+<span class="go">1.004270315170288</span>
 
 <span class="gp">In [8]: </span><span class="n">daq</span><span class="o">.</span><span class="n">state</span>
 <span class="gh">Out[8]: </span><span class="go">&#39;Open&#39;</span>
@@ -210,7 +210,7 @@ Optionally, we can call <a class="reference internal" href="daq_api.html#pcdsdaq
 <span class="gp">In [15]: </span><span class="n">daq</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
 
 <span class="gp">In [16]: </span><span class="nb">print</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
-<span class="go">3.0003576278686523</span>
+<span class="go">2.998878002166748</span>
 
 <span class="gp">In [17]: </span><span class="n">daq</span><span class="o">.</span><span class="n">state</span>
 <span class="gh">Out[17]: </span><span class="go">&#39;Open&#39;</span>
@@ -234,7 +234,7 @@ We can pass <code class="docutils literal notranslate"><span class="pre">wait=Tr
 <span class="gp">In [22]: </span><span class="n">daq</span><span class="o">.</span><span class="n">begin</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="gp">In [23]: </span><span class="nb">print</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
-<span class="go">2.4988179206848145</span>
+<span class="go">2.49849271774292</span>
 
 <span class="gp">In [24]: </span><span class="n">daq</span><span class="o">.</span><span class="n">state</span>
 <span class="gh">Out[24]: </span><span class="go">&#39;Open&#39;</span>

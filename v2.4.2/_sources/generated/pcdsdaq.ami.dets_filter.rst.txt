@@ -1,0 +1,6 @@
+pcdsdaq.ami.dets\_filter
+========================
+
+.. currentmodule:: pcdsdaq.ami
+
+.. autofunction:: dets_filter
