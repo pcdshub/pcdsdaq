@@ -1,94 +1,52 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
-  <title>Basic Usage &mdash; pcdsdaq 2.3.4 documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-
-  
-  
-
-  
-  
-
-  
-
-  
+  <title>Basic Usage &mdash; pcdsdaq 2.4.2.dev8+g6dfbb11 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/doctools.js"></script>
-    
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-
-    
+        <script src="_static/sphinx_highlight.js"></script>
+        <script src="_static/docs-versions-menu.js"></script>
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Configuration" href="daq_config.html" />
     <link rel="prev" title="pcdsdaq" href="index.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
 
           
-            <a href="index.html" class="icon icon-home"> pcdsdaq
           
-
-          
+          <a href="index.html" class="icon icon-home">
+            pcdsdaq
           </a>
-
-          
-            
-            
               <div class="version">
-                2.3.4
+                2.4.2.dev8+g6dfbb11
               </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
-              <p class="caption"><span class="caption-text">Running the DAQ</span></p>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Running the DAQ</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Basic Usage</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#creating-a-daq-object">Creating a Daq object</a></li>
@@ -103,111 +61,66 @@
 <li class="toctree-l1"><a class="reference internal" href="daq_config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="daq_api.html">Daq API</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Getting AMI Data</span></p>
+<p class="caption" role="heading"><span class="caption-text">Getting AMI Data</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="ami_basic.html">Basic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ami_api.html">AmiDet API</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Bluesky Plans</span></p>
+<p class="caption" role="heading"><span class="caption-text">Bluesky Plans</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="plans_basic.html">Using the DAQ with Bluesky</a></li>
 <li class="toctree-l1"><a class="reference internal" href="preprocessors_api.html">Preprocessors API</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Auxiliary Features</span></p>
+<p class="caption" role="heading"><span class="caption-text">Auxiliary Features</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="scan_pvs.html">Scan PVs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="misc.html">Miscellaneous</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Sim Mode</span></p>
+<p class="caption" role="heading"><span class="caption-text">Sim Mode</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="sim.html">Simulated DAQ</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Developer Notes</span></p>
+<p class="caption" role="heading"><span class="caption-text">Developer Notes</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="env.html">Environments</a></li>
 <li class="toctree-l1"><a class="reference internal" href="releases.html">Release History</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">pcdsdaq</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-        
-      <li>Basic Usage</li>
-    
-    
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Basic Usage</li>
       <li class="wy-breadcrumbs-aside">
-        
-          
             <a href="_sources/daq_basic.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="basic-usage">
-<h1>Basic Usage<a class="headerlink" href="#basic-usage" title="Permalink to this headline">¶</a></h1>
+             
+  <section id="basic-usage">
+<h1>Basic Usage<a class="headerlink" href="#basic-usage" title="Permalink to this heading">¶</a></h1>
 <p>The <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> class allows a user to connect to the LCLS1 daq and control it.
 For this to work, the daq must be up and allocated.</p>
 <p>The most important method is <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.begin</span></code></a>. This will connect, configure,
 and start running the daq all in one call. <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.stop" title="pcdsdaq.daq.Daq.stop"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.stop</span></code></a> can be used to stop
 acquiring data without ending a run. <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.begin</span></code></a> can be called again to
 resume a stopped run. <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.end_run" title="pcdsdaq.daq.Daq.end_run"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.end_run</span></code></a> will end the run.</p>
-<p><a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.state" title="pcdsdaq.daq.Daq.state"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.state</span></code></a> can be used to inspect what the daq is currently doing. It will
+<p><a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.state" title="pcdsdaq.daq.Daq.state"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">Daq.state</span></code></a> can be used to inspect what the daq is currently doing. It will
 return one of the following possibilities:</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 27%" />
-<col style="width: 73%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>State</p></th>
 <th class="head"><p>Meaning</p></th>
@@ -233,8 +146,8 @@ return one of the following possibilities:</p>
 </table>
 <p>I will step through the basic options for <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.begin</span></code></a> below. You can consult
 the full <a class="reference internal" href="daq_api.html"><span class="doc">api docs</span></a> for more information.</p>
-<div class="section" id="creating-a-daq-object">
-<h2>Creating a Daq object<a class="headerlink" href="#creating-a-daq-object" title="Permalink to this headline">¶</a></h2>
+<section id="creating-a-daq-object">
+<h2>Creating a Daq object<a class="headerlink" href="#creating-a-daq-object" title="Permalink to this heading">¶</a></h2>
 <p>First, I will set up the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> class in simulated mode. In practice, the
 <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> class will be set up for you in the <code class="docutils literal notranslate"><span class="pre">hutch-python</span></code> configuration.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pcdsdaq.daq</span> <span class="kn">import</span> <span class="n">Daq</span>
@@ -244,14 +157,14 @@ the full <a class="reference internal" href="daq_api.html"><span class="doc">api
 <span class="n">daq</span> <span class="o">=</span> <span class="n">Daq</span><span class="p">()</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="running-until-stop">
-<h2>Running Until Stop<a class="headerlink" href="#running-until-stop" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="running-until-stop">
+<h2>Running Until Stop<a class="headerlink" href="#running-until-stop" title="Permalink to this heading">¶</a></h2>
 <p>Calling <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.begin</span></code></a> with no arguments in the default configuration will
 run the daq indefinitely, until we manually stop it.
 You can also use <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin_infinite" title="pcdsdaq.daq.Daq.begin_infinite"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.begin_infinite</span></code></a> to run the daq indefinitely with
 any configuration.
-Here I check <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.state" title="pcdsdaq.daq.Daq.state"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.state</span></code></a> to verify that we’ve started running the daq.</p>
+Here I check <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.state" title="pcdsdaq.daq.Daq.state"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">Daq.state</span></code></a> to verify that we’ve started running the daq.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="n">daq</span><span class="o">.</span><span class="n">state</span>
 <span class="gh">Out[1]: </span><span class="go">&#39;Disconnected&#39;</span>
 
@@ -267,7 +180,7 @@ Here I check <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.st
 <span class="gp">In [6]: </span><span class="n">daq</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
 
 <span class="gp">In [7]: </span><span class="nb">print</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
-<span class="go">1.0051922798156738</span>
+<span class="go">1.0044567584991455</span>
 
 <span class="gp">In [8]: </span><span class="n">daq</span><span class="o">.</span><span class="n">state</span>
 <span class="gh">Out[8]: </span><span class="go">&#39;Open&#39;</span>
@@ -278,9 +191,9 @@ Here I check <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.st
 <span class="gh">Out[10]: </span><span class="go">&#39;Configured&#39;</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="running-for-a-fixed-number-of-events">
-<h2>Running for a Fixed Number of Events<a class="headerlink" href="#running-for-a-fixed-number-of-events" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="running-for-a-fixed-number-of-events">
+<h2>Running for a Fixed Number of Events<a class="headerlink" href="#running-for-a-fixed-number-of-events" title="Permalink to this heading">¶</a></h2>
 <p>Use the <code class="docutils literal notranslate"><span class="pre">events</span></code> argument to specify duration in number of events.
 The duration of this run will depend on the current beam rate.
 Optionally, we can call <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.wait" title="pcdsdaq.daq.Daq.wait"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.wait</span></code></a> to pause until acquisition is complete.</p>
@@ -297,7 +210,7 @@ Optionally, we can call <a class="reference internal" href="daq_api.html#pcdsdaq
 <span class="gp">In [15]: </span><span class="n">daq</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
 
 <span class="gp">In [16]: </span><span class="nb">print</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
-<span class="go">2.9982757568359375</span>
+<span class="go">3.0003576278686523</span>
 
 <span class="gp">In [17]: </span><span class="n">daq</span><span class="o">.</span><span class="n">state</span>
 <span class="gh">Out[17]: </span><span class="go">&#39;Open&#39;</span>
@@ -308,9 +221,9 @@ Optionally, we can call <a class="reference internal" href="daq_api.html#pcdsdaq
 <span class="gh">Out[19]: </span><span class="go">&#39;Configured&#39;</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="runing-for-a-fixed-time-duration">
-<h2>Runing for a Fixed Time Duration<a class="headerlink" href="#runing-for-a-fixed-time-duration" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="runing-for-a-fixed-time-duration">
+<h2>Runing for a Fixed Time Duration<a class="headerlink" href="#runing-for-a-fixed-time-duration" title="Permalink to this heading">¶</a></h2>
 <p>Use the <code class="docutils literal notranslate"><span class="pre">duration</span></code> argument to specify duration in seconds.
 We can pass <code class="docutils literal notranslate"><span class="pre">wait=True</span></code> to skip the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.wait" title="pcdsdaq.daq.Daq.wait"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.wait</span></code></a> call.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [20]: </span><span class="n">daq</span><span class="o">.</span><span class="n">state</span>
@@ -321,7 +234,7 @@ We can pass <code class="docutils literal notranslate"><span class="pre">wait=Tr
 <span class="gp">In [22]: </span><span class="n">daq</span><span class="o">.</span><span class="n">begin</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="gp">In [23]: </span><span class="nb">print</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
-<span class="go">2.4977757930755615</span>
+<span class="go">2.4988179206848145</span>
 
 <span class="gp">In [24]: </span><span class="n">daq</span><span class="o">.</span><span class="n">state</span>
 <span class="gh">Out[24]: </span><span class="go">&#39;Open&#39;</span>
@@ -332,9 +245,9 @@ We can pass <code class="docutils literal notranslate"><span class="pre">wait=Tr
 <span class="gh">Out[26]: </span><span class="go">&#39;Configured&#39;</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="ending-a-run">
-<h2>Ending a Run<a class="headerlink" href="#ending-a-run" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="ending-a-run">
+<h2>Ending a Run<a class="headerlink" href="#ending-a-run" title="Permalink to this heading">¶</a></h2>
 <p>As seen in the previous examples, <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.end_run" title="pcdsdaq.daq.Daq.end_run"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.end_run</span></code></a> can be used to tell the daq
 that the current run is over. You can also do with with an argument to
 <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.begin</span></code></a> for a nice one-liner:</p>
@@ -347,10 +260,10 @@ that the current run is over. You can also do with with an argument to
 <span class="gh">Out[29]: </span><span class="go">&#39;Configured&#39;</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="recording-data">
-<h2>Recording Data<a class="headerlink" href="#recording-data" title="Permalink to this headline">¶</a></h2>
-<p>You can set <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.record" title="pcdsdaq.daq.Daq.record"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.record</span></code></a> to <code class="docutils literal notranslate"><span class="pre">True</span></code> to record data. This is fairly simple:</p>
+</section>
+<section id="recording-data">
+<h2>Recording Data<a class="headerlink" href="#recording-data" title="Permalink to this heading">¶</a></h2>
+<p>You can set <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.record" title="pcdsdaq.daq.Daq.record"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">Daq.record</span></code></a> to <code class="docutils literal notranslate"><span class="pre">True</span></code> to record data. This is fairly simple:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [30]: </span><span class="n">daq</span><span class="o">.</span><span class="n">record</span> <span class="o">=</span> <span class="kc">True</span>
 </pre></div>
 </div>
@@ -370,9 +283,9 @@ You can undo this by simply setting:</p>
 <span class="gh">Out[34]: </span><span class="go">False</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="advanced-options">
-<h2>Advanced Options<a class="headerlink" href="#advanced-options" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="advanced-options">
+<h2>Advanced Options<a class="headerlink" href="#advanced-options" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
 <li><dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">use_l3t=True</span></code>: This will reinterpret the <code class="docutils literal notranslate"><span class="pre">events</span></code> argument as</dt><dd><p>“the number of events that pass the level 3 trigger.”</p>
@@ -396,55 +309,38 @@ actually start before doing some action.</p>
 </dl>
 </li>
 </ul>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="daq_config.html" class="btn btn-neutral float-right" title="Configuration" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="index.html" class="btn btn-neutral float-left" title="pcdsdaq" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="daq_config.html" class="btn btn-neutral float-right" title="Configuration" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright .
-
-    </p>
+    <p>&#169; Copyright .</p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

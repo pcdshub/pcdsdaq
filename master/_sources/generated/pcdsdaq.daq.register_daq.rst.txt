@@ -1,6 +1,0 @@
-pcdsdaq.daq.register\_daq
-=========================
-
-.. currentmodule:: pcdsdaq.daq
-
-.. autofunction:: register_daq
