@@ -57,13 +57,18 @@ from ophyd.status import Status
 from ophyd.utils import StatusTimeoutError, WaitTimeoutError
 from ophyd.utils.errors import InvalidState
 from pcdsutils.enum import HelpfulIntEnum
-from psdaq.control.ControlDef import ControlDef
-from psdaq.control.DaqControl import DaqControl
 
 from .interface import (CONFIG_VAL, ControlsArg, DaqBase,
                         DaqStateTransitionError, DaqTimeoutError, EnumId,
                         Sentinel, TernaryBool, get_controls_name,
                         get_controls_value, typing_check)
+
+try:
+    from psdaq.control.ControlDef import ControlDef
+    from psdaq.control.DaqControl import DaqControl
+except ImportError:
+    ControlDef = None
+    DaqControl = None
 
 logger = logging.getLogger(__name__)
 
@@ -1811,6 +1816,11 @@ class SimDaqControl:
 
     def __init__(self, *args, **kwargs):
         logger.debug("SimDaqControl.__init__(%s, %s)", args, kwargs)
+        if None in (ControlDef, DaqControl):
+            raise RuntimeError(
+                'Optional dependency psdaq is not installed, '
+                'cannot run lcls2 daq'
+            )
         self._lock = threading.RLock()
         self._new_status = threading.Event()
         self._headers = HelpfulIntEnum(

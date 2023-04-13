@@ -12,16 +12,22 @@ from ophyd.positioner import SoftPositioner
 from ophyd.signal import Signal
 from ophyd.sim import motor
 from ophyd.utils.errors import WaitTimeoutError
-from psdaq.control.ControlDef import ControlDef
 
 from pcdsdaq.daq import DaqLCLS2, DaqTimeoutError
 from pcdsdaq.daq.interface import DaqStateTransitionError, TernaryBool
+
+try:
+    from psdaq.control.ControlDef import ControlDef
+except ImportError:
+    ControlDef = None
 
 logger = logging.getLogger(__name__)
 
 
 @pytest.fixture(scope='function')
 def daq_lcls2(RE: RunEngine) -> DaqLCLS2:
+    if ControlDef is None:
+        pytest.skip(reason='psdaq is not installed')
     return DaqLCLS2(
         platform=0,
         host='tst',
