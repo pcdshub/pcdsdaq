@@ -30,6 +30,8 @@ requirements:
 test:
   imports:
   - pcdsdaq
+  commands:
+  - psdaq_lib_setup
   requires:
   - pytest
   - pytest-timeout
