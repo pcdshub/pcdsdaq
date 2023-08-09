@@ -6,6 +6,7 @@ from bluesky.preprocessors import fly_during_wrapper, stage_wrapper
 from bluesky.utils import make_decorator
 
 from .daq import get_daq
+from .exceptions import DaqNotRegisteredError
 
 
 def daq_during_wrapper(plan, record=None, use_l3t=False, controls=None):
@@ -45,6 +46,11 @@ def daq_during_wrapper(plan, record=None, use_l3t=False, controls=None):
         must have a ``name`` attribute.
     """
     daq = get_daq()
+    if daq is None:
+        raise DaqNotRegisteredError(
+            "A daq object has not yet been registered.  Scans are unavailable "
+            "until one is initialized and registered."
+        )
     yield from configure(daq, events=None, duration=None, record=record,
                          use_l3t=use_l3t, controls=controls)
     yield from stage_wrapper(fly_during_wrapper(plan, flyers=[daq]), [daq])
