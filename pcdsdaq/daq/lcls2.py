@@ -58,10 +58,10 @@ from ophyd.utils import StatusTimeoutError, WaitTimeoutError
 from ophyd.utils.errors import InvalidState
 from pcdsutils.enum import HelpfulIntEnum
 
-from .interface import (CONFIG_VAL, ControlsArg, DaqBase,
-                        DaqStateTransitionError, DaqTimeoutError, EnumId,
-                        Sentinel, TernaryBool, get_controls_name,
-                        get_controls_value, typing_check)
+from ..exceptions import DaqStateTransitionError, DaqTimeoutError
+from .interface import (CONFIG_VAL, ControlsArg, DaqBase, EnumId, Sentinel,
+                        TernaryBool, get_controls_name, get_controls_value,
+                        typing_check)
 
 try:
     from psdaq.control.ControlDef import ControlDef

@@ -17,9 +17,14 @@ Here are the available classes:
   lcls1-compatible interface for maximum parity between lcls1 and lcls2.
   It will be importable once it is ready for testing.
 """
-# flake8: noqa
-from .interface import (DaqError, DaqStateTransitionError, DaqTimeoutError,
-                        get_daq)
+from .interface import get_daq
 # from .lcls1 import DaqLCLS1  # DaqLCLS1 is not yet ready
 from .lcls2 import DaqLCLS2
 from .original import Daq  # Backcompat, will be deprecated
+
+__all__ = [
+    "get_daq",
+    "Daq",
+    # "DaqLCLS1",
+    "DaqLCLS2",
+]
