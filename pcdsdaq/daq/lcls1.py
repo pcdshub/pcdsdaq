@@ -25,8 +25,8 @@ from ophyd.utils import StatusTimeoutError, WaitTimeoutError
 
 from .. import ext_scripts
 from ..ami import AmiDet, set_monitor_det, set_pyami_filter
-from .interface import (CONFIG_VAL, ControlsArg, DaqBase,
-                        DaqStateTransitionError, DaqTimeoutError, Sentinel,
+from ..exceptions import DaqStateTransitionError, DaqTimeoutError
+from .interface import (CONFIG_VAL, ControlsArg, DaqBase, Sentinel,
                         get_controls_value)
 
 logger = logging.getLogger(__name__)

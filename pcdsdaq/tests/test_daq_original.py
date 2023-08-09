@@ -11,12 +11,11 @@ from bluesky.plans import count
 from bluesky.preprocessors import run_wrapper, stage_wrapper
 from ophyd.status import wait as status_wait
 
-import pcdsdaq.ext_scripts as ext
-import pcdsdaq.sim.pydaq as sim_pydaq
-from pcdsdaq.daq import original as daq_module
-from pcdsdaq.daq.original import (BEGIN_TIMEOUT, DaqTimeoutError,
-                                  StateTransitionError)
-
+from .. import ext_scripts as ext
+from ..daq import original as daq_module
+from ..daq.original import BEGIN_TIMEOUT, StateTransitionError
+from ..exceptions import DaqTimeoutError
+from ..sim import pydaq as sim_pydaq
 from .conftest import skip_windows
 
 logger = logging.getLogger(__name__)

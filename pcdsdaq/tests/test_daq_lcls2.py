@@ -13,8 +13,9 @@ from ophyd.signal import Signal
 from ophyd.sim import motor
 from ophyd.utils.errors import WaitTimeoutError
 
-from pcdsdaq.daq import DaqLCLS2, DaqTimeoutError
-from pcdsdaq.daq.interface import DaqStateTransitionError, TernaryBool
+from ..daq import DaqLCLS2
+from ..daq.interface import TernaryBool
+from ..exceptions import DaqStateTransitionError, DaqTimeoutError
 
 try:
     from psdaq.control.ControlDef import ControlDef
