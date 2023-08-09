@@ -4,19 +4,19 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Using the DAQ with Bluesky &mdash; pcdsdaq 2.4.2 documentation</title>
+  <title>Using the DAQ with Bluesky &mdash; pcdsdaq 2.4.3.dev6+g22ad154 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="_static/jquery.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
-        <script src="_static/docs-versions-menu.js"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=25d93aeb"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/docs-versions-menu.js?v=3d6a1aea"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -36,7 +36,7 @@
             pcdsdaq
           </a>
               <div class="version">
-                2.4.2
+                2.4.3.dev6+g22ad154
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -109,7 +109,7 @@
            <div itemprop="articleBody">
              
   <section id="using-the-daq-with-bluesky">
-<h1>Using the DAQ with Bluesky<a class="headerlink" href="#using-the-daq-with-bluesky" title="Permalink to this heading">¶</a></h1>
+<h1>Using the DAQ with Bluesky<a class="headerlink" href="#using-the-daq-with-bluesky" title="Link to this heading">¶</a></h1>
 <p>The <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> class is designed as a drop-in <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> readable. That means
 you can put it into built-in <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> plans in the <code class="docutils literal notranslate"><span class="pre">dets</span></code> list and it will
 collect data at each scan point.</p>
@@ -117,7 +117,7 @@ collect data at each scan point.</p>
 how to use the <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code>, but does not require a full understanding of
 the internals.</p>
 <section id="creating-a-daq-object-with-the-runengine">
-<h2>Creating a Daq object with the RunEngine<a class="headerlink" href="#creating-a-daq-object-with-the-runengine" title="Permalink to this heading">¶</a></h2>
+<h2>Creating a Daq object with the RunEngine<a class="headerlink" href="#creating-a-daq-object-with-the-runengine" title="Link to this heading">¶</a></h2>
 <p>The <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> needs to register a <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code> instance for this to work. This
 must be the same <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code> that will be running all of the plans.
 This will be done automatically for you in a <code class="docutils literal notranslate"><span class="pre">hutch-python</span></code> session.</p>
@@ -138,7 +138,7 @@ in most built-in plans like <code class="docutils literal notranslate"><span cla
 </div>
 </section>
 <section id="calib-cycles">
-<h2>Calib Cycles<a class="headerlink" href="#calib-cycles" title="Permalink to this heading">¶</a></h2>
+<h2>Calib Cycles<a class="headerlink" href="#calib-cycles" title="Link to this heading">¶</a></h2>
 <p>Including calib cycles in a built-in plan is as simple as including the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a>
 as a reader or detector. The <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> will start and run for the configured
 duration or number of events at every scan step.</p>
@@ -154,7 +154,7 @@ step.</p>
 </div>
 </section>
 <section id="running-with-the-sequencer">
-<h2>Running with the Sequencer<a class="headerlink" href="#running-with-the-sequencer" title="Permalink to this heading">¶</a></h2>
+<h2>Running with the Sequencer<a class="headerlink" href="#running-with-the-sequencer" title="Link to this heading">¶</a></h2>
 <p>If the daq or the sequencer is configured to run forever, and the other is
 configured for a fixed duration or number of events, you can use a normal
 daq/sequencer procedure. Each of these devices will wait for the other to
@@ -172,7 +172,7 @@ restarting at the next scan step.</p>
 </div>
 </section>
 <section id="running-for-an-entire-plan-duration">
-<h2>Running for an Entire Plan Duration<a class="headerlink" href="#running-for-an-entire-plan-duration" title="Permalink to this heading">¶</a></h2>
+<h2>Running for an Entire Plan Duration<a class="headerlink" href="#running-for-an-entire-plan-duration" title="Link to this heading">¶</a></h2>
 <p>The simplest way to include the daq is to turn it on at the start of the plan
 and turn it off at the end of the plan. This is done using the
 <a class="reference internal" href="generated/pcdsdaq.preprocessors.daq_during_wrapper.html#pcdsdaq.preprocessors.daq_during_wrapper" title="pcdsdaq.preprocessors.daq_during_wrapper"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_during_wrapper</span></code></a> or <a class="reference internal" href="generated/pcdsdaq.preprocessors.daq_during_decorator.html#pcdsdaq.preprocessors.daq_during_decorator" title="pcdsdaq.preprocessors.daq_during_decorator"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_during_decorator</span></code></a>, which treat
@@ -199,7 +199,7 @@ This makes it simple to add the daq collecting data in the background
 to a normal <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> <code class="docutils literal notranslate"><span class="pre">plan</span></code>.</p>
 </section>
 <section id="after-the-plan">
-<h2>After the Plan<a class="headerlink" href="#after-the-plan" title="Permalink to this heading">¶</a></h2>
+<h2>After the Plan<a class="headerlink" href="#after-the-plan" title="Link to this heading">¶</a></h2>
 <p>The daq will automatically be returned to whatever state it was in before
 running the <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> <code class="docutils literal notranslate"><span class="pre">plan</span></code>. This means if you start from a disconnected
 state, we will disconnect, if you start from a running state we will return

@@ -4,19 +4,19 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Basic Usage &mdash; pcdsdaq 2.4.2 documentation</title>
+  <title>Basic Usage &mdash; pcdsdaq 2.4.3.dev6+g22ad154 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="_static/jquery.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
-        <script src="_static/docs-versions-menu.js"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=25d93aeb"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/docs-versions-menu.js?v=3d6a1aea"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -36,7 +36,7 @@
             pcdsdaq
           </a>
               <div class="version">
-                2.4.2
+                2.4.3.dev6+g22ad154
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -108,7 +108,7 @@
            <div itemprop="articleBody">
              
   <section id="basic-usage">
-<h1>Basic Usage<a class="headerlink" href="#basic-usage" title="Permalink to this heading">¶</a></h1>
+<h1>Basic Usage<a class="headerlink" href="#basic-usage" title="Link to this heading">¶</a></h1>
 <p>The <a class="reference internal" href="ami_api.html#pcdsdaq.ami.AmiDet" title="pcdsdaq.ami.AmiDet"><code class="xref any py py-class docutils literal notranslate"><span class="pre">AmiDet</span></code></a> class can be used to read the mean and rms of an ami variable
 over time. This can be useful for keeping track of DAQ scans in the python
 layer.</p>
@@ -116,7 +116,7 @@ layer.</p>
 if this isn’t working for your setup you may need to call <a class="reference internal" href="generated/pcdsdaq.ami.set_pyami_proxy.html#pcdsdaq.ami.set_pyami_proxy" title="pcdsdaq.ami.set_pyami_proxy"><code class="xref any py py-func docutils literal notranslate"><span class="pre">set_pyami_proxy</span></code></a> and
 <a class="reference internal" href="generated/pcdsdaq.ami.set_l3t_file.html#pcdsdaq.ami.set_l3t_file" title="pcdsdaq.ami.set_l3t_file"><code class="xref any py py-func docutils literal notranslate"><span class="pre">set_l3t_file</span></code></a> before everything will work.</p>
 <section id="creating-an-amidet-object">
-<h2>Creating an AmiDet object<a class="headerlink" href="#creating-an-amidet-object" title="Permalink to this heading">¶</a></h2>
+<h2>Creating an AmiDet object<a class="headerlink" href="#creating-an-amidet-object" title="Link to this heading">¶</a></h2>
 <p>This code will set up an <a class="reference internal" href="ami_api.html#pcdsdaq.ami.AmiDet" title="pcdsdaq.ami.AmiDet"><code class="xref any py py-class docutils literal notranslate"><span class="pre">AmiDet</span></code></a> object. Replace
 <code class="docutils literal notranslate"><span class="pre">'AMI-NAME'</span></code> with the name used in AMI to reference the data, and replace
 <code class="docutils literal notranslate"><span class="pre">'ami_det'</span></code> with the desired table label in the <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> scans.</p>
@@ -127,7 +127,7 @@ if this isn’t working for your setup you may need to call <a class="reference 
 </div>
 </section>
 <section id="in-a-scan">
-<h2>In a Scan<a class="headerlink" href="#in-a-scan" title="Permalink to this heading">¶</a></h2>
+<h2>In a Scan<a class="headerlink" href="#in-a-scan" title="Link to this heading">¶</a></h2>
 <p>These <a class="reference internal" href="ami_api.html#pcdsdaq.ami.AmiDet" title="pcdsdaq.ami.AmiDet"><code class="xref any py py-class docutils literal notranslate"><span class="pre">AmiDet</span></code></a> objects should be added to the <code class="docutils literal notranslate"><span class="pre">dets</span></code> list of a <code class="docutils literal notranslate"><span class="pre">bluesky</span></code>
 scan. If used as configured above, they will collect data at each scan step
 while the daq is running. Below is an example scan, see the <a class="reference internal" href="plans_basic.html"><span class="doc">Using the DAQ with Bluesky</span></a> page
@@ -146,7 +146,7 @@ to do this can result in missing some events.</p>
 </div>
 </section>
 <section id="interactively">
-<h2>Interactively<a class="headerlink" href="#interactively" title="Permalink to this heading">¶</a></h2>
+<h2>Interactively<a class="headerlink" href="#interactively" title="Link to this heading">¶</a></h2>
 <p>You can also use <a class="reference internal" href="ami_api.html#pcdsdaq.ami.AmiDet" title="pcdsdaq.ami.AmiDet"><code class="xref any py py-class docutils literal notranslate"><span class="pre">AmiDet</span></code></a> interactively, perhaps in a second session, to snoop
 on AMI information. You should use the same methods that the scan does to
 control the collection of data: <code class="docutils literal notranslate"><span class="pre">stage</span></code> will begin collecting data,
@@ -155,7 +155,7 @@ collecting data. You can use <code class="docutils literal notranslate"><span cl
 on the level of detail you need.</p>
 </section>
 <section id="advanced-options">
-<h2>Advanced Options<a class="headerlink" href="#advanced-options" title="Permalink to this heading">¶</a></h2>
+<h2>Advanced Options<a class="headerlink" href="#advanced-options" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Use the <code class="docutils literal notranslate"><span class="pre">filter_string</span></code> kwarg or set <code class="docutils literal notranslate"><span class="pre">det.filter_string</span></code> to filter the
 incoming data for the <a class="reference internal" href="ami_api.html#pcdsdaq.ami.AmiDet" title="pcdsdaq.ami.AmiDet"><code class="xref any py py-class docutils literal notranslate"><span class="pre">AmiDet</span></code></a>. You can also use the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.set_filter" title="pcdsdaq.daq.Daq.set_filter"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.set_filter</span></code></a> method

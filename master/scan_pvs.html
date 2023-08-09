@@ -4,19 +4,19 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Scan PVs &mdash; pcdsdaq 2.4.2 documentation</title>
+  <title>Scan PVs &mdash; pcdsdaq 2.4.3.dev6+g22ad154 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="_static/jquery.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
-        <script src="_static/docs-versions-menu.js"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=25d93aeb"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/docs-versions-menu.js?v=3d6a1aea"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -36,7 +36,7 @@
             pcdsdaq
           </a>
               <div class="version">
-                2.4.2
+                2.4.3.dev6+g22ad154
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -122,13 +122,13 @@
            <div itemprop="articleBody">
              
   <section id="scan-pvs">
-<h1>Scan PVs<a class="headerlink" href="#scan-pvs" title="Permalink to this heading">¶</a></h1>
+<h1>Scan PVs<a class="headerlink" href="#scan-pvs" title="Link to this heading">¶</a></h1>
 <p>When using the DAQ, it is convenient to keep track of the state of the scan
 in EPICS to set up nice run tables. This is implemented as the <a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars" title="pcdsdaq.scan_vars.ScanVars"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ScanVars</span></code></a>
 class.</p>
 <p>In this document I will use “scan vars” and “scan pvs” interchangably.</p>
 <section id="usage">
-<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this heading">¶</a></h2>
+<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h2>
 <p>Once instantiated, you can use <a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars.enable" title="pcdsdaq.scan_vars.ScanVars.enable"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">ScanVars.enable</span></code></a> and
 <a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars.disable" title="pcdsdaq.scan_vars.ScanVars.disable"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">ScanVars.disable</span></code></a> to control whether or not we will update the PVs
 during a scan.</p>
@@ -137,7 +137,7 @@ during a scan.</p>
 replacing <code class="docutils literal notranslate"><span class="pre">XPP</span></code> with the correct hutch.</p>
 </section>
 <section id="pvs">
-<h2>PVs<a class="headerlink" href="#pvs" title="Permalink to this heading">¶</a></h2>
+<h2>PVs<a class="headerlink" href="#pvs" title="Link to this heading">¶</a></h2>
 <table class="docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p>PV Suffix</p></td>
@@ -168,13 +168,13 @@ replacing <code class="docutils literal notranslate"><span class="pre">XPP</span
 </table>
 </section>
 <section id="api">
-<h2>API<a class="headerlink" href="#api" title="Permalink to this heading">¶</a></h2>
+<h2>API<a class="headerlink" href="#api" title="Link to this heading">¶</a></h2>
 <p>The <a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars" title="pcdsdaq.scan_vars.ScanVars"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ScanVars</span></code></a> class is an <code class="docutils literal notranslate"><span class="pre">ophyd</span></code> <code class="docutils literal notranslate"><span class="pre">Device</span></code> with special <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code>
 subscription mechanisms for updating the scan PVs. It reads plan metadata
 and daq configuration to update the PVs.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="pcdsdaq.scan_vars.ScanVars">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pcdsdaq.scan_vars.</span></span><span class="sig-name descname"><span class="pre">ScanVars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">RE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pcdsdaq.scan_vars.</span></span><span class="sig-name descname"><span class="pre">ScanVars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">RE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars" title="Link to this definition">¶</a></dt>
 <dd><p>Collection of PVs to keep track of the scan state.</p>
 <p>Use <a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars.enable" title="pcdsdaq.scan_vars.ScanVars.enable"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">enable</span></code></a> to set up automatic updating of these PVs
 during a <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code> scan. This relies on proper
@@ -194,19 +194,19 @@ which is offset by one from the one-indexed bluesky counter.</p></li>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="pcdsdaq.scan_vars.ScanVars.enable">
-<span class="sig-name descname"><span class="pre">enable</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.enable" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">enable</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.enable" title="Link to this definition">¶</a></dt>
 <dd><p>Enable automatic updating of PVs during a scan.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pcdsdaq.scan_vars.ScanVars.disable">
-<span class="sig-name descname"><span class="pre">disable</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.disable" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">disable</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.disable" title="Link to this definition">¶</a></dt>
 <dd><p>Disable automatic updating of PVs during a scan.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pcdsdaq.scan_vars.ScanVars.start">
-<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.start" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.start" title="Link to this definition">¶</a></dt>
 <dd><p>Initialize the scan variables at the start of a run.</p>
 <p>This inspects the metadata dictionary and will set reasonable values if
 this metadata dictionary is well-formed as in <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> built-ins
@@ -215,13 +215,13 @@ like <code class="docutils literal notranslate"><span class="pre">scan</span></c
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pcdsdaq.scan_vars.ScanVars.update_min_max">
-<span class="sig-name descname"><span class="pre">update_min_max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.update_min_max" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">update_min_max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.update_min_max" title="Link to this definition">¶</a></dt>
 <dd><p>Helper function for updating the min and max PVs for the scan table.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pcdsdaq.scan_vars.ScanVars.setup_inner_product">
-<span class="sig-name descname"><span class="pre">setup_inner_product</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan_pattern_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.setup_inner_product" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">setup_inner_product</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan_pattern_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.setup_inner_product" title="Link to this definition">¶</a></dt>
 <dd><p>Handle max, min, number of steps for inner_product scans.</p>
 <p>These are the plans whose arguments are (mot, start, stop) repeat,
 then a num later, such as the normal scan.</p>
@@ -229,7 +229,7 @@ then a num later, such as the normal scan.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pcdsdaq.scan_vars.ScanVars.setup_outer_product">
-<span class="sig-name descname"><span class="pre">setup_outer_product</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan_pattern_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.setup_outer_product" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">setup_outer_product</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan_pattern_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.setup_outer_product" title="Link to this definition">¶</a></dt>
 <dd><p>Handle max, min, number of steps for outer_product scans.</p>
 <p>These are the plans whose arguments are (mot, start, stop, num)
 repeat, with snake directions intersperced starting after the second
@@ -238,7 +238,7 @@ num (or not), such as grid_scan.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pcdsdaq.scan_vars.ScanVars.setup_inner_list_product">
-<span class="sig-name descname"><span class="pre">setup_inner_list_product</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan_pattern_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.setup_inner_list_product" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">setup_inner_list_product</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan_pattern_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.setup_inner_list_product" title="Link to this definition">¶</a></dt>
 <dd><p>Handle max, min, number of steps for inner_list_product scans.</p>
 <p>These are the plans whose arguments are (mot, list) repeat,
 where every list needs to have the same length because it’s a 1D
@@ -247,7 +247,7 @@ scan with multiple motors, such as list_scan.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pcdsdaq.scan_vars.ScanVars.setup_outer_list_product">
-<span class="sig-name descname"><span class="pre">setup_outer_list_product</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan_pattern_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.setup_outer_list_product" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">setup_outer_list_product</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan_pattern_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.setup_outer_list_product" title="Link to this definition">¶</a></dt>
 <dd><p>Handle max, min, number of steps for outer_list_product scans.</p>
 <p>These are the plans whose arguments are (mot, list) repeat,
 where the lists can be any length because it’s a multi-dimensional
@@ -256,7 +256,7 @@ mesh scan, like list_grid_scan.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pcdsdaq.scan_vars.ScanVars.event">
-<span class="sig-name descname"><span class="pre">event</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.event" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">event</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.event" title="Link to this definition">¶</a></dt>
 <dd><p>Update the step counter at each scan step.</p>
 <p>This actually sets the step counter for the next scan step, because
 this runs immediately after a scan step and recieves an event doc from
@@ -265,7 +265,7 @@ the step that just ran.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pcdsdaq.scan_vars.ScanVars.stop">
-<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.stop" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.stop" title="Link to this definition">¶</a></dt>
 <dd><p>Set all fields to their default values at the end of a run.</p>
 <p>These are all 0 for the numeric fields and empty strings for the string
 fields.</p>

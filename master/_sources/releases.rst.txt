@@ -1,6 +1,12 @@
 Release History
 ###############
 
+v2.4.3 (2023-09-14)
+===================
+
+- Raise if daq not yet registered, consolidate exceptions and some relative imports
+
+
 v2.4.2 (2023-04-13)
 ===================
 
