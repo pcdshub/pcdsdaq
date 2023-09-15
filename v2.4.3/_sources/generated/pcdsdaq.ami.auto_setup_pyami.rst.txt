@@ -1,0 +1,6 @@
+pcdsdaq.ami.auto\_setup\_pyami
+==============================
+
+.. currentmodule:: pcdsdaq.ami
+
+.. autofunction:: auto_setup_pyami

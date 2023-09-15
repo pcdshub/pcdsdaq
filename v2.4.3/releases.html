@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Release History &mdash; pcdsdaq 2.4.3 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=7a6bd5fc"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/docs-versions-menu.js?v=3d6a1aea"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Environments" href="env.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            pcdsdaq
+          </a>
+              <div class="version">
+                2.4.3
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Running the DAQ</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="daq_basic.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="daq_config.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="daq_api.html">Daq API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Getting AMI Data</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ami_basic.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ami_api.html">AmiDet API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Bluesky Plans</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="plans_basic.html">Using the DAQ with Bluesky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="preprocessors_api.html">Preprocessors API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Auxiliary Features</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="scan_pvs.html">Scan PVs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="misc.html">Miscellaneous</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Sim Mode</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="sim.html">Simulated DAQ</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Notes</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="env.html">Environments</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Release History</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#v2-4-3-2023-09-14">v2.4.3 (2023-09-14)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#v2-4-2-2023-04-13">v2.4.2 (2023-04-13)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#v2-4-1-2023-04-11">v2.4.1 (2023-04-11)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#v2-4-0-2023-04-04">v2.4.0 (2023-04-04)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#v2-3-5-2022-06-02">v2.3.5 (2022-06-02)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#v2-3-4-2021-04-02">v2.3.4 (2021-04-02)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#v2-3-3-2021-02-10">v2.3.3 (2021-02-10)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#v2-3-2-2021-01-11">v2.3.2 (2021-01-11)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#v2-3-1-2020-12-22">v2.3.1 (2020-12-22)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#v2-3-0-2020-10-02">v2.3.0 (2020-10-02)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#v2-2-7-2020-09-17">v2.2.7 (2020-09-17)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#v2-2-6-2020-08-19">v2.2.6 (2020-08-19)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#v2-2-5-2020-29-05">v2.2.5 (2020-29-05)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#v2-2-4-2020-05-21">v2.2.4 (2020-05-21)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#v2-2-3-2020-3-21">v2.2.3 (2020-3-21)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#v2-2-2-2020-1-22">v2.2.2 (2020-1-22)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#v2-2-1-2019-6-6">v2.2.1 (2019-6-6)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#bugfixes">Bugfixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#v2-2-0-2018-10-12">v2.2.0 (2018-10-12)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#features">Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Bugfixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#v2-1-0-2018-08-06">v2.1.0 (2018-08-06)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id2">Features</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#v2-0-0-2018-05-27">v2.0.0 (2018-05-27)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id3">Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#api-changes">API Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#deprecations">Deprecations</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#v1-2-0-2018-05-08">v1.2.0 (2018-05-08)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id4">Features</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#v1-1-0-2018-03-07">v1.1.0 (2018-03-07)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id5">Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id6">Bugfixes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#v1-0-0-2018-03-02">v1.0.0 (2018-03-02)</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pcdsdaq</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Release History</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/releases.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="release-history">
+<h1>Release History<a class="headerlink" href="#release-history" title="Link to this heading">¶</a></h1>
+<section id="v2-4-3-2023-09-14">
+<h2>v2.4.3 (2023-09-14)<a class="headerlink" href="#v2-4-3-2023-09-14" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Raise if daq not yet registered, consolidate exceptions and some relative imports</p></li>
+</ul>
+</section>
+<section id="v2-4-2-2023-04-13">
+<h2>v2.4.2 (2023-04-13)<a class="headerlink" href="#v2-4-2-2023-04-13" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Fix issues related to the missing pcdsdaq_lib_setup script</p></li>
+<li><p>Fix issues related to failing pypi builds</p></li>
+<li><p>Fix issues related to failing docs builds</p></li>
+</ul>
+</section>
+<section id="v2-4-1-2023-04-11">
+<h2>v2.4.1 (2023-04-11)<a class="headerlink" href="#v2-4-1-2023-04-11" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Mark tests as xfail, we’ll come back to fix them later.
+This is not operation critical.
+One of these tests contain a nasty race condition that
+causes the suite to time out.</p></li>
+<li><p>Fix an issue where automatic pypi/conda uploads would
+not have proper authentication.</p></li>
+</ul>
+</section>
+<section id="v2-4-0-2023-04-04">
+<h2>v2.4.0 (2023-04-04)<a class="headerlink" href="#v2-4-0-2023-04-04" title="Link to this heading">¶</a></h2>
+<p>This includes a large update for lcls2 daq support,
+but the module is fully backwards compatible with
+the previous versions.</p>
+<ul class="simple">
+<li><p>Huge addition of 1st-class lcls2 daq support
+including monitoring the current daq’s status and running it.
+Uses the daq’s own APIs repackaged for bluesky.</p></li>
+<li><p>Migrate to github actions, pyproject.toml, and other ecs standards.</p></li>
+<li><p>Merge an ancient PR that adds a useful feature for CXI</p></li>
+</ul>
+</section>
+<section id="v2-3-5-2022-06-02">
+<h2>v2.3.5 (2022-06-02)<a class="headerlink" href="#v2-3-5-2022-06-02" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Fix issue where the scan variable min/max values would not fill in
+correctly for scan types other then the normal “scan”.</p></li>
+</ul>
+</section>
+<section id="v2-3-4-2021-04-02">
+<h2>v2.3.4 (2021-04-02)<a class="headerlink" href="#v2-3-4-2021-04-02" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Fix issue where the <code class="docutils literal notranslate"><span class="pre">Daq</span></code> could automatically disconnect after a scan
+was complete, causing all <code class="docutils literal notranslate"><span class="pre">ami</span></code> windows to close.</p></li>
+</ul>
+</section>
+<section id="v2-3-3-2021-02-10">
+<h2>v2.3.3 (2021-02-10)<a class="headerlink" href="#v2-3-3-2021-02-10" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Fix issue where the <code class="docutils literal notranslate"><span class="pre">AmiDet</span></code> had a hinted <code class="docutils literal notranslate"><span class="pre">entries</span></code> field that got in
+the way when using the <code class="docutils literal notranslate"><span class="pre">BestEffortCallback</span></code>.</p></li>
+</ul>
+</section>
+<section id="v2-3-2-2021-01-11">
+<h2>v2.3.2 (2021-01-11)<a class="headerlink" href="#v2-3-2-2021-01-11" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Update recipe and build for python 3.7+ and noarch compatibility</p></li>
+<li><p>Remove pydaq linkage scripts in favor of using the corrected sym links
+in the daq build</p></li>
+</ul>
+</section>
+<section id="v2-3-1-2020-12-22">
+<h2>v2.3.1 (2020-12-22)<a class="headerlink" href="#v2-3-1-2020-12-22" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Fix issue where <code class="docutils literal notranslate"><span class="pre">events=-1</span></code> was a rejected argument rather than a
+valid configuration for infinite running.</p></li>
+</ul>
+</section>
+<section id="v2-3-0-2020-10-02">
+<h2>v2.3.0 (2020-10-02)<a class="headerlink" href="#v2-3-0-2020-10-02" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">hutch_name</span></code> argument to <code class="docutils literal notranslate"><span class="pre">Daq</span></code> class to allow bypassing of the external <code class="docutils literal notranslate"><span class="pre">get_hutch_name</span></code> script.</p></li>
+</ul>
+</section>
+<section id="v2-2-7-2020-09-17">
+<h2>v2.2.7 (2020-09-17)<a class="headerlink" href="#v2-2-7-2020-09-17" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Change bykik code to False by default in set_filter as per Silke’s instructions</p></li>
+<li><p>Give up on the run_number getter on the first failure per session, it is merely cosmetic and should not slow down the scan.</p></li>
+<li><p>Decrease the get run number timeout to 1s.</p></li>
+<li><p>Copy the good docstring for set_filter over to the daq method</p></li>
+<li><p>Increase timeouts for get_hutch and get_ami_proxy, then cache the result. The result does not change.</p></li>
+<li><p>Allow controls arg to accept pseudopositioners</p></li>
+<li><p>Allow “tri-state” configuration args (True, False, None), and allow the Daq class to know whether the user has passed in <code class="xref any docutils literal notranslate"><span class="pre">None</span></code> versus not passed in anything at all</p></li>
+<li><p>Allow <code class="xref any docutils literal notranslate"><span class="pre">record=None</span></code> to mean “Use the record option selected in the DAQ GUI”</p></li>
+<li><p>Increase the begin timeout to 15s</p></li>
+<li><p>Add more pointed error messages to the wait timeouts</p></li>
+</ul>
+</section>
+<section id="v2-2-6-2020-08-19">
+<h2>v2.2.6 (2020-08-19)<a class="headerlink" href="#v2-2-6-2020-08-19" title="Link to this heading">¶</a></h2>
+<p>Fix issue with ami proxy script changes, making the library compatible with both the old and the new output.</p>
+</section>
+<section id="v2-2-5-2020-29-05">
+<h2>v2.2.5 (2020-29-05)<a class="headerlink" href="#v2-2-5-2020-29-05" title="Link to this heading">¶</a></h2>
+<p>Compatibility for ophyd=1.5.0</p>
+</section>
+<section id="v2-2-4-2020-05-21">
+<h2>v2.2.4 (2020-05-21)<a class="headerlink" href="#v2-2-4-2020-05-21" title="Link to this heading">¶</a></h2>
+<p>Fix issue with the begin timeout where the clock started ticking too early.</p>
+</section>
+<section id="v2-2-3-2020-3-21">
+<h2>v2.2.3 (2020-3-21)<a class="headerlink" href="#v2-2-3-2020-3-21" title="Link to this heading">¶</a></h2>
+<p>Fix issue with pcdsdaq_lib_setup that broke hutch environments.</p>
+</section>
+<section id="v2-2-2-2020-1-22">
+<h2>v2.2.2 (2020-1-22)<a class="headerlink" href="#v2-2-2-2020-1-22" title="Link to this heading">¶</a></h2>
+<p>Fix issue where daq would fail to load for det and tst hutches.</p>
+</section>
+<section id="v2-2-1-2019-6-6">
+<h2>v2.2.1 (2019-6-6)<a class="headerlink" href="#v2-2-1-2019-6-6" title="Link to this heading">¶</a></h2>
+<section id="bugfixes">
+<h3>Bugfixes<a class="headerlink" href="#bugfixes" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Fix issue where the daq could rapidly cycle under specific conditions</p></li>
+<li><p>Fix issue where the daq class wasn’t correctly reset after a disconnect</p></li>
+<li><p>Fix issue where deprecated <code class="docutils literal notranslate"><span class="pre">platform</span></code> argument was mistakenly left in at
+2.0.0</p></li>
+<li><p>Fix issue where module was broken on newest <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> because <code class="docutils literal notranslate"><span class="pre">None</span></code> is
+no longer a valid data shape</p></li>
+</ul>
+</section>
+</section>
+<section id="v2-2-0-2018-10-12">
+<h2>v2.2.0 (2018-10-12)<a class="headerlink" href="#v2-2-0-2018-10-12" title="Link to this heading">¶</a></h2>
+<section id="features">
+<h3>Features<a class="headerlink" href="#features" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Add <a class="reference internal" href="ami_api.html#pcdsdaq.ami.AmiDet" title="pcdsdaq.ami.AmiDet"><code class="xref any py py-class docutils literal notranslate"><span class="pre">AmiDet</span></code></a> interface for interacting with <code class="docutils literal notranslate"><span class="pre">pyami</span></code></p></li>
+<li><p>Clean up and update <code class="docutils literal notranslate"><span class="pre">pcdsdaq_lib_setup</span></code> to work with <code class="docutils literal notranslate"><span class="pre">pyami</span></code></p></li>
+<li><p>Allow daq to be configured to run “forever, until everything else is done
+triggering” by setting <code class="docutils literal notranslate"><span class="pre">events=0</span></code></p></li>
+<li><p>Add configurable sleep time to account for the difference between the daq
+process claiming to be ready and actually being ready
+(<code class="docutils literal notranslate"><span class="pre">daq.configure(begin_sleep=0.5)</span></code>)</p></li>
+</ul>
+</section>
+<section id="id1">
+<h3>Bugfixes<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Fix issue where package update would break the conda environment</p></li>
+</ul>
+</section>
+</section>
+<section id="v2-1-0-2018-08-06">
+<h2>v2.1.0 (2018-08-06)<a class="headerlink" href="#v2-1-0-2018-08-06" title="Link to this heading">¶</a></h2>
+<section id="id2">
+<h3>Features<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Add <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.run_number" title="pcdsdaq.daq.Daq.run_number"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.run_number</span></code></a> method to get the current run number.</p></li>
+</ul>
+</section>
+</section>
+<section id="v2-0-0-2018-05-27">
+<h2>v2.0.0 (2018-05-27)<a class="headerlink" href="#v2-0-0-2018-05-27" title="Link to this heading">¶</a></h2>
+<section id="id3">
+<h3>Features<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Allow <code class="docutils literal notranslate"><span class="pre">ctrl+c</span></code> during a <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">begin</span></code></a> call with <code class="docutils literal notranslate"><span class="pre">wait=True</span></code> to stop the run.</p></li>
+<li><p>Add sourcable <code class="docutils literal notranslate"><span class="pre">pcdsdaq_lib_setup</span></code> script that will get <code class="docutils literal notranslate"><span class="pre">pydaq</span></code> and
+<code class="docutils literal notranslate"><span class="pre">pycdb</span></code> ready for your python environment.</p></li>
+<li><p>The <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.connect" title="pcdsdaq.daq.Daq.connect"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">connect</span></code></a> method will provide more helpful error messages when it fails.</p></li>
+<li><p>Allow the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> class to be used as a <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> readable device.
+Once staged, runs will end on run stop documents.
+A calibcycle will be run when the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> is triggered, and triggering will be
+reported as done when the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> has stopped. This means it is viable to use
+the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> inside normal plans like <code class="docutils literal notranslate"><span class="pre">scan</span></code> and <code class="docutils literal notranslate"><span class="pre">count</span></code>.</p></li>
+<li><p>Add an argument to <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.begin</span></code></a>: <code class="docutils literal notranslate"><span class="pre">end_run=True</span></code> will end the run once the
+daq stops running, rather than leaving the run open.</p></li>
+<li><p>Add <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin_infinite" title="pcdsdaq.daq.Daq.begin_infinite"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.begin_infinite</span></code></a></p></li>
+<li><p>Add <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.config_info" title="pcdsdaq.daq.Daq.config_info"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.config_info</span></code></a></p></li>
+<li><p>Restore daq state after a <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> <code class="docutils literal notranslate"><span class="pre">plan</span></code>, e.g. disconnect if we were
+disconnected, run if we were running, etc.</p></li>
+<li><p>Add support for scan PVs via the <a class="reference internal" href="scan_pvs.html#pcdsdaq.scan_vars.ScanVars" title="pcdsdaq.scan_vars.ScanVars"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ScanVars</span></code></a> class. This class attaches
+itself to a <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code> and knows when to update each PV, provided that
+the <code class="docutils literal notranslate"><span class="pre">plan</span></code> has reasonable metadata.</p></li>
+</ul>
+</section>
+<section id="api-changes">
+<h3>API Changes<a class="headerlink" href="#api-changes" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">calib_cycle</span></code> and related <code class="docutils literal notranslate"><span class="pre">plans</span></code> module has been removed, as using the
+<a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> as a readable device is more intuitive and it’s still early enough to
+break my API.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">daq_wrapper</span></code> and <code class="docutils literal notranslate"><span class="pre">daq_decorator</span></code> have been move to the <code class="docutils literal notranslate"><span class="pre">preprocessors</span></code>
+submodule, as a parallel to the <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> structure. They have been renamed
+to <a class="reference internal" href="generated/pcdsdaq.preprocessors.daq_during_wrapper.html#pcdsdaq.preprocessors.daq_during_wrapper" title="pcdsdaq.preprocessors.daq_during_wrapper"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_during_wrapper</span></code></a> and <a class="reference internal" href="generated/pcdsdaq.preprocessors.daq_during_decorator.html#pcdsdaq.preprocessors.daq_during_decorator" title="pcdsdaq.preprocessors.daq_during_decorator"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_during_decorator</span></code></a> as a parallel to the
+built-in <code class="docutils literal notranslate"><span class="pre">fly_during_wrapper</span></code>. These are now simple preprocessors to
+run the daq at the same time as a daq-agnostic plan.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">complete</span></code> no longer ends the run. This makes it more in line with the
+<code class="docutils literal notranslate"><span class="pre">bluesky</span></code> API.</p></li>
+</ul>
+</section>
+<section id="deprecations">
+<h3>Deprecations<a class="headerlink" href="#deprecations" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>The daq no longer needs to be passed a <code class="docutils literal notranslate"><span class="pre">platform</span></code> argument. This argument
+will be removed in a future release, and will log a warning if you pass it.</p></li>
+</ul>
+</section>
+</section>
+<section id="v1-2-0-2018-05-08">
+<h2>v1.2.0 (2018-05-08)<a class="headerlink" href="#v1-2-0-2018-05-08" title="Link to this heading">¶</a></h2>
+<section id="id4">
+<h3>Features<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Add the <code class="docutils literal notranslate"><span class="pre">record</span></code> option to the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">begin</span></code></a> method. This allows a user running
+interactively to concisely activate recording for single runs.</p></li>
+</ul>
+</section>
+</section>
+<section id="v1-1-0-2018-03-07">
+<h2>v1.1.0 (2018-03-07)<a class="headerlink" href="#v1-1-0-2018-03-07" title="Link to this heading">¶</a></h2>
+<section id="id5">
+<h3>Features<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">daq.record</span></code> property to schedule that the next run sould be
+configured with <code class="docutils literal notranslate"><span class="pre">record=True</span></code></p></li>
+</ul>
+</section>
+<section id="id6">
+<h3>Bugfixes<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Fix bug where configured record was overridden on every configure</p></li>
+</ul>
+</section>
+</section>
+<section id="v1-0-0-2018-03-02">
+<h2>v1.0.0 (2018-03-02)<a class="headerlink" href="#v1-0-0-2018-03-02" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Initial release, transferred from <a class="reference external" href="https://github.com/pcdshub/pcdsdevices">https://github.com/pcdshub/pcdsdevices</a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="env.html" class="btn btn-neutral float-left" title="Environments" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

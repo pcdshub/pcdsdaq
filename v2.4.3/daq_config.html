@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Configuration &mdash; pcdsdaq 2.4.3 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=7a6bd5fc"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/docs-versions-menu.js?v=3d6a1aea"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Daq API" href="daq_api.html" />
+    <link rel="prev" title="Basic Usage" href="daq_basic.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            pcdsdaq
+          </a>
+              <div class="version">
+                2.4.3
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Running the DAQ</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="daq_basic.html">Basic Usage</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="daq_api.html">Daq API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Getting AMI Data</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ami_basic.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ami_api.html">AmiDet API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Bluesky Plans</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="plans_basic.html">Using the DAQ with Bluesky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="preprocessors_api.html">Preprocessors API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Auxiliary Features</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="scan_pvs.html">Scan PVs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="misc.html">Miscellaneous</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Sim Mode</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="sim.html">Simulated DAQ</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Notes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="env.html">Environments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="releases.html">Release History</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pcdsdaq</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Configuration</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/daq_config.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="configuration">
+<h1>Configuration<a class="headerlink" href="#configuration" title="Link to this heading">¶</a></h1>
+<p>Some manual configuration is necessary to record data or to run
+special <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> plans with daq support.</p>
+<p>You can get the current configuration from <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.config" title="pcdsdaq.daq.Daq.config"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">Daq.config</span></code></a>.
+Shown here is the default config:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="n">daq</span><span class="o">.</span><span class="n">config</span>
+<span class="gh">Out[1]: </span>
+<span class="go">{&#39;events&#39;: None,</span>
+<span class="go"> &#39;duration&#39;: None,</span>
+<span class="go"> &#39;use_l3t&#39;: False,</span>
+<span class="go"> &#39;record&#39;: None,</span>
+<span class="go"> &#39;controls&#39;: None,</span>
+<span class="go"> &#39;begin_sleep&#39;: 0}</span>
+</pre></div>
+</div>
+<p>You can also print this information nicely using <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.config_info" title="pcdsdaq.daq.Daq.config_info"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.config_info</span></code></a>.</p>
+<p>You can configure the daq through <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.configure" title="pcdsdaq.daq.Daq.configure"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.configure</span></code></a>, which configures
+the daq right away, or <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.preconfig" title="pcdsdaq.daq.Daq.preconfig"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.preconfig</span></code></a>, which schedules a configuration
+to be done when it is next needed. This distinction is sometimes important
+because we cannot do a full configure during an open run, for example.
+As an aside, <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.configure" title="pcdsdaq.daq.Daq.configure"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.configure</span></code></a> has a long return value, which may make
+<a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.preconfig" title="pcdsdaq.daq.Daq.preconfig"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.preconfig</span></code></a> the preferred method for interactive sessions.</p>
+<p>In general, there are two kinds of configuration arguments:
+those that are shared with <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">Daq.begin</span></code></a>, and those that are not.</p>
+<p>Arguments that are shared between the two methods act as defaults.
+For example, calling <code class="docutils literal notranslate"><span class="pre">daq.configure(duration=3)</span></code> will set the
+no-arguments behavior of <code class="docutils literal notranslate"><span class="pre">daq.begin()</span></code> to run the daq for 3 seconds.</p>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">Daq.</span></span><span class="sig-name descname"><span class="pre">configure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">events=&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration=&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">record=&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_l3t=&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">controls=&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">begin_sleep=&lt;object</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Changes the daq’s configuration for the next run.</p>
+<p>All arguments omitted from the method call will default to the last
+configured value in the python session.</p>
+<p>This is the method that directly interfaces with the daq. If you simply
+want to get a configuration ready for later, use <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.preconfig" title="pcdsdaq.daq.Daq.preconfig"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">preconfig</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>events</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code>, optional) – If provided, the daq will run for this many events before
+stopping, unless we override in <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">begin</span></code></a>.
+If not provided, we’ll use the <code class="docutils literal notranslate"><span class="pre">duration</span></code> argument instead.
+Defaults to its last configured value, or <code class="docutils literal notranslate"><span class="pre">None</span></code> on the first
+configure.</p></li>
+<li><p><strong>duration</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code>, optional) – If provided, the daq will run for this many seconds before
+stopping, unless we override in <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">begin</span></code></a>.
+If not provided, and <code class="docutils literal notranslate"><span class="pre">events</span></code> was also not provided, an empty
+call like <code class="docutils literal notranslate"><span class="pre">begin()</span></code> will run indefinitely. You can also achieve
+this behavior by passing events=None and/or duration=None, Defaults
+to its last configured value, or <code class="docutils literal notranslate"><span class="pre">None</span></code> on the first configure.</p></li>
+<li><p><strong>record</strong> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, we’ll record the data. If <code class="docutils literal notranslate"><span class="pre">False</span></code>, we’ll run without
+recording. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, we’ll use the option selected in the DAQ
+GUI. Defaults to the its last configured value, or <code class="docutils literal notranslate"><span class="pre">None</span></code> on the
+first configure.</p></li>
+<li><p><strong>use_l3t</strong> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>, optional) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, an <code class="docutils literal notranslate"><span class="pre">events</span></code> argument to begin will be reinterpreted
+to only count events that pass the level 3 trigger. Defaults to
+its last configured value, or <code class="docutils literal notranslate"><span class="pre">False</span></code> on the first configure.</p></li>
+<li><p><strong>controls</strong> (<code class="docutils literal notranslate"><span class="pre">dict{name:</span> <span class="pre">device}</span></code> or <code class="docutils literal notranslate"><span class="pre">list[device...]</span></code>, optional) – If provided, values from these will make it into the DAQ data
+stream as variables. We will check <code class="docutils literal notranslate"><span class="pre">device.position</span></code> and
+<code class="docutils literal notranslate"><span class="pre">device.value</span></code> for quantities to use and we will update these
+values each time begin is called. To provide a list, all devices
+must have a <code class="docutils literal notranslate"><span class="pre">name</span></code> attribute. Defaults to its last configured
+value, or no controls values on the first configure.</p></li>
+<li><p><strong>begin_sleep</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code>, optional) – The amount of time to wait after the DAQ returns begin is done.
+This is a hack because the DAQ often says that a begin transition
+is done without actually being done, so it needs a short delay.
+Defaults to its last configured value, or 0 on the first
+configure.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>old, new</strong> – The old configuration and the new configuration. These dictionaries
+are verbose, containing all configuration values and the timestamps
+at which they were configured, as specified by <code class="docutils literal notranslate"><span class="pre">bluesky</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">tuple</span></code> of <code class="docutils literal notranslate"><span class="pre">dict</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="daq_basic.html" class="btn btn-neutral float-left" title="Basic Usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="daq_api.html" class="btn btn-neutral float-right" title="Daq API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
