@@ -24,6 +24,7 @@ requirements:
   - bluesky >=1.6.0
   - ophyd >=1.5.0
   - pcdsdevices >=2.1.0
+  - pcdsutils
   - psdaq-control-minimal >=3.3.19
   - toolz
 
