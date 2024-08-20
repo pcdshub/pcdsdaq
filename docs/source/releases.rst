@@ -1,6 +1,12 @@
 Release History
 ###############
 
+v2.4.4 (2024-08-20)
+===================
+
+- Include pcdsutils dependency in requirements
+
+
 v2.4.3 (2023-09-14)
 ===================
 
