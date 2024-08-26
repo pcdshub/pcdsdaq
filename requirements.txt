@@ -1,5 +1,5 @@
 ophyd
-bluesky
+bluesky==1.10.0
 pcdsdevices
 pcdsutils
 toolz
