@@ -1,0 +1,6 @@
+pcdsdaq.ami.evr\_filter
+=======================
+
+.. currentmodule:: pcdsdaq.ami
+
+.. autofunction:: evr_filter
