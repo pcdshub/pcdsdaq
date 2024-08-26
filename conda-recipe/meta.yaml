@@ -21,7 +21,8 @@ requirements:
   - pip
   run:
   - python >=3.9
-  - bluesky-base =1.10.0
+  - bluesky-base =1.10.0  # Can be released when npy 2.0 compat is complete
+  - numpy <2.0.0  # dependency of other packages, needs additional pin
   - ophyd >=1.5.0
   - pcdsdevices >=2.1.0
   - pcdsutils
