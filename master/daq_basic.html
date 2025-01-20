@@ -1,24 +1,22 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Basic Usage &mdash; pcdsdaq 2.4.4.dev8+g3d7dcb1 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+  <title>Basic Usage &mdash; pcdsdaq 2.4.5.dev4+g4050d77 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=814de6c9"></script>
-        <script src="_static/doctools.js?v=9a2dae69"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-        <script src="_static/docs-versions-menu.js?v=3d6a1aea"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=eada5dab"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/docs-versions-menu.js?v=3d6a1aea"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -37,9 +35,6 @@
           <a href="index.html" class="icon icon-home">
             pcdsdaq
           </a>
-              <div class="version">
-                2.4.4.dev8+g3d7dcb1
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -152,8 +147,8 @@ the full <a class="reference internal" href="daq_api.html"><span class="doc">api
 <h2>Creating a Daq object<a class="headerlink" href="#creating-a-daq-object" title="Link to this heading">¶</a></h2>
 <p>First, I will set up the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> class in simulated mode. In practice, the
 <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> class will be set up for you in the <code class="docutils literal notranslate"><span class="pre">hutch-python</span></code> configuration.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pcdsdaq.daq</span> <span class="kn">import</span> <span class="n">Daq</span>
-<span class="kn">from</span> <span class="nn">pcdsdaq.sim</span> <span class="kn">import</span> <span class="n">set_sim_mode</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pcdsdaq.daq</span><span class="w"> </span><span class="kn">import</span> <span class="n">Daq</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pcdsdaq.sim</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_sim_mode</span>
 
 <span class="n">set_sim_mode</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">daq</span> <span class="o">=</span> <span class="n">Daq</span><span class="p">()</span>
@@ -182,7 +177,7 @@ Here I check <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq.st
 <span class="gp">In [6]: </span><span class="n">daq</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
 
 <span class="gp">In [7]: </span><span class="nb">print</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
-<span class="go">1.0040631294250488</span>
+<span class="go">1.0043268203735352</span>
 
 <span class="gp">In [8]: </span><span class="n">daq</span><span class="o">.</span><span class="n">state</span>
 <span class="gh">Out[8]: </span><span class="go">&#39;Open&#39;</span>
@@ -212,7 +207,7 @@ Optionally, we can call <a class="reference internal" href="daq_api.html#pcdsdaq
 <span class="gp">In [15]: </span><span class="n">daq</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
 
 <span class="gp">In [16]: </span><span class="nb">print</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
-<span class="go">2.9983081817626953</span>
+<span class="go">2.998844861984253</span>
 
 <span class="gp">In [17]: </span><span class="n">daq</span><span class="o">.</span><span class="n">state</span>
 <span class="gh">Out[17]: </span><span class="go">&#39;Open&#39;</span>
@@ -236,7 +231,7 @@ We can pass <code class="docutils literal notranslate"><span class="pre">wait=Tr
 <span class="gp">In [22]: </span><span class="n">daq</span><span class="o">.</span><span class="n">begin</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="gp">In [23]: </span><span class="nb">print</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
-<span class="go">2.4987003803253174</span>
+<span class="go">2.4985594749450684</span>
 
 <span class="gp">In [24]: </span><span class="n">daq</span><span class="o">.</span><span class="n">state</span>
 <span class="gh">Out[24]: </span><span class="go">&#39;Open&#39;</span>

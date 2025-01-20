@@ -1,6 +1,12 @@
 Release History
 ###############
 
+v2.4.5 (2025-03-16)
+===================
+
+- Unpin numpy now that bluesky is compatible
+
+
 v2.4.4 (2024-08-20)
 ===================
 

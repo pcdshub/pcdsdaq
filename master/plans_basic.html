@@ -1,24 +1,22 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Using the DAQ with Bluesky &mdash; pcdsdaq 2.4.4.dev8+g3d7dcb1 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+  <title>Using the DAQ with Bluesky &mdash; pcdsdaq 2.4.5.dev4+g4050d77 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=814de6c9"></script>
-        <script src="_static/doctools.js?v=9a2dae69"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-        <script src="_static/docs-versions-menu.js?v=3d6a1aea"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=eada5dab"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/docs-versions-menu.js?v=3d6a1aea"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -37,9 +35,6 @@
           <a href="index.html" class="icon icon-home">
             pcdsdaq
           </a>
-              <div class="version">
-                2.4.4.dev8+g3d7dcb1
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -123,9 +118,9 @@ the internals.</p>
 <p>The <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> needs to register a <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code> instance for this to work. This
 must be the same <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code> that will be running all of the plans.
 This will be done automatically for you in a <code class="docutils literal notranslate"><span class="pre">hutch-python</span></code> session.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bluesky</span> <span class="kn">import</span> <span class="n">RunEngine</span>
-<span class="kn">from</span> <span class="nn">pcdsdaq.daq</span> <span class="kn">import</span> <span class="n">Daq</span>
-<span class="kn">from</span> <span class="nn">pcdsdaq.sim</span> <span class="kn">import</span> <span class="n">set_sim_mode</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">bluesky</span><span class="w"> </span><span class="kn">import</span> <span class="n">RunEngine</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pcdsdaq.daq</span><span class="w"> </span><span class="kn">import</span> <span class="n">Daq</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pcdsdaq.sim</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_sim_mode</span>
 
 <span class="n">set_sim_mode</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">RE</span> <span class="o">=</span> <span class="n">RunEngine</span><span class="p">({})</span>
@@ -148,7 +143,7 @@ duration or number of events at every scan step.</p>
 steps. Prior to the scan, we configure the <code class="docutils literal notranslate"><span class="pre">daq</span></code> to take <code class="docutils literal notranslate"><span class="pre">120</span></code> events at
 each point. Since <code class="docutils literal notranslate"><span class="pre">daq</span></code> is included in the detectors list, it is run at every
 step.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bluesky.plans</span> <span class="kn">import</span> <span class="n">scan</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">bluesky.plans</span><span class="w"> </span><span class="kn">import</span> <span class="n">scan</span>
 <span class="n">daq</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">events</span><span class="o">=</span><span class="mi">120</span><span class="p">)</span>
 
 <span class="n">RE</span><span class="p">(</span><span class="n">scan</span><span class="p">([</span><span class="n">daq</span><span class="p">],</span> <span class="n">motor1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">))</span>
@@ -179,13 +174,13 @@ restarting at the next scan step.</p>
 and turn it off at the end of the plan. This is done using the
 <a class="reference internal" href="generated/pcdsdaq.preprocessors.daq_during_wrapper.html#pcdsdaq.preprocessors.daq_during_wrapper" title="pcdsdaq.preprocessors.daq_during_wrapper"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_during_wrapper</span></code></a> or <a class="reference internal" href="generated/pcdsdaq.preprocessors.daq_during_decorator.html#pcdsdaq.preprocessors.daq_during_decorator" title="pcdsdaq.preprocessors.daq_during_decorator"><code class="xref any py py-func docutils literal notranslate"><span class="pre">daq_during_decorator</span></code></a>, which treat
 the <a class="reference internal" href="daq_api.html#pcdsdaq.daq.Daq" title="pcdsdaq.daq.Daq"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Daq</span></code></a> as a <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> <code class="docutils literal notranslate"><span class="pre">Flyer</span></code>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bluesky.plan_stubs</span> <span class="kn">import</span> <span class="n">mv</span>
-<span class="kn">from</span> <span class="nn">bluesky.preprocessors</span> <span class="kn">import</span> <span class="n">run_decorator</span>
-<span class="kn">from</span> <span class="nn">pcdsdaq.preprocessors</span> <span class="kn">import</span> <span class="n">daq_during_decorator</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">bluesky.plan_stubs</span><span class="w"> </span><span class="kn">import</span> <span class="n">mv</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bluesky.preprocessors</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_decorator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pcdsdaq.preprocessors</span><span class="w"> </span><span class="kn">import</span> <span class="n">daq_during_decorator</span>
 
 <span class="nd">@daq_during_decorator</span><span class="p">()</span>
 <span class="nd">@run_decorator</span><span class="p">()</span>
-<span class="k">def</span> <span class="nf">basic_plan</span><span class="p">(</span><span class="n">motor</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">basic_plan</span><span class="p">(</span><span class="n">motor</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
     <span class="k">yield from</span> <span class="n">mv</span><span class="p">(</span><span class="n">motor</span><span class="p">,</span> <span class="n">start</span><span class="p">)</span>
     <span class="k">yield from</span> <span class="n">mv</span><span class="p">(</span><span class="n">motor</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
     <span class="k">yield from</span> <span class="n">mv</span><span class="p">(</span><span class="n">motor</span><span class="p">,</span> <span class="n">start</span><span class="p">)</span>
