@@ -1,0 +1,6 @@
+pcdsdaq.ami.basic\_filter
+=========================
+
+.. currentmodule:: pcdsdaq.ami
+
+.. autofunction:: basic_filter

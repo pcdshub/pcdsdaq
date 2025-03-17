@@ -1,0 +1,307 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scan PVs &mdash; pcdsdaq 2.4.5 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=159ac128"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/docs-versions-menu.js?v=3d6a1aea"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Miscellaneous" href="misc.html" />
+    <link rel="prev" title="pcdsdaq.preprocessors.daq_during_decorator" href="generated/pcdsdaq.preprocessors.daq_during_decorator.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            pcdsdaq
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Running the DAQ</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="daq_basic.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="daq_config.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="daq_api.html">Daq API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Getting AMI Data</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ami_basic.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ami_api.html">AmiDet API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Bluesky Plans</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="plans_basic.html">Using the DAQ with Bluesky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="preprocessors_api.html">Preprocessors API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Auxiliary Features</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Scan PVs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pvs">PVs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#api">API</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars"><code class="docutils literal notranslate"><span class="pre">ScanVars</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars.enable"><code class="docutils literal notranslate"><span class="pre">ScanVars.enable()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars.disable"><code class="docutils literal notranslate"><span class="pre">ScanVars.disable()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars.start"><code class="docutils literal notranslate"><span class="pre">ScanVars.start()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars.update_min_max"><code class="docutils literal notranslate"><span class="pre">ScanVars.update_min_max()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars.setup_inner_product"><code class="docutils literal notranslate"><span class="pre">ScanVars.setup_inner_product()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars.setup_outer_product"><code class="docutils literal notranslate"><span class="pre">ScanVars.setup_outer_product()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars.setup_inner_list_product"><code class="docutils literal notranslate"><span class="pre">ScanVars.setup_inner_list_product()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars.setup_outer_list_product"><code class="docutils literal notranslate"><span class="pre">ScanVars.setup_outer_list_product()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars.event"><code class="docutils literal notranslate"><span class="pre">ScanVars.event()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars.stop"><code class="docutils literal notranslate"><span class="pre">ScanVars.stop()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="misc.html">Miscellaneous</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Sim Mode</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="sim.html">Simulated DAQ</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Notes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="env.html">Environments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="releases.html">Release History</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pcdsdaq</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Scan PVs</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/scan_pvs.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="scan-pvs">
+<h1>Scan PVs<a class="headerlink" href="#scan-pvs" title="Link to this heading">¶</a></h1>
+<p>When using the DAQ, it is convenient to keep track of the state of the scan
+in EPICS to set up nice run tables. This is implemented as the <a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars" title="pcdsdaq.scan_vars.ScanVars"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ScanVars</span></code></a>
+class.</p>
+<p>In this document I will use “scan vars” and “scan pvs” interchangably.</p>
+<section id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h2>
+<p>Once instantiated, you can use <a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars.enable" title="pcdsdaq.scan_vars.ScanVars.enable"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">ScanVars.enable</span></code></a> and
+<a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars.disable" title="pcdsdaq.scan_vars.ScanVars.disable"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">ScanVars.disable</span></code></a> to control whether or not we will update the PVs
+during a scan.</p>
+<p>The class is instantiated as
+<code class="docutils literal notranslate"><span class="pre">scan_vars</span> <span class="pre">=</span> <span class="pre">ScanVars('XPP:SCAN',</span> <span class="pre">name='scan_vars',</span> <span class="pre">RE=RE)</span></code>,
+replacing <code class="docutils literal notranslate"><span class="pre">XPP</span></code> with the correct hutch.</p>
+</section>
+<section id="pvs">
+<h2>PVs<a class="headerlink" href="#pvs" title="Link to this heading">¶</a></h2>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p>PV Suffix</p></td>
+<td><p>Function</p></td>
+</tr>
+<tr class="row-even"><td><p>ISTEP</p></td>
+<td><p>Current scan step, 0-indexed by default</p></td>
+</tr>
+<tr class="row-odd"><td><p>ISSCAN</p></td>
+<td><p>1 if we are doing a scan, 0 otherwise</p></td>
+</tr>
+<tr class="row-even"><td><p>SCANVAR0{0,1,2}</p></td>
+<td><p>The name of our {1st, 2nd, 3rd} positioner</p></td>
+</tr>
+<tr class="row-odd"><td><p>MAX0{0,1,2}</p></td>
+<td><p>The max scan position of each positioner</p></td>
+</tr>
+<tr class="row-even"><td><p>MIN0{0,1,2}</p></td>
+<td><p>The min scan position of each positioner</p></td>
+</tr>
+<tr class="row-odd"><td><p>NSTEPS</p></td>
+<td><p>The total number of steps in the scan</p></td>
+</tr>
+<tr class="row-even"><td><p>NSHOTS</p></td>
+<td><p>Number of events per point in the DAQ</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="api">
+<h2>API<a class="headerlink" href="#api" title="Link to this heading">¶</a></h2>
+<p>The <a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars" title="pcdsdaq.scan_vars.ScanVars"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ScanVars</span></code></a> class is an <code class="docutils literal notranslate"><span class="pre">ophyd</span></code> <code class="docutils literal notranslate"><span class="pre">Device</span></code> with special <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code>
+subscription mechanisms for updating the scan PVs. It reads plan metadata
+and daq configuration to update the PVs.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="pcdsdaq.scan_vars.ScanVars">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pcdsdaq.scan_vars.</span></span><span class="sig-name descname"><span class="pre">ScanVars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">RE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars" title="Link to this definition">¶</a></dt>
+<dd><p>Collection of PVs to keep track of the scan state.</p>
+<p>Use <a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars.enable" title="pcdsdaq.scan_vars.ScanVars.enable"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">enable</span></code></a> to set up automatic updating of these PVs
+during a <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code> scan. This relies on proper
+metadata like the metadata in the built in <code class="docutils literal notranslate"><span class="pre">scan</span></code>
+and <code class="docutils literal notranslate"><span class="pre">count</span></code> plans to populate the PVS.</p>
+<p>Use <a class="reference internal" href="#pcdsdaq.scan_vars.ScanVars.disable" title="pcdsdaq.scan_vars.ScanVars.disable"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">disable</span></code></a> to remove this from the <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prefix</strong> (<code class="docutils literal notranslate"><span class="pre">str</span></code>) – The PV prefix, e.g. <code class="docutils literal notranslate"><span class="pre">XPP:SCAN</span></code></p></li>
+<li><p><strong>name</strong> (<code class="docutils literal notranslate"><span class="pre">str</span></code>, required keyword) – A name to refer to this object by</p></li>
+<li><p><strong>RE</strong> (<code class="docutils literal notranslate"><span class="pre">RunEngine</span></code>, required keyword) – The <code class="docutils literal notranslate"><span class="pre">RunEngine</span></code> instance associated with the session.</p></li>
+<li><p><strong>i_start</strong> (<code class="docutils literal notranslate"><span class="pre">int</span></code>, optional) – The starting count for the i_step tracker. This defaults to zero,
+which is offset by one from the one-indexed bluesky counter.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="pcdsdaq.scan_vars.ScanVars.enable">
+<span class="sig-name descname"><span class="pre">enable</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.enable" title="Link to this definition">¶</a></dt>
+<dd><p>Enable automatic updating of PVs during a scan.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcdsdaq.scan_vars.ScanVars.disable">
+<span class="sig-name descname"><span class="pre">disable</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.disable" title="Link to this definition">¶</a></dt>
+<dd><p>Disable automatic updating of PVs during a scan.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcdsdaq.scan_vars.ScanVars.start">
+<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.start" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize the scan variables at the start of a run.</p>
+<p>This inspects the metadata dictionary and will set reasonable values if
+this metadata dictionary is well-formed as in <code class="docutils literal notranslate"><span class="pre">bluesky</span></code> built-ins
+like <code class="docutils literal notranslate"><span class="pre">scan</span></code>. It also inspects the daq object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcdsdaq.scan_vars.ScanVars.update_min_max">
+<span class="sig-name descname"><span class="pre">update_min_max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.update_min_max" title="Link to this definition">¶</a></dt>
+<dd><p>Helper function for updating the min and max PVs for the scan table.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcdsdaq.scan_vars.ScanVars.setup_inner_product">
+<span class="sig-name descname"><span class="pre">setup_inner_product</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan_pattern_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.setup_inner_product" title="Link to this definition">¶</a></dt>
+<dd><p>Handle max, min, number of steps for inner_product scans.</p>
+<p>These are the plans whose arguments are (mot, start, stop) repeat,
+then a num later, such as the normal scan.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcdsdaq.scan_vars.ScanVars.setup_outer_product">
+<span class="sig-name descname"><span class="pre">setup_outer_product</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan_pattern_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.setup_outer_product" title="Link to this definition">¶</a></dt>
+<dd><p>Handle max, min, number of steps for outer_product scans.</p>
+<p>These are the plans whose arguments are (mot, start, stop, num)
+repeat, with snake directions intersperced starting after the second
+num (or not), such as grid_scan.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcdsdaq.scan_vars.ScanVars.setup_inner_list_product">
+<span class="sig-name descname"><span class="pre">setup_inner_list_product</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan_pattern_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.setup_inner_list_product" title="Link to this definition">¶</a></dt>
+<dd><p>Handle max, min, number of steps for inner_list_product scans.</p>
+<p>These are the plans whose arguments are (mot, list) repeat,
+where every list needs to have the same length because it’s a 1D
+scan with multiple motors, such as list_scan.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcdsdaq.scan_vars.ScanVars.setup_outer_list_product">
+<span class="sig-name descname"><span class="pre">setup_outer_list_product</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan_pattern_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.setup_outer_list_product" title="Link to this definition">¶</a></dt>
+<dd><p>Handle max, min, number of steps for outer_list_product scans.</p>
+<p>These are the plans whose arguments are (mot, list) repeat,
+where the lists can be any length because it’s a multi-dimensional
+mesh scan, like list_grid_scan.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcdsdaq.scan_vars.ScanVars.event">
+<span class="sig-name descname"><span class="pre">event</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.event" title="Link to this definition">¶</a></dt>
+<dd><p>Update the step counter at each scan step.</p>
+<p>This actually sets the step counter for the next scan step, because
+this runs immediately after a scan step and recieves an event doc from
+the step that just ran.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcdsdaq.scan_vars.ScanVars.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.scan_vars.ScanVars.stop" title="Link to this definition">¶</a></dt>
+<dd><p>Set all fields to their default values at the end of a run.</p>
+<p>These are all 0 for the numeric fields and empty strings for the string
+fields.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="generated/pcdsdaq.preprocessors.daq_during_decorator.html" class="btn btn-neutral float-left" title="pcdsdaq.preprocessors.daq_during_decorator" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="misc.html" class="btn btn-neutral float-right" title="Miscellaneous" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

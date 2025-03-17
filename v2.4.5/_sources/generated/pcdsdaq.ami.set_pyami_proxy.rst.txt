@@ -1,0 +1,6 @@
+pcdsdaq.ami.set\_pyami\_proxy
+=============================
+
+.. currentmodule:: pcdsdaq.ami
+
+.. autofunction:: set_pyami_proxy

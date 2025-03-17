@@ -1,0 +1,324 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AmiDet API &mdash; pcdsdaq 2.4.5 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=159ac128"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/docs-versions-menu.js?v=3d6a1aea"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="pcdsdaq.ami.auto_setup_pyami" href="generated/pcdsdaq.ami.auto_setup_pyami.html" />
+    <link rel="prev" title="Basic Usage" href="ami_basic.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            pcdsdaq
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Running the DAQ</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="daq_basic.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="daq_config.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="daq_api.html">Daq API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Getting AMI Data</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="ami_basic.html">Basic Usage</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">AmiDet API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#pcdsdaq.ami.AmiDet"><code class="docutils literal notranslate"><span class="pre">AmiDet</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pcdsdaq.ami.AmiDet.get"><code class="docutils literal notranslate"><span class="pre">AmiDet.get()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pcdsdaq.ami.AmiDet.put"><code class="docutils literal notranslate"><span class="pre">AmiDet.put()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pcdsdaq.ami.AmiDet.read"><code class="docutils literal notranslate"><span class="pre">AmiDet.read()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pcdsdaq.ami.AmiDet.set_det_filter"><code class="docutils literal notranslate"><span class="pre">AmiDet.set_det_filter()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pcdsdaq.ami.AmiDet.stage"><code class="docutils literal notranslate"><span class="pre">AmiDet.stage()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pcdsdaq.ami.AmiDet.trigger"><code class="docutils literal notranslate"><span class="pre">AmiDet.trigger()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pcdsdaq.ami.AmiDet.unstage"><code class="docutils literal notranslate"><span class="pre">AmiDet.unstage()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pcdsdaq.ami.auto_setup_pyami.html">pcdsdaq.ami.auto_setup_pyami</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pcdsdaq.ami.set_pyami_proxy.html">pcdsdaq.ami.set_pyami_proxy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pcdsdaq.ami.set_l3t_file.html">pcdsdaq.ami.set_l3t_file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pcdsdaq.ami.set_monitor_det.html">pcdsdaq.ami.set_monitor_det</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pcdsdaq.ami.set_pyami_filter.html">pcdsdaq.ami.set_pyami_filter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pcdsdaq.ami.dets_filter.html">pcdsdaq.ami.dets_filter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pcdsdaq.ami.basic_filter.html">pcdsdaq.ami.basic_filter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pcdsdaq.ami.evr_filter.html">pcdsdaq.ami.evr_filter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pcdsdaq.ami.concat_filter_strings.html">pcdsdaq.ami.concat_filter_strings</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Bluesky Plans</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="plans_basic.html">Using the DAQ with Bluesky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="preprocessors_api.html">Preprocessors API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Auxiliary Features</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="scan_pvs.html">Scan PVs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="misc.html">Miscellaneous</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Sim Mode</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="sim.html">Simulated DAQ</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Notes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="env.html">Environments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="releases.html">Release History</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pcdsdaq</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">AmiDet API</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/ami_api.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="amidet-api">
+<h1>AmiDet API<a class="headerlink" href="#amidet-api" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="pcdsdaq.ami.AmiDet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pcdsdaq.ami.</span></span><span class="sig-name descname"><span class="pre">AmiDet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_string</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.ami.AmiDet" title="Link to this definition">¶</a></dt>
+<dd><p>Detector that gets data from pyami scalars.</p>
+<p>The data will be in the form of an accumulated mean, rms, and number
+of entries used in the calculations. The raw data is not avaiable via
+pyami.</p>
+<p>This only supports scalars. The array features are known to crash both the
+python session and active ami clients, so don’t use them.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prefix</strong> (<code class="docutils literal notranslate"><span class="pre">str</span></code>) – The ami name to use to retrieve the data.</p></li>
+<li><p><strong>name</strong> (<code class="docutils literal notranslate"><span class="pre">str</span></code>, required keyword) – The shorter name to use to label the data.</p></li>
+<li><p><strong>filter_str</strong> (<code class="docutils literal notranslate"><span class="pre">str</span></code>, optional) – If provided, we’ll filter the incoming data using this filter string.
+If omitted or None, we’ll use the last set_l3t string.
+If False, but not None, we’ll do no filtering at all. This includes the
+empty string.</p></li>
+<li><p><strong>min_duration</strong> (<code class="docutils literal notranslate"><span class="pre">float</span></code>, optional) – If provided, we’ll wait this many seconds before declaring the
+acquisition as complete. Otherwise, we’ll stop acquring on read.</p></li>
+<li><p><strong>normalize</strong> (<code class="docutils literal notranslate"><span class="pre">bool</span></code> or <code class="docutils literal notranslate"><span class="pre">AmiDet</span></code>, optional) – Determines the normalization behavior of this detector. The default is
+<code class="docutils literal notranslate"><span class="pre">True</span></code>, which means normalize to the current <code class="docutils literal notranslate"><span class="pre">monitor_det</span></code>. See
+<a class="reference internal" href="generated/pcdsdaq.ami.set_monitor_det.html#pcdsdaq.ami.set_monitor_det" title="pcdsdaq.ami.set_monitor_det"><code class="xref any py py-func docutils literal notranslate"><span class="pre">set_monitor_det</span></code></a>. <code class="docutils literal notranslate"><span class="pre">False</span></code> means do not normalize. You can also pass
+in any other detector to normalize against something that is not the
+<code class="docutils literal notranslate"><span class="pre">monitor_det</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="pcdsdaq.ami.AmiDet.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.ami.AmiDet.get" title="Link to this definition">¶</a></dt>
+<dd><p>Get the value of all components in the device</p>
+<p>Keyword arguments are passed onto each signal.get(). Components
+beginning with an underscore will not be included.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcdsdaq.ami.AmiDet.put">
+<span class="sig-name descname"><span class="pre">put</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.ami.AmiDet.put" title="Link to this definition">¶</a></dt>
+<dd><p>Put a value to all components of the device</p>
+<p>Keyword arguments are passed onto each signal.put()</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dev_t</strong> (<em>DeviceTuple</em><em> or </em><em>tuple</em>) – The device tuple with the value(s) to put (see get_device_tuple)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcdsdaq.ami.AmiDet.read">
+<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.ami.AmiDet.read" title="Link to this definition">¶</a></dt>
+<dd><p>Read data from the device.</p>
+<p>This method is expected to be as instantaneous as possible,
+with any substantial acquisition time taken care of in
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">trigger()</span></code>.</p>
+<p>The <code class="xref any docutils literal notranslate"><span class="pre">OrderedDict</span></code> returned by this method must have identical
+keys (in the same order) as the <code class="xref any docutils literal notranslate"><span class="pre">OrderedDict</span></code> returned by
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">describe()</span></code>.</p>
+<p>By convention, the first key in the return is the ‘primary’ key
+and maybe used by heuristics in <code class="xref py py-mod docutils literal notranslate"><span class="pre">bluesky</span></code>.</p>
+<p>The values in the ordered dictionary must be dict (-likes) with the
+keys <code class="docutils literal notranslate"><span class="pre">{'value',</span> <span class="pre">'timestamp'}</span></code>.  The <code class="docutils literal notranslate"><span class="pre">'value'</span></code> may have any type,
+the timestamp must be a float UNIX epoch timestamp in UTC.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> – The keys must be strings and the values must be dict-like
+with the keys <code class="docutils literal notranslate"><span class="pre">{'value',</span> <span class="pre">'timestamp'}</span></code></p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>OrderedDict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcdsdaq.ami.AmiDet.set_det_filter">
+<span class="sig-name descname"><span class="pre">set_det_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_codes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">operator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'&amp;'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.ami.AmiDet.set_det_filter" title="Link to this definition">¶</a></dt>
+<dd><p>Set the filter on this detector only.</p>
+<p>This lets you override the l3t filter for a single AmiDet. Call with
+no arguments to revert to the last l3t filter. Call with a simple
+<code class="docutils literal notranslate"><span class="pre">False</span></code> to disable filtering on this detector. Call as you would to
+set the l3t filter to setup a normal filtering override.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*args</strong> ((<code class="docutils literal notranslate"><span class="pre">AmiDet</span></code>, <code class="docutils literal notranslate"><span class="pre">float</span></code>, <code class="docutils literal notranslate"><span class="pre">float</span></code>) n times) – A sequence of (detector, low, high), which create filters that make
+sure the detector is between low and high. If instead, the first
+argument is <code class="docutils literal notranslate"><span class="pre">False</span></code>, we’ll disable filtering on this detector.</p></li>
+<li><p><strong>event_codes</strong> (<code class="docutils literal notranslate"><span class="pre">list</span></code>, optional) – A list of event codes to include in the filter. l3pass will be when
+the event code is present.</p></li>
+<li><p><strong>operator</strong> (<code class="docutils literal notranslate"><span class="pre">str</span></code>, optional) – The operator for combining the detector ranges and event codes.
+This can either be <code class="docutils literal notranslate"><span class="pre">|</span></code> to <code class="docutils literal notranslate"><span class="pre">or</span></code> the conditions together, so
+l3pass will happen if any filter passes, or it can be left at the
+default <code class="docutils literal notranslate"><span class="pre">&amp;</span></code> to <code class="docutils literal notranslate"><span class="pre">and</span></code> the conditions together, so l3pass will
+only happen if all filters pass.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcdsdaq.ami.AmiDet.stage">
+<span class="sig-name descname"><span class="pre">stage</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.ami.AmiDet.stage" title="Link to this definition">¶</a></dt>
+<dd><p>Called early in a bluesky scan to initialize the pyami.Entry object.</p>
+<p>Note that pyami.Entry objects begin accumulating data immediately.</p>
+<p>This will be when the filter_string is used to determine how to filter
+the pyami data. Setting the filter_string after stage is called will
+have no effect.</p>
+<p>Internally this creates a new pyami.Entry object. These objects start
+accumulating data immediately.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcdsdaq.ami.AmiDet.trigger">
+<span class="sig-name descname"><span class="pre">trigger</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.ami.AmiDet.trigger" title="Link to this definition">¶</a></dt>
+<dd><p>Called during a bluesky scan to clear the accumulated pyami data.</p>
+<p>This must be done because the pyami.Entry objects continually
+accumulate data forever. You can stop it by deleting the objects
+as in <a class="reference internal" href="#pcdsdaq.ami.AmiDet.unstage" title="pcdsdaq.ami.AmiDet.unstage"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">unstage</span></code></a>, and you can clear it here to at least start from a
+clean slate.</p>
+<p>If min_duration is zero, this will return a status already marked done
+and successful. Otherwise, this will return a status that will be
+marked done after min_duration seconds.</p>
+<p>If there is a normalization detector in use and it has not been staged,
+it will be staged during the first trigger in a scan.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pcdsdaq.ami.AmiDet.unstage">
+<span class="sig-name descname"><span class="pre">unstage</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.ami.AmiDet.unstage" title="Link to this definition">¶</a></dt>
+<dd><p>Called late in a bluesky scan to remove the pyami.Entry object and the
+monitor.</p>
+</dd></dl>
+
+</dd></dl>
+
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pcdsdaq.ami.auto_setup_pyami.html#pcdsdaq.ami.auto_setup_pyami" title="pcdsdaq.ami.auto_setup_pyami"><code class="xref py py-obj docutils literal notranslate"><span class="pre">auto_setup_pyami</span></code></a></p></td>
+<td><p>Does a best-guess at the ami configuration, if it has not yet been setup.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pcdsdaq.ami.set_pyami_proxy.html#pcdsdaq.ami.set_pyami_proxy" title="pcdsdaq.ami.set_pyami_proxy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_pyami_proxy</span></code></a></p></td>
+<td><p>Pick the hostname or group to use for the pyami connection.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pcdsdaq.ami.set_l3t_file.html#pcdsdaq.ami.set_l3t_file" title="pcdsdaq.ami.set_l3t_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_l3t_file</span></code></a></p></td>
+<td><p>Pick the file to write out for the l3t trigger</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pcdsdaq.ami.set_monitor_det.html#pcdsdaq.ami.set_monitor_det" title="pcdsdaq.ami.set_monitor_det"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_monitor_det</span></code></a></p></td>
+<td><p>Designate one <a class="reference internal" href="#pcdsdaq.ami.AmiDet" title="pcdsdaq.ami.AmiDet"><code class="xref any py py-class docutils literal notranslate"><span class="pre">AmiDet</span></code></a> as the monitor.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pcdsdaq.ami.set_pyami_filter.html#pcdsdaq.ami.set_pyami_filter" title="pcdsdaq.ami.set_pyami_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_pyami_filter</span></code></a></p></td>
+<td><p>Set up the l3t filters.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pcdsdaq.ami.dets_filter.html#pcdsdaq.ami.dets_filter" title="pcdsdaq.ami.dets_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dets_filter</span></code></a></p></td>
+<td><p>Return valid l3t/pyami filter strings in a useful format.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pcdsdaq.ami.basic_filter.html#pcdsdaq.ami.basic_filter" title="pcdsdaq.ami.basic_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">basic_filter</span></code></a></p></td>
+<td><p>Helper function for creating an ami filter string.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pcdsdaq.ami.evr_filter.html#pcdsdaq.ami.evr_filter" title="pcdsdaq.ami.evr_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evr_filter</span></code></a></p></td>
+<td><p>Helper function that creates a filter for a certain event code.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pcdsdaq.ami.concat_filter_strings.html#pcdsdaq.ami.concat_filter_strings" title="pcdsdaq.ami.concat_filter_strings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">concat_filter_strings</span></code></a></p></td>
+<td><p>Helper function to combine ami filter strings</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="ami_basic.html" class="btn btn-neutral float-left" title="Basic Usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="generated/pcdsdaq.ami.auto_setup_pyami.html" class="btn btn-neutral float-right" title="pcdsdaq.ami.auto_setup_pyami" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
