@@ -6,17 +6,17 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Daq API &mdash; pcdsdaq 2.4.5.dev4+g4050d77 documentation</title>
+  <title>Daq API &mdash; pcdsdaq 2.4.6.dev9+g0ec7081a3 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=eada5dab"></script>
-      <script src="_static/doctools.js?v=9a2dae69"></script>
-      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-      <script src="_static/docs-versions-menu.js?v=3d6a1aea"></script>
+      <script src="_static/documentation_options.js?v=2c6f951f"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="_static/docs-versions-menu.js?v=2187e224"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -140,7 +140,7 @@
 <h1>Daq API<a class="headerlink" href="#daq-api" title="Link to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="pcdsdaq.daq.Daq">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pcdsdaq.daq.</span></span><span class="sig-name descname"><span class="pre">Daq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">RE</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hutch_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq" title="Link to this definition">¶</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pcdsdaq.daq.</span></span><span class="sig-name descname"><span class="pre">Daq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">RE</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hutch_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq" title="Link to this definition">¶</a></dt>
 <dd><p>The LCLS1 daq as a <code class="docutils literal notranslate"><span class="pre">bluesky</span></code>-compatible object.</p>
 <p>This uses the <code class="docutils literal notranslate"><span class="pre">pydaq</span></code> module to connect with a running daq instance,
 controlling it via socket commands.</p>
@@ -161,7 +161,7 @@ will pass into the python layer from the daq.</p>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="pcdsdaq.daq.Daq.begin">
-<span class="sig-name descname"><span class="pre">begin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">events=&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration=&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">record=&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_l3t=&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">controls=&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_run=False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.begin" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">begin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">events</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_l3t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">controls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_run</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.begin" title="Link to this definition">¶</a></dt>
 <dd><p>Start the daq and block until the daq has begun acquiring data.</p>
 <p>Optionally block with <code class="docutils literal notranslate"><span class="pre">wait=True</span></code> until the daq has finished aquiring
 data. If blocking, a <code class="docutils literal notranslate"><span class="pre">ctrl+c</span></code> will end the run and clean up.</p>
@@ -194,7 +194,7 @@ run and clean up.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pcdsdaq.daq.Daq.begin_infinite">
-<span class="sig-name descname"><span class="pre">begin_infinite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record=&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_l3t=&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">controls=&lt;object</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.begin_infinite" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">begin_infinite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_l3t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">controls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;object</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.begin_infinite" title="Link to this definition">¶</a></dt>
 <dd><p>Start the daq to run forever in the background.</p>
 </dd></dl>
 
@@ -226,7 +226,7 @@ acquiring</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="pcdsdaq.daq.Daq.config">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">config</span></span><a class="headerlink" href="#pcdsdaq.daq.Daq.config" title="Link to this definition">¶</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">config</span></span><a class="headerlink" href="#pcdsdaq.daq.Daq.config" title="Link to this definition">¶</a></dt>
 <dd><p>The current configuration, e.g. the last call to <a class="reference internal" href="#pcdsdaq.daq.Daq.configure" title="pcdsdaq.daq.Daq.configure"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">configure</span></code></a></p>
 </dd></dl>
 
@@ -248,7 +248,7 @@ config.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pcdsdaq.daq.Daq.configure">
-<span class="sig-name descname"><span class="pre">configure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">events=&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration=&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">record=&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_l3t=&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">controls=&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">begin_sleep=&lt;object</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.configure" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">configure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">events</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_l3t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">controls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">begin_sleep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;object</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.configure" title="Link to this definition">¶</a></dt>
 <dd><p>Changes the daq’s configuration for the next run.</p>
 <p>All arguments omitted from the method call will default to the last
 configured value in the python session.</p>
@@ -301,7 +301,7 @@ at which they were configured, as specified by <code class="docutils literal not
 
 <dl class="py property">
 <dt class="sig sig-object py" id="pcdsdaq.daq.Daq.configured">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">configured</span></span><a class="headerlink" href="#pcdsdaq.daq.Daq.configured" title="Link to this definition">¶</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">configured</span></span><a class="headerlink" href="#pcdsdaq.daq.Daq.configured" title="Link to this definition">¶</a></dt>
 <dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the daq is configured, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
@@ -314,7 +314,7 @@ at which they were configured, as specified by <code class="docutils literal not
 
 <dl class="py property">
 <dt class="sig sig-object py" id="pcdsdaq.daq.Daq.connected">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">connected</span></span><a class="headerlink" href="#pcdsdaq.daq.Daq.connected" title="Link to this definition">¶</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">connected</span></span><a class="headerlink" href="#pcdsdaq.daq.Daq.connected" title="Link to this definition">¶</a></dt>
 <dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the daq is connected, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
@@ -362,7 +362,7 @@ values</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pcdsdaq.daq.Daq.kickoff">
-<span class="sig-name descname"><span class="pre">kickoff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">events=&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration=&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_l3t=&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">controls=&lt;object</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.kickoff" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">kickoff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">events</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_l3t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">controls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;object</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.kickoff" title="Link to this definition">¶</a></dt>
 <dd><p>Begin acquisition. This method is non-blocking.
 See <a class="reference internal" href="#pcdsdaq.daq.Daq.begin" title="pcdsdaq.daq.Daq.begin"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">begin</span></code></a> for a description of the parameters.</p>
 <p>This method does not supply arguments for configuration parameters, it
@@ -381,7 +381,7 @@ configure before running if there are queued configuration changes.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="pcdsdaq.daq.Daq.next_config">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">next_config</span></span><a class="headerlink" href="#pcdsdaq.daq.Daq.next_config" title="Link to this definition">¶</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">next_config</span></span><a class="headerlink" href="#pcdsdaq.daq.Daq.next_config" title="Link to this definition">¶</a></dt>
 <dd><p>The next queued configuration.</p>
 <p>This can be different than <a class="reference internal" href="#pcdsdaq.daq.Daq.config" title="pcdsdaq.daq.Daq.config"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">config</span></code></a> if we have queued up a
 configuration to be run on the next begin.</p>
@@ -396,7 +396,7 @@ interrupted. This will call <a class="reference internal" href="#pcdsdaq.daq.Daq
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pcdsdaq.daq.Daq.preconfig">
-<span class="sig-name descname"><span class="pre">preconfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">events=&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration=&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">record=&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_l3t=&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">controls=&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">begin_sleep=&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_queued_cfg=True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.preconfig" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">preconfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">events</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_l3t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">controls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">begin_sleep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_queued_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pcdsdaq.daq.Daq.preconfig" title="Link to this definition">¶</a></dt>
 <dd><p>Queue configuration parameters for next call to <a class="reference internal" href="#pcdsdaq.daq.Daq.configure" title="pcdsdaq.daq.Daq.configure"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">configure</span></code></a>.</p>
 <p>These will be overridden by arguments passed directly to <a class="reference internal" href="#pcdsdaq.daq.Daq.configure" title="pcdsdaq.daq.Daq.configure"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">configure</span></code></a>.
 These will be cleared after each call to <a class="reference internal" href="#pcdsdaq.daq.Daq.configure" title="pcdsdaq.daq.Daq.configure"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">configure</span></code></a>.</p>
@@ -431,7 +431,7 @@ when it was last set.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="pcdsdaq.daq.Daq.record">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">record</span></span><a class="headerlink" href="#pcdsdaq.daq.Daq.record" title="Link to this definition">¶</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">record</span></span><a class="headerlink" href="#pcdsdaq.daq.Daq.record" title="Link to this definition">¶</a></dt>
 <dd><p>If <code class="docutils literal notranslate"><span class="pre">True</span></code>, we’ll configure the daq to record data. If <code class="docutils literal notranslate"><span class="pre">False</span></code>, we
 will configure the daq to not record data.</p>
 <p>Setting this is the equivalent of scheduling a <a class="reference internal" href="#pcdsdaq.daq.Daq.configure" title="pcdsdaq.daq.Daq.configure"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">configure</span></code></a> call to be
@@ -549,7 +549,7 @@ new run during the scan.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="pcdsdaq.daq.Daq.state">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">state</span></span><a class="headerlink" href="#pcdsdaq.daq.Daq.state" title="Link to this definition">¶</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">state</span></span><a class="headerlink" href="#pcdsdaq.daq.Daq.state" title="Link to this definition">¶</a></dt>
 <dd><p>State as reported by the daq. Can be any of the following:
 - <code class="docutils literal notranslate"><span class="pre">Disconnected</span></code>: No active session in python
 - <code class="docutils literal notranslate"><span class="pre">Connected</span></code>:    Active session in python
