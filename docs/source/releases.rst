@@ -1,6 +1,33 @@
 Release History
 ###############
 
+v2.4.5 (2025-03-16)
+===================
+
+- Unpin numpy now that bluesky is compatible
+
+
+v2.4.4 (2024-08-20)
+===================
+
+- Include pcdsutils dependency in requirements
+- Use bluesky-base in conda-recipe to avoid matplotlib qt dependencies
+
+
+v2.4.3 (2023-09-14)
+===================
+
+- Raise if daq not yet registered, consolidate exceptions and some relative imports
+
+
+v2.4.2 (2023-04-13)
+===================
+
+- Fix issues related to the missing pcdsdaq_lib_setup script
+- Fix issues related to failing pypi builds
+- Fix issues related to failing docs builds
+
+
 v2.4.1 (2023-04-11)
 ===================
 

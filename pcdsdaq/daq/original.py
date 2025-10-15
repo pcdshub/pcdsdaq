@@ -18,6 +18,7 @@ from ophyd.utils import StatusTimeoutError, WaitTimeoutError
 
 from .. import ext_scripts
 from ..ami import set_monitor_det, set_pyami_filter
+from ..exceptions import DaqTimeoutError
 from .interface import register_daq
 
 logger = logging.getLogger(__name__)
@@ -52,10 +53,6 @@ def check_connect(f):
             logger.error(err)
             raise RuntimeError(err)
     return wrapper
-
-
-class DaqTimeoutError(Exception):
-    pass
 
 
 class Daq:

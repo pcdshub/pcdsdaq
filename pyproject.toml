@@ -3,12 +3,13 @@ build-backend = "setuptools.build_meta"
 requires = [ "setuptools>=45", "setuptools_scm[toml]>=6.2",]
 
 [project]
-classifiers = [ "Development Status :: 2 - Pre-Alpha", "Natural Language :: English", "Programming Language :: Python :: 3",]
+classifiers = [ "Development Status :: 5 - Production/Stable", "Natural Language :: English", "Programming Language :: Python :: 3",]
 description = "DAQ Control Interface"
 dynamic = [ "version", "readme", "dependencies", "optional-dependencies", "optional-dependencies",]
 keywords = []
 name = "pcdsdaq"
 requires-python = ">=3.9"
+
 [[project.authors]]
 name = "SLAC National Accelerator Laboratory"
 
@@ -29,6 +30,9 @@ timeout = "60"
 where = [ ".",]
 include = [ "pcdsdaq*",]
 namespaces = false
+
+[tool.setuptools]
+script-files = [ "bin/pcdsdaq_lib_setup",]
 
 [tool.setuptools.dynamic.readme]
 file = "README.rst"
