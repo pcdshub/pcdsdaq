@@ -27,10 +27,8 @@ elif [ "${OS_VER}" = el9 ]; then
 fi
 
 if [ -z "${OS_DIR}" ]; then
-  echo "pcdsdaq_lib_setup: OS was ${OS_VER}, must be el6, el7, or el9"
+  echo "pcdsdaq_lib_setup: failed to link hutch python to daq. OS was ${OS_VER}, must be el6, el7, or el9"
 else
-  echo "pcdsdaq_lib_setup: linking hutch python to current ${HUTCH} daq libraries"
-
   # Add pydaq, pydcb, pyami to the python path
   export PYTHONPATH="${PYTHONPATH}:${DAQREL}/pdsapp/lib/${OS_DIR}"
 
@@ -48,4 +46,5 @@ else
   do
     export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${DAQREL}/${dir}/lib/${OS_DIR}"
   done
+  echo "pcdsdaq_lib_setup: linked hutch python to current ${HUTCH} daq libraries on ${OS_VER}"
 fi
