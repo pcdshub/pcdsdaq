@@ -14,16 +14,23 @@ else
   AMIREL="/reg/g/pcds/dist/pds/${HUTCH}/ami-current/build"
 fi
 
-OS_VER="$(uname -r | rev | cut -d . -f 2 | rev)"
+# Sample uname -r strings
+# 3.10.0-1160.119.1.el7.x86_64
+# 5.14.0-427.42.1.el9_4.x86_64
+OS_VER="$(uname -r | rev | cut -d . -f 2 | rev | cut -d _ -f 1)"
 if [ "${OS_VER}" = el6 ]; then
   OS_DIR=x86_64-linux-opt
 elif [ "${OS_VER}" = el7 ]; then
   OS_DIR=x86_64-rhel7-opt
+elif [ "${OS_VER}" = el9 ]; then
+  OS_DIR=x86_64-rhel9-opt
 fi
 
 if [ -z "${OS_DIR}" ]; then
-  echo "OS must be rhel6 or rhel7"
+  echo "pcdsdaq_lib_setup: OS was ${OS_VER}, must be el6, el7, or el9"
 else
+  echo "pcdsdaq_lib_setup: linking hutch python to current ${HUTCH} daq libraries"
+
   # Add pydaq, pydcb, pyami to the python path
   export PYTHONPATH="${PYTHONPATH}:${DAQREL}/pdsapp/lib/${OS_DIR}"
 
